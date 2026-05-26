@@ -604,9 +604,11 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
         Syncing your data to Firebase cloud. Changes save automatically and sync to all devices instantly.
       </div>
       <div class="flex gap8" style="flex-wrap:wrap">
-        <button class="btn bp bsm" onclick="fbForceSync()">&#9729; Force Sync Now</button>
+        <button class="btn bp bsm" onclick="fbForcePush()">&#11014; Push My Data Up</button>
+        <button class="btn bsm" onclick="fbForcePull()">&#11015; Pull from Cloud</button>
         <button class="btn bsm" onclick="fbShowInfo()">&#8505; Info</button>
       </div>
+      <div class="f11 c3 mt8">Push = send YOUR data to cloud &bull; Pull = get CLOUD data to this device</div>
       <div id="fb-last-sync" class="f11 c3 mt8"></div>
     </div>
   </div>
@@ -747,14 +749,19 @@ async function fbPull() {
     var snap = await getDoc(fbDoc);
     if (snap.exists()) {
       var remote = snap.data();
-      // Only merge if remote is newer than our local data
-      if (remote._ts && remote._ts > (S.updated || 0)) {
+      var remoteTs = remote._ts || 0;
+      var localTs  = S.updated || 0;
+      console.log('[Firebase] Remote ts:', remoteTs, 'Local ts:', localTs);
+      if (remoteTs > localTs) {
+        // Cloud is newer - pull it down
         fbMerge(remote);
-        console.log('[Firebase] Pulled newer data from cloud');
-      } else {
-        console.log('[Firebase] Local data is up to date');
-        // Push our local data up
+        console.log('[Firebase] Pulled newer cloud data');
+      } else if (localTs > remoteTs) {
+        // Local is newer - push it up
+        console.log('[Firebase] Local is newer, pushing up');
         fbPush();
+      } else {
+        console.log('[Firebase] Already in sync');
       }
     } else {
       // No cloud data yet - push ours up
@@ -775,8 +782,10 @@ function fbListen() {
     var remote = snap.data();
     // Ignore if this update came from us
     if (remote._device === DEVICE_ID && remote._ts === fbLastWritten) return;
-    // Only update if remote is newer
-    if (remote._ts && remote._ts > (S.updated || 0)) {
+    // Only update if remote is STRICTLY newer than our current data
+    var remoteTs = remote._ts || 0;
+    var localTs = S.updated || 0;
+    if (remoteTs > localTs) {
       console.log('[Firebase] Received update from', remote._device);
       fbMerge(remote);
       showToast('Synced from another device');
@@ -858,6 +867,24 @@ window.autoSave = function() {
 window.fbInit = fbInit;
 
 // ── SETTINGS UI ───────────────────────────────────────────────
+window.fbForcePush = async function() {
+  if (!fbDoc) { showToast('Firebase not connected'); return; }
+  S.updated = Date.now(); // Mark as latest
+  fbSetStatus('syncing');
+  await fbPush();
+  showToast('Your data pushed to cloud successfully');
+};
+window.fbForcePull = async function() {
+  if (!fbDoc) { showToast('Firebase not connected'); return; }
+  fbSetStatus('syncing');
+  var snap = await getDoc(fbDoc);
+  if (snap.exists()) {
+    fbMerge(snap.data());
+    showToast('Cloud data pulled to this device');
+  } else {
+    showToast('No cloud data found');
+  }
+};
 window.fbForceSync = async function() {
   if (!fbDoc) { showToast('Firebase not connected'); return; }
   fbSetStatus('syncing');
