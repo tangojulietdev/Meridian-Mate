@@ -1164,11 +1164,14 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
         Syncing your data to Firebase cloud. Changes save automatically and sync to all devices instantly.
       </div>
       <div class="flex gap8" style="flex-wrap:wrap">
-        <button class="btn bp bsm" onclick="fbForcePush()">&#11014; Push My Data Up</button>
+        <button class="btn bp bsm" onclick="fbForcePush()">&#11014; Push My Data</button>
         <button class="btn bsm" onclick="fbForcePull()">&#11015; Pull from Cloud</button>
+        <button class="btn bsm" onclick="fbRestoreBackup()">&#128268; Restore Backup</button>
         <button class="btn bsm" onclick="fbShowInfo()">&#8505; Info</button>
       </div>
-      <div class="f11 c3 mt8">Push = send YOUR data to cloud &bull; Pull = get CLOUD data to this device</div>
+      <div class="f11 c3 mt8">
+        Push = send YOUR data up &bull; Pull = get cloud data &bull; Restore = recover from auto-backup
+      </div>
       <div id="fb-last-sync" class="f11 c3 mt8"></div>
     </div>
   </div>
@@ -1241,7 +1244,9 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
 </div>
 
 <script type="module">
-// ── FIREBASE SYNC v3 - CLEAN REWRITE ─────────────────────────
+// ── FIREBASE SYNC v4 - TWO DOCUMENT STRATEGY ─────────────────
+// shared_data = latest sync (may be overwritten)
+// backup_data = last known GOOD data (only overwritten if hasRealData)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -1260,47 +1265,22 @@ function getDeviceId() {
   return id;
 }
 
-var fbApp=null, fbDb=null, fbDoc=null;
-var fbListening=false, fbBooting=true, fbLastPushTs=0;
+var fbApp=null, fbDb=null, fbDocMain=null, fbDocBackup=null;
+var fbListening=false, fbBooting=true;
 var DEVICE_ID = getDeviceId();
-var FB_DOC = 'shared_data';
-var FB_COL  = 'meridian_co';
 var fbPushTimer = null;
 
-// ── DATA QUALITY CHECK ────────────────────────────────────────
-function hasRealData(data) {
-  if (!data) return false;
-  return (data.jobs   && data.jobs.length   > 0) ||
-         (data.ports  && data.ports.length  > 0) ||
-         (data.rag    && data.rag.length    > 0) ||
-         (data.drills && data.drills.length > 0) ||
-         (data.vessel && data.vessel.name   && data.vessel.name !== 'MV Vessel');
+// ── REAL DATA CHECK ───────────────────────────────────────────
+function hasRealData(d) {
+  if (!d) return false;
+  return (d.jobs   && d.jobs.length   > 0) ||
+         (d.ports  && d.ports.length  > 0) ||
+         (d.rag    && d.rag.length    > 0) ||
+         (d.drills && d.drills.length > 0) ||
+         (d.vessel && d.vessel.name   && d.vessel.name !== 'MV Vessel');
 }
 
-// ── PUSH to Firestore ─────────────────────────────────────────
-async function fbPush() {
-  if (!fbDoc || !navigator.onLine) return;
-  // Never push during boot sequence
-  if (fbBooting) { console.log('[FB] Skipping push - still booting'); return; }
-  // Never push empty data
-  if (!hasRealData(window.S)) { console.log('[FB] Skipping push - no real data'); return; }
-  try {
-    var payload = JSON.parse(JSON.stringify(window.S));
-    payload._device = DEVICE_ID;
-    payload._ts = Date.now();
-    window.S.updated = payload._ts;
-    fbLastPushTs = payload._ts;
-    await setDoc(fbDoc, payload);
-    fbSetStatus('synced');
-    window.fbUpdateBadge && window.fbUpdateBadge('synced');
-    console.log('[FB] Pushed ts:', payload._ts);
-  } catch(e) {
-    console.warn('[FB] Push failed:', e.message);
-    fbSetStatus('error');
-  }
-}
-
-// ── APPLY remote data safely ──────────────────────────────────
+// ── APPLY remote data to app ──────────────────────────────────
 function fbApply(remote) {
   var keys = ['vessel','theme','jobs','rag','drills','orders','ports',
               'holds','dcounters','wplans','cldata','custom_bundles',
@@ -1310,45 +1290,83 @@ function fbApply(remote) {
   window.boot2 && window.boot2();
   fbSetStatus('synced');
   window.fbUpdateBadge && window.fbUpdateBadge('synced');
+  console.log('[FB] Applied remote data ts:', remote._ts);
 }
 
-// ── PULL on boot ──────────────────────────────────────────────
-async function fbPull() {
-  if (!fbDoc) return;
+// ── PUSH: write to BOTH main and backup (only if real data) ───
+async function fbPush() {
+  if (!fbDocMain || !navigator.onLine) return;
+  if (fbBooting) { console.log('[FB] Push blocked - booting'); return; }
+  if (!hasRealData(window.S)) { console.log('[FB] Push blocked - no real data'); return; }
+
   try {
-    var snap = await getDoc(fbDoc);
-    if (!snap.exists()) {
-      console.log('[FB] No cloud data');
+    var payload = JSON.parse(JSON.stringify(window.S));
+    payload._device = DEVICE_ID;
+    payload._ts = Date.now();
+    window.S.updated = payload._ts;
+
+    // Write to main doc
+    await setDoc(fbDocMain, payload);
+    // Write to backup doc (safe copy - only real data ever gets here)
+    await setDoc(fbDocBackup, payload);
+
+    fbSetStatus('synced');
+    window.fbUpdateBadge && window.fbUpdateBadge('synced');
+    console.log('[FB] Pushed + backed up ts:', payload._ts);
+  } catch(e) {
+    console.warn('[FB] Push failed:', e.message);
+    fbSetStatus('error');
+  }
+}
+
+// ── PULL: get best available data ─────────────────────────────
+async function fbPull() {
+  if (!fbDocMain) return;
+  try {
+    // Read BOTH docs in parallel
+    var results = await Promise.all([getDoc(fbDocMain), getDoc(fbDocBackup)]);
+    var snapMain   = results[0];
+    var snapBackup = results[1];
+
+    // Get best remote data - prefer backup if main is empty/missing
+    var remote = null;
+    if (snapMain.exists() && hasRealData(snapMain.data())) {
+      remote = snapMain.data();
+    } else if (snapBackup.exists() && hasRealData(snapBackup.data())) {
+      remote = snapBackup.data();
+      console.log('[FB] Main was empty - using backup data');
+      // Restore main from backup
+      await setDoc(fbDocMain, remote);
+    }
+
+    if (!remote) {
+      console.log('[FB] No cloud data at all');
       fbBooting = false;
-      // Only push if we have real data
       if (hasRealData(window.S)) fbPush();
       return;
     }
-    var remote = snap.data();
+
     var remoteTs = remote._ts || 0;
     var localTs  = window.S ? (window.S.updated || 0) : 0;
-    var localReal = hasRealData(window.S);
+    var localReal  = hasRealData(window.S);
     var remoteReal = hasRealData(remote);
 
-    console.log('[FB] Pull - remoteTs:', remoteTs, 'localTs:', localTs, 
+    console.log('[FB] remoteTs:', remoteTs, 'localTs:', localTs,
                 'localReal:', localReal, 'remoteReal:', remoteReal);
 
     if (!localReal && remoteReal) {
-      // Phone is blank, cloud has data → ALWAYS pull
-      console.log('[FB] Local empty → pulling cloud');
+      // Local empty → always use cloud
+      console.log('[FB] Local empty → pulling');
       fbApply(remote);
     } else if (remoteReal && remoteTs > localTs) {
-      // Cloud is strictly newer → pull
+      // Cloud strictly newer → pull
       console.log('[FB] Cloud newer → pulling');
       fbApply(remote);
-    } else if (localReal && localTs > remoteTs) {
-      // Local is strictly newer → push
-      console.log('[FB] Local newer → pushing');
+    } else if (localReal && localTs >= remoteTs) {
+      // Local same or newer → push
+      console.log('[FB] Local newer or equal → pushing');
       fbBooting = false;
       fbPush();
-    } else {
-      // Same timestamp or both empty → do nothing
-      console.log('[FB] In sync or no data to sync');
     }
     fbBooting = false;
   } catch(e) {
@@ -1357,39 +1375,30 @@ async function fbPull() {
   }
 }
 
-// ── LISTEN for real-time changes from OTHER devices ───────────
+// ── LISTEN for changes from other devices ─────────────────────
 function fbListen() {
-  if (!fbDoc || fbListening) return;
+  if (!fbDocMain || fbListening) return;
   fbListening = true;
-  
-  // Wait for boot to complete before listening
   setTimeout(function() {
-    onSnapshot(fbDoc, function(snap) {
-      if (!snap.exists()) return;
-      if (fbBooting) return; // Ignore during boot
-      
+    onSnapshot(fbDocMain, function(snap) {
+      if (fbBooting || !snap.exists()) return;
       var remote = snap.data();
+      if (remote._device === DEVICE_ID) return; // our own push
+      if (!hasRealData(remote)) return;          // empty data
       var remoteTs = remote._ts || 0;
       var localTs  = window.S ? (window.S.updated || 0) : 0;
-
-      // Ignore our own pushes
-      if (remote._device === DEVICE_ID) return;
-      // Ignore if not newer
-      if (remoteTs <= localTs) return;
-      // Ignore empty data
-      if (!hasRealData(remote)) return;
-
-      console.log('[FB] Real-time update from', remote._device);
+      if (remoteTs <= localTs) return;           // not newer
+      console.log('[FB] Live update from', remote._device);
       fbApply(remote);
       window.showToast && window.showToast('Synced from another device');
     }, function(err) {
       console.warn('[FB] Listener error:', err.message);
       fbListening = false;
     });
-  }, 3000); // Wait 3s after boot before listening
+  }, 3000);
 }
 
-// ── STATUS ────────────────────────────────────────────────────
+// ── STATUS DOT ────────────────────────────────────────────────
 function fbSetStatus(state) {
   var dot = document.getElementById('sync-dot');
   if (!dot) return;
@@ -1398,54 +1407,75 @@ function fbSetStatus(state) {
   else if(state==='synced'){dot.style.background='var(--grn)';}
   else if(state==='error'){dot.style.background='var(--red)';}
   else{dot.style.background='var(--ink3)';}
-  dot.title = state==='synced'?'Synced to cloud':state==='syncing'?'Syncing...':state==='error'?'Sync error':'Offline';
+  dot.title=state==='synced'?'Synced to cloud':state==='syncing'?'Syncing...':state==='error'?'Sync error':'Offline';
 }
-
-// ── SCHEDULE PUSH (debounced, only after user action) ─────────
-window.fbSchedulePush = function() {
-  if (fbBooting) return; // Never push during boot
-  clearTimeout(fbPushTimer);
-  fbPushTimer = setTimeout(fbPush, 2500);
-};
 
 // ── INIT ──────────────────────────────────────────────────────
 async function fbInit() {
   try {
     fbApp = initializeApp(firebaseConfig);
     fbDb  = getFirestore(fbApp);
-    fbDoc = doc(fbDb, FB_COL, FB_DOC);
+    fbDocMain   = doc(fbDb, 'meridian_co', 'shared_data');
+    fbDocBackup = doc(fbDb, 'meridian_co', 'backup_data');
     fbSetStatus('syncing');
     await fbPull();
     fbListen();
     window.addEventListener('online', function() {
       fbSetStatus('syncing');
-      setTimeout(fbPush, 1000); // Small delay after reconnect
+      setTimeout(function() { if (!fbBooting) fbPush(); }, 2000);
     });
     window.addEventListener('offline', function() { fbSetStatus('offline'); });
     if (!navigator.onLine) fbSetStatus('offline');
-    console.log('[FB] Init complete, device:', DEVICE_ID);
   } catch(e) {
     console.warn('[FB] Init failed:', e.message);
     fbBooting = false;
   }
 }
 
-// ── EXPOSE to main app ────────────────────────────────────────
+// ── SCHEDULE PUSH ─────────────────────────────────────────────
+window.fbSchedulePush = function() {
+  if (fbBooting) return;
+  clearTimeout(fbPushTimer);
+  fbPushTimer = setTimeout(fbPush, 2500);
+};
+
+// ── EXPOSE ───────────────────────────────────────────────────
 window.fbInit = fbInit;
+
 window.fbForcePush = async function() {
+  if (!hasRealData(window.S)) { window.showToast&&window.showToast('No real data to push'); return; }
   fbBooting = false;
-  if (!hasRealData(window.S)) { window.showToast&&window.showToast('No data to push'); return; }
   window.S.updated = Date.now();
   await fbPush();
-  window.showToast&&window.showToast('Your data pushed to cloud');
+  window.showToast&&window.showToast('Your data pushed to cloud and backup');
 };
+
 window.fbForcePull = async function() {
-  if (!fbDoc){window.showToast&&window.showToast('Not connected');return;}
-  var snap=await getDoc(fbDoc);
-  if(snap.exists()){fbApply(snap.data());window.showToast&&window.showToast('Cloud data pulled');}
-  else{window.showToast&&window.showToast('No cloud data found');}
+  if (!fbDocMain) { window.showToast&&window.showToast('Not connected'); return; }
+  // Always try backup first for safety
+  var snapB = await getDoc(fbDocBackup);
+  var snapM = await getDoc(fbDocMain);
+  var best = null;
+  if (snapB.exists() && hasRealData(snapB.data())) best = snapB.data();
+  if (snapM.exists() && hasRealData(snapM.data())) {
+    var md = snapM.data();
+    if (!best || md._ts > best._ts) best = md;
+  }
+  if (best) { fbApply(best); window.showToast&&window.showToast('Cloud data pulled successfully'); }
+  else { window.showToast&&window.showToast('No valid cloud data found'); }
 };
-window.fbGetStatus = function() { return fbDoc?'connected':'not connected'; };
+
+window.fbRestoreBackup = async function() {
+  if (!fbDocBackup) return;
+  var snap = await getDoc(fbDocBackup);
+  if (snap.exists() && hasRealData(snap.data())) {
+    fbApply(snap.data());
+    window.showToast&&window.showToast('Backup restored!');
+  } else {
+    window.showToast&&window.showToast('No backup found');
+  }
+};
+
 window.fbShowInfo = function() {
   window.openModal && window.openModal('Meridian C/O — Info',
     '<div style="font-size:13px">'+
@@ -1455,17 +1485,36 @@ window.fbShowInfo = function() {
     '</div>'+
     '<div class="f12 c2" style="line-height:2.2">'+
     '&#9729; Firebase: meridian-mate<br>'+
-    '&#10003; Auto-saves 2.5s after change<br>'+
-    '&#10003; Blank device always pulls cloud<br>'+
-    '&#10003; Push blocked during boot<br>'+
+    '&#10003; Two-document sync (main + backup)<br>'+
+    '&#10003; Empty data can never overwrite cloud<br>'+
+    '&#10003; Backup auto-restores if main is wiped<br>'+
     '<span class="c3 f11">Device: '+DEVICE_ID+'</span>'+
     '</div></div>',
     '<button class="btn bp bsm" onclick="fbForcePush();closeModal()">Push My Data</button>'+
     '<button class="btn bsm" onclick="fbForcePull();closeModal()">Pull from Cloud</button>'+
+    '<button class="btn bsm" onclick="fbRestoreBackup();closeModal()">Restore Backup</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Close</button>');
 };
 
-// Patch autoSave AFTER window.autoSave exists
+window.fbUpdateBadge = function(state) {
+  var badge = document.getElementById('fb-status-badge');
+  var sub = document.getElementById('fb-status-detail');
+  var last = document.getElementById('fb-last-sync');
+  if (!badge) return;
+  if (state==='synced') {
+    badge.className='bdg dg'; badge.textContent='Synced';
+    if(sub) sub.textContent='All data synced. Main + backup both updated.';
+    if(last) last.textContent='Last sync: '+new Date().toLocaleTimeString();
+  } else if(state==='syncing'){
+    badge.className='bdg da'; badge.textContent='Syncing...';
+  } else if(state==='error'){
+    badge.className='bdg dr'; badge.textContent='Error';
+  } else {
+    badge.className='bdg dgr'; badge.textContent='Offline';
+  }
+};
+
+// Patch autoSave after DOM ready
 document.addEventListener('DOMContentLoaded', function() {
   var orig = window.autoSave;
   window.autoSave = function() {
