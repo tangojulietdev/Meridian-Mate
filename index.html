@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian C/O">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian C/O</title>
+<title>Meridian C/O v2.1.0</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -520,7 +520,13 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
 </div>
 
 <div class="page" id="pg-settings">
-  <div class="ph"><div><div class="ph-t">Settings</div></div></div>
+  <div class="ph">
+    <div><div class="ph-t">Settings</div></div>
+    <div style="text-align:right">
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v2.1.0</div>
+      <div class="f10 c3">27 May 2026</div>
+    </div>
+  </div>
   <div class="card mb12">
     <div class="ch"><div class="ct">Vessel Information</div></div>
     <div class="cb">
@@ -2219,6 +2225,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
+var APP_VERSION = '2.1.0';
+var BUILD_DATE  = '27 May 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'timeline';
 var ACTIVE_BUNDLE = null;
@@ -3922,18 +3930,19 @@ function closeModal(){document.getElementById('mwrap').classList.remove('open');
 
 // ── PWA ───────────────────────────────────────────────────────
 function fbShowInfo() {
-  openModal('Firebase Sync',
-    '<div style="line-height:2;font-size:13px">'+
-    '<div class="flex gap8 mb12"><div style="font-size:24px">&#9729;</div><div>'+
-    '<div class="fw7">Real-time Cloud Sync</div>'+
-    '<div class="c3 f12">All changes sync automatically</div></div></div>'+
+  openModal('Meridian C/O — Info',
+    '<div style="font-size:13px">'+
+    '<div style="background:var(--ac-d);border:1px solid var(--ac-b);border-radius:var(--rl);padding:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">'+
+      '<div><div class="fw8" style="font-size:16px">Meridian C/O</div><div class="c3 f12">Chief Officer Personal Operations</div></div>'+
+      '<div style="text-align:right"><div class="fw7 mono" style="color:var(--ac);font-size:18px">v'+APP_VERSION+'</div><div class="c3 f11">'+BUILD_DATE+'</div></div>'+
+    '</div>'+
     '<div class="dvd"></div>'+
-    '<div class="f12 c2" style="line-height:2">'+
-    '&#10003; Auto-saves every 2 seconds after a change<br>'+
-    '&#10003; Works across phone, tablet, laptop<br>'+
-    '&#10003; Syncs when you come back online after offline use<br>'+
-    '&#10003; Project: meridian-mate<br>'+
-    '<span class="c3">Device ID: '+localStorage.getItem('mco_device_id')+'</span>'+
+    '<div class="f12 c2" style="line-height:2.2">'+
+    '&#9729; Firebase Cloud Sync: meridian-mate<br>'+
+    '&#10003; Auto-saves every 2 seconds<br>'+
+    '&#10003; Works across all devices<br>'+
+    '&#10003; Syncs when back online<br>'+
+    '<span class="c3 f11">Device: '+localStorage.getItem('mco_device_id')+'</span>'+
     '</div></div>',
     '<button class="btn bp bsm" onclick="fbForceSync();closeModal()">Sync Now</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Close</button>');
