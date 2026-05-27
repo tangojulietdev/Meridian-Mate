@@ -1241,7 +1241,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
 </div>
 
 <script type="module">
-// ── FIREBASE SYNC ─────────────────────────────────────────────
+// ── FIREBASE SYNC v3 - CLEAN REWRITE ─────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -1254,238 +1254,226 @@ const firebaseConfig = {
   appId: "1:899931535256:web:bbb1350c2e16eadcf71ded"
 };
 
-// Device ID - unique per device so we know who wrote what
 function getDeviceId() {
   var id = localStorage.getItem('mco_device_id');
-  if (!id) {
-    id = 'device_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-    localStorage.setItem('mco_device_id', id);
-  }
+  if (!id) { id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); localStorage.setItem('mco_device_id', id); }
   return id;
 }
 
-var fbApp = null;
-var fbDb  = null;
-var fbDoc = null;
-var fbListening = false;
-var fbLastWritten = 0;  // timestamp of last write we did
+var fbApp=null, fbDb=null, fbDoc=null;
+var fbListening=false, fbBooting=true, fbLastPushTs=0;
 var DEVICE_ID = getDeviceId();
-var FB_COLLECTION = 'meridian_co';
-var FB_DOC_ID = 'shared_data';  // one doc, all devices share it
+var FB_DOC = 'shared_data';
+var FB_COL  = 'meridian_co';
+var fbPushTimer = null;
 
-function fbInit() {
-  try {
-    fbApp = initializeApp(firebaseConfig);
-    fbDb  = getFirestore(fbApp);
-    fbDoc = doc(fbDb, FB_COLLECTION, FB_DOC_ID);
-    console.log('[Firebase] Initialised, device:', DEVICE_ID);
-    fbStartSync();
-  } catch(e) {
-    console.warn('[Firebase] Init failed:', e.message);
-  }
+// ── DATA QUALITY CHECK ────────────────────────────────────────
+function hasRealData(data) {
+  if (!data) return false;
+  return (data.jobs   && data.jobs.length   > 0) ||
+         (data.ports  && data.ports.length  > 0) ||
+         (data.rag    && data.rag.length    > 0) ||
+         (data.drills && data.drills.length > 0) ||
+         (data.vessel && data.vessel.name   && data.vessel.name !== 'MV Vessel');
 }
 
-// ── PUSH: write S to Firestore ────────────────────────────────
+// ── PUSH to Firestore ─────────────────────────────────────────
 async function fbPush() {
   if (!fbDoc || !navigator.onLine) return;
-  // SAFETY: never push empty/blank data that would wipe cloud
-  var hasRealData = (S.jobs&&S.jobs.length>0) || 
-                    (S.ports&&S.ports.length>0) ||
-                    (S.rag&&S.rag.length>0) ||
-                    (S.drills&&S.drills.length>0) ||
-                    (S.dcounters&&S.dcounters.length>0) ||
-                    (S.vessel&&S.vessel.name&&S.vessel.name!=='MV Vessel');
-  if (!hasRealData) {
-    console.log('[Firebase] Skipping push - no real data yet, will pull instead');
-    fbPull();
-    return;
-  }
+  // Never push during boot sequence
+  if (fbBooting) { console.log('[FB] Skipping push - still booting'); return; }
+  // Never push empty data
+  if (!hasRealData(window.S)) { console.log('[FB] Skipping push - no real data'); return; }
   try {
-    var payload = JSON.parse(JSON.stringify(S));
+    var payload = JSON.parse(JSON.stringify(window.S));
     payload._device = DEVICE_ID;
     payload._ts = Date.now();
-    fbLastWritten = payload._ts;
+    window.S.updated = payload._ts;
+    fbLastPushTs = payload._ts;
     await setDoc(fbDoc, payload);
     fbSetStatus('synced');
-    console.log('[Firebase] Pushed at', new Date().toISOString());
+    window.fbUpdateBadge && window.fbUpdateBadge('synced');
+    console.log('[FB] Pushed ts:', payload._ts);
   } catch(e) {
-    console.warn('[Firebase] Push failed:', e.message);
+    console.warn('[FB] Push failed:', e.message);
     fbSetStatus('error');
   }
 }
 
-// ── PULL: read from Firestore on first load ───────────────────
+// ── APPLY remote data safely ──────────────────────────────────
+function fbApply(remote) {
+  var keys = ['vessel','theme','jobs','rag','drills','orders','ports',
+              'holds','dcounters','wplans','cldata','custom_bundles',
+              'deleted_bundles','updated'];
+  keys.forEach(function(k) { if (remote[k] !== undefined) window.S[k] = remote[k]; });
+  window.dbSave && window.dbSave();
+  window.boot2 && window.boot2();
+  fbSetStatus('synced');
+  window.fbUpdateBadge && window.fbUpdateBadge('synced');
+}
+
+// ── PULL on boot ──────────────────────────────────────────────
 async function fbPull() {
   if (!fbDoc) return;
   try {
     var snap = await getDoc(fbDoc);
-    if (snap.exists()) {
-      var remote = snap.data();
-      var remoteTs = remote._ts || 0;
-      var localTs  = S.updated || 0;
-      // Check if local has any real data
-      var localHasData = (S.jobs&&S.jobs.length>0) ||
-                         (S.ports&&S.ports.length>0) ||
-                         (S.rag&&S.rag.length>0) ||
-                         (S.vessel&&S.vessel.name&&S.vessel.name!=='MV Vessel');
-      console.log('[Firebase] Remote ts:', remoteTs, 'Local ts:', localTs, 'Local has data:', localHasData);
-      if (!localHasData) {
-        // Local is empty/fresh install - ALWAYS pull from cloud
-        console.log('[Firebase] Local empty, pulling cloud data');
-        fbMerge(remote);
-      } else if (remoteTs > localTs) {
-        // Cloud is newer - pull it down
-        fbMerge(remote);
-        console.log('[Firebase] Pulled newer cloud data');
-      } else if (localTs > remoteTs) {
-        // Local is newer - push it up
-        console.log('[Firebase] Local is newer, pushing up');
-        fbPush();
-      } else {
-        console.log('[Firebase] Already in sync');
-      }
-    } else {
-      // No cloud data yet - push ours up
-      console.log('[Firebase] No cloud data, pushing local');
-      fbPush();
+    if (!snap.exists()) {
+      console.log('[FB] No cloud data');
+      fbBooting = false;
+      // Only push if we have real data
+      if (hasRealData(window.S)) fbPush();
+      return;
     }
+    var remote = snap.data();
+    var remoteTs = remote._ts || 0;
+    var localTs  = window.S ? (window.S.updated || 0) : 0;
+    var localReal = hasRealData(window.S);
+    var remoteReal = hasRealData(remote);
+
+    console.log('[FB] Pull - remoteTs:', remoteTs, 'localTs:', localTs, 
+                'localReal:', localReal, 'remoteReal:', remoteReal);
+
+    if (!localReal && remoteReal) {
+      // Phone is blank, cloud has data → ALWAYS pull
+      console.log('[FB] Local empty → pulling cloud');
+      fbApply(remote);
+    } else if (remoteReal && remoteTs > localTs) {
+      // Cloud is strictly newer → pull
+      console.log('[FB] Cloud newer → pulling');
+      fbApply(remote);
+    } else if (localReal && localTs > remoteTs) {
+      // Local is strictly newer → push
+      console.log('[FB] Local newer → pushing');
+      fbBooting = false;
+      fbPush();
+    } else {
+      // Same timestamp or both empty → do nothing
+      console.log('[FB] In sync or no data to sync');
+    }
+    fbBooting = false;
   } catch(e) {
-    console.warn('[Firebase] Pull failed:', e.message);
+    console.warn('[FB] Pull failed:', e.message);
+    fbBooting = false;
   }
 }
 
-// ── LISTEN: real-time updates from other devices ─────────────
+// ── LISTEN for real-time changes from OTHER devices ───────────
 function fbListen() {
   if (!fbDoc || fbListening) return;
   fbListening = true;
-  onSnapshot(fbDoc, function(snap) {
-    if (!snap.exists()) return;
-    var remote = snap.data();
-    // Ignore if this update came from us
-    if (remote._device === DEVICE_ID && remote._ts === fbLastWritten) return;
-    // Only update if remote is STRICTLY newer than our current data
-    var remoteTs = remote._ts || 0;
-    var localTs = S.updated || 0;
-    if (remoteTs > localTs) {
-      // Only merge if remote actually has data
-      var remoteHasData = (remote.jobs&&remote.jobs.length>0) ||
-                          (remote.ports&&remote.ports.length>0) ||
-                          (remote.rag&&remote.rag.length>0);
-      if (remoteHasData) {
-        console.log('[Firebase] Received update from', remote._device);
-        fbMerge(remote);
-        showToast('Synced from ' + (remote._device||'another device').substring(0,12));
-      }
-    }
-  }, function(err) {
-    console.warn('[Firebase] Listener error:', err.message);
-    fbListening = false;
-  });
+  
+  // Wait for boot to complete before listening
+  setTimeout(function() {
+    onSnapshot(fbDoc, function(snap) {
+      if (!snap.exists()) return;
+      if (fbBooting) return; // Ignore during boot
+      
+      var remote = snap.data();
+      var remoteTs = remote._ts || 0;
+      var localTs  = window.S ? (window.S.updated || 0) : 0;
+
+      // Ignore our own pushes
+      if (remote._device === DEVICE_ID) return;
+      // Ignore if not newer
+      if (remoteTs <= localTs) return;
+      // Ignore empty data
+      if (!hasRealData(remote)) return;
+
+      console.log('[FB] Real-time update from', remote._device);
+      fbApply(remote);
+      window.showToast && window.showToast('Synced from another device');
+    }, function(err) {
+      console.warn('[FB] Listener error:', err.message);
+      fbListening = false;
+    });
+  }, 3000); // Wait 3s after boot before listening
 }
 
-// ── MERGE: safely merge remote data into S ───────────────────
-function fbMerge(remote) {
-  var keys = ['vessel','theme','jobs','rag','drills','orders','ports',
-              'holds','dcounters','wplans','cldata','custom_bundles',
-              'deleted_bundles','updated'];
-  keys.forEach(function(k) {
-    if (remote[k] !== undefined) S[k] = remote[k];
-  });
-  // Persist to IndexedDB
-  dbSave();
-  // Re-render everything
-  boot2();
-  fbSetStatus('synced');
-}
-
-// ── STATUS DOT ────────────────────────────────────────────────
+// ── STATUS ────────────────────────────────────────────────────
 function fbSetStatus(state) {
   var dot = document.getElementById('sync-dot');
   if (!dot) return;
   dot.className = 'sync-dot';
-  dot.title = state === 'synced' ? 'Synced to cloud' :
-              state === 'syncing' ? 'Syncing...' :
-              state === 'error'   ? 'Sync error - check connection' :
-              'Offline';
-  if (state === 'syncing') { dot.classList.add('saving'); dot.style.background = ''; }
-  else if (state === 'synced') { dot.style.background = 'var(--grn)'; }
-  else if (state === 'error')  { dot.style.background = 'var(--red)'; }
-  else { dot.style.background = 'var(--ink3)'; }
+  if (state==='syncing'){dot.classList.add('saving');dot.style.background='';}
+  else if(state==='synced'){dot.style.background='var(--grn)';}
+  else if(state==='error'){dot.style.background='var(--red)';}
+  else{dot.style.background='var(--ink3)';}
+  dot.title = state==='synced'?'Synced to cloud':state==='syncing'?'Syncing...':state==='error'?'Sync error':'Offline';
 }
 
-// ── START SYNC ────────────────────────────────────────────────
-async function fbStartSync() {
-  fbSetStatus('syncing');
-  // Always pull first on boot - cloud is the source of truth
-  // This prevents empty local state from overwriting cloud data
-  await fbPull();
-  fbListen();         // then listen for future changes
-  window.addEventListener('online', function() {
-    fbSetStatus('syncing');
-    fbPush();         // push when coming back online
-  });
-  window.addEventListener('offline', function() {
-    fbSetStatus('offline');
-  });
-  if (!navigator.onLine) fbSetStatus('offline');
-}
-
-// ── HOOK INTO autoSave so every change syncs ─────────────────
-// Override the existing autoSave to also trigger fbPush
-var _origDbSave = window.dbSave;
-var fbPushTimer = null;
-window.fbPush = fbPush;
-
-// Debounced push - waits 2 seconds after last change before pushing
-var fbUserMadeChange = false; // Only push after user actually makes a change
+// ── SCHEDULE PUSH (debounced, only after user action) ─────────
 window.fbSchedulePush = function() {
-  fbUserMadeChange = true;
+  if (fbBooting) return; // Never push during boot
   clearTimeout(fbPushTimer);
-  fbPushTimer = setTimeout(function() {
-    if (fbUserMadeChange) fbPush();
-  }, 2000);
+  fbPushTimer = setTimeout(fbPush, 2500);
 };
 
-// Patch autoSave to also schedule a Firebase push
-var origAutoSave = window.autoSave;
-window.autoSave = function() {
-  if (origAutoSave) origAutoSave();
-  window.fbSchedulePush();
-};
+// ── INIT ──────────────────────────────────────────────────────
+async function fbInit() {
+  try {
+    fbApp = initializeApp(firebaseConfig);
+    fbDb  = getFirestore(fbApp);
+    fbDoc = doc(fbDb, FB_COL, FB_DOC);
+    fbSetStatus('syncing');
+    await fbPull();
+    fbListen();
+    window.addEventListener('online', function() {
+      fbSetStatus('syncing');
+      setTimeout(fbPush, 1000); // Small delay after reconnect
+    });
+    window.addEventListener('offline', function() { fbSetStatus('offline'); });
+    if (!navigator.onLine) fbSetStatus('offline');
+    console.log('[FB] Init complete, device:', DEVICE_ID);
+  } catch(e) {
+    console.warn('[FB] Init failed:', e.message);
+    fbBooting = false;
+  }
+}
 
-// Also expose fbInit so boot can call it
+// ── EXPOSE to main app ────────────────────────────────────────
 window.fbInit = fbInit;
-
-// ── SETTINGS UI ───────────────────────────────────────────────
 window.fbForcePush = async function() {
-  if (!fbDoc) { showToast('Firebase not connected'); return; }
-  S.updated = Date.now(); // Mark as latest
-  fbSetStatus('syncing');
+  fbBooting = false;
+  if (!hasRealData(window.S)) { window.showToast&&window.showToast('No data to push'); return; }
+  window.S.updated = Date.now();
   await fbPush();
-  showToast('Your data pushed to cloud successfully');
+  window.showToast&&window.showToast('Your data pushed to cloud');
 };
 window.fbForcePull = async function() {
-  if (!fbDoc) { showToast('Firebase not connected'); return; }
-  fbSetStatus('syncing');
-  var snap = await getDoc(fbDoc);
-  if (snap.exists()) {
-    fbMerge(snap.data());
-    showToast('Cloud data pulled to this device');
-  } else {
-    showToast('No cloud data found');
-  }
+  if (!fbDoc){window.showToast&&window.showToast('Not connected');return;}
+  var snap=await getDoc(fbDoc);
+  if(snap.exists()){fbApply(snap.data());window.showToast&&window.showToast('Cloud data pulled');}
+  else{window.showToast&&window.showToast('No cloud data found');}
 };
-window.fbForceSync = async function() {
-  if (!fbDoc) { showToast('Firebase not connected'); return; }
-  fbSetStatus('syncing');
-  await fbPush();
-  showToast('Force synced to cloud');
-};
-window.fbGetStatus = function() {
-  return fbDoc ? 'connected' : 'not connected';
+window.fbGetStatus = function() { return fbDoc?'connected':'not connected'; };
+window.fbShowInfo = function() {
+  window.openModal && window.openModal('Meridian C/O — Info',
+    '<div style="font-size:13px">'+
+    '<div style="background:var(--ac-d);border:1px solid var(--ac-b);border-radius:var(--rl);padding:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">'+
+      '<div><div class="fw8" style="font-size:16px">Meridian C/O</div><div class="c3 f12">Chief Officer Personal Operations</div></div>'+
+      '<div style="text-align:right"><div class="fw7 mono" style="color:var(--ac);font-size:18px">v'+(window.APP_VERSION||'2.2.0')+'</div><div class="c3 f11">'+(window.BUILD_DATE||'')+'</div></div>'+
+    '</div>'+
+    '<div class="f12 c2" style="line-height:2.2">'+
+    '&#9729; Firebase: meridian-mate<br>'+
+    '&#10003; Auto-saves 2.5s after change<br>'+
+    '&#10003; Blank device always pulls cloud<br>'+
+    '&#10003; Push blocked during boot<br>'+
+    '<span class="c3 f11">Device: '+DEVICE_ID+'</span>'+
+    '</div></div>',
+    '<button class="btn bp bsm" onclick="fbForcePush();closeModal()">Push My Data</button>'+
+    '<button class="btn bsm" onclick="fbForcePull();closeModal()">Pull from Cloud</button>'+
+    '<button class="btn bgh bsm" onclick="closeModal()">Close</button>');
 };
 
-// Auto-init on load
+// Patch autoSave AFTER window.autoSave exists
+document.addEventListener('DOMContentLoaded', function() {
+  var orig = window.autoSave;
+  window.autoSave = function() {
+    if (orig) orig();
+    window.fbSchedulePush();
+  };
+});
+
 fbInit();
 </script>
 
@@ -2775,7 +2763,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '2.1.0';
+var APP_VERSION = '2.2.0';
 var BUILD_DATE  = '27 May 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'timeline';
