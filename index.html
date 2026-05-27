@@ -14,7 +14,7 @@
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
   --base:#0d1117;--surf:#161c27;--elev:#1c2535;--hov:#212e42;
@@ -305,6 +305,532 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
 .cnd-ballast{background:var(--surf);border:1px solid var(--ln);border-radius:var(--r);padding:10px 13px;margin-bottom:7px;display:flex;align-items:center;gap:12px}
 [data-theme="nautical"] .cnd-sum-val{color:#FF8C42}
 
+
+/* ── VINTAGE NAUTICAL CHART THEME ──────────────────────────── */
+[data-theme="vintage"]{
+  --base:#F4ECD8;
+  --surf:#FDF6E3;
+  --elev:#F9F0D8;
+  --hov:#F0E4C4;
+  --ink1:#2C1810;
+  --ink2:#6B4226;
+  --ink3:#9E7B5A;
+  --ink4:#C4A882;
+  --ln:rgba(107,66,38,0.12);
+  --ln2:rgba(107,66,38,0.20);
+  --ln3:rgba(107,66,38,0.32);
+  --ac:#8B2500;
+  --ac-d:rgba(139,37,0,0.08);
+  --ac-b:rgba(139,37,0,0.22);
+  --red:#9B1B1B;
+  --red-d:rgba(155,27,27,0.08);
+  --red-b:rgba(155,27,27,0.22);
+  --amb:#8B5E00;
+  --amb-d:rgba(139,94,0,0.08);
+  --amb-b:rgba(139,94,0,0.22);
+  --grn:#2D5016;
+  --grn-d:rgba(45,80,22,0.08);
+  --grn-b:rgba(45,80,22,0.22);
+  --blu:#1A3A5C;
+  --blu-d:rgba(26,58,92,0.08);
+  --blu-b:rgba(26,58,92,0.22);
+  --pur:#4A1A5C;
+  --pur-d:rgba(74,26,92,0.08);
+  --pur-b:rgba(74,26,92,0.22);
+  --font-vintage:"Libre Baskerville",Georgia,serif;
+  --font-title:"Cinzel",serif;
+  --font-felt:"IM Fell English",Georgia,serif;
+}
+
+/* Vintage body */
+[data-theme="vintage"] body {
+  font-family: var(--font-vintage);
+  background: var(--base);
+  color: var(--ink1);
+}
+
+/* Vintage paper texture background */
+[data-theme="vintage"] #main {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(139,94,0,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(107,66,38,0.04) 0%, transparent 50%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 24px,
+      rgba(107,66,38,0.04) 24px,
+      rgba(107,66,38,0.04) 25px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 24px,
+      rgba(107,66,38,0.03) 24px,
+      rgba(107,66,38,0.03) 25px
+    ),
+    var(--base);
+}
+
+/* Vintage topbar */
+[data-theme="vintage"] #topbar {
+  background: linear-gradient(180deg, #2C1810 0%, #3D2214 100%);
+  border-bottom: 3px solid #8B2500;
+  box-shadow: 0 2px 8px rgba(44,24,16,0.4);
+}
+[data-theme="vintage"] #topbar .logo {
+  font-family: var(--font-title);
+  color: #F4ECD8;
+  letter-spacing: .08em;
+  font-size: 15px;
+}
+[data-theme="vintage"] #topbar .logo em {
+  color: #D4A853;
+  font-style: italic;
+}
+[data-theme="vintage"] .utc {
+  color: #D4A853;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+}
+[data-theme="vintage"] .vlbl {
+  color: #C4A882;
+  font-family: var(--font-vintage);
+  font-style: italic;
+  font-size: 12px;
+}
+[data-theme="vintage"] .tbtn {
+  background: transparent;
+  border-color: rgba(212,168,83,0.3);
+  color: #D4A853;
+}
+[data-theme="vintage"] .tbtn:hover {
+  background: rgba(212,168,83,0.15);
+  color: #F4ECD8;
+}
+[data-theme="vintage"] .save-btn {
+  background: rgba(212,168,83,0.15);
+  border-color: rgba(212,168,83,0.4);
+  color: #D4A853;
+  font-family: var(--font-title);
+  letter-spacing: .05em;
+  font-size: 11px;
+}
+[data-theme="vintage"] .save-btn:hover {
+  background: #D4A853;
+  color: #2C1810;
+}
+
+/* Vintage sidebar */
+[data-theme="vintage"] #sidebar {
+  background: linear-gradient(180deg, #FDF6E3 0%, #F9EDD0 100%);
+  border-right: 2px solid rgba(107,66,38,0.25);
+}
+[data-theme="vintage"] .logo {
+  font-family: var(--font-title) !important;
+}
+[data-theme="vintage"] .ngl {
+  font-family: var(--font-title);
+  font-size: 9px;
+  letter-spacing: .2em;
+  color: var(--ink3);
+  border-bottom: 1px solid var(--ln);
+  padding-bottom: 5px;
+  margin-bottom: 3px;
+}
+[data-theme="vintage"] .ni {
+  font-family: var(--font-vintage);
+  font-size: 13px;
+  color: var(--ink2);
+  border-radius: 0;
+  border-left: 3px solid transparent;
+}
+[data-theme="vintage"] .ni:hover {
+  background: rgba(139,37,0,0.06);
+  border-left-color: var(--ac);
+  color: var(--ac);
+}
+[data-theme="vintage"] .ni.on {
+  background: rgba(139,37,0,0.08);
+  border-left-color: var(--ac);
+  color: var(--ac);
+  font-weight: 700;
+}
+
+/* Vintage cards */
+[data-theme="vintage"] .card {
+  background: var(--surf);
+  border: 1px solid var(--ln2);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0 rgba(107,66,38,0.08), 4px 4px 0 rgba(107,66,38,0.04);
+}
+[data-theme="vintage"] .ch {
+  border-bottom: 2px solid var(--ln2);
+  background: rgba(107,66,38,0.04);
+}
+[data-theme="vintage"] .ct {
+  font-family: var(--font-title);
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--ink1);
+  text-transform: uppercase;
+}
+
+/* Vintage page headers */
+[data-theme="vintage"] .ph-t {
+  font-family: var(--font-title);
+  font-size: 22px;
+  letter-spacing: .05em;
+  color: var(--ink1);
+}
+[data-theme="vintage"] .ph-s {
+  font-family: var(--font-felt);
+  font-style: italic;
+  color: var(--ink3);
+  font-size: 13px;
+}
+[data-theme="vintage"] .slbl {
+  font-family: var(--font-title);
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: var(--ink3);
+  border-bottom: 1px solid var(--ln2);
+  padding-bottom: 5px;
+}
+
+/* Vintage buttons */
+[data-theme="vintage"] .btn {
+  font-family: var(--font-vintage);
+  border-radius: 2px;
+  border-color: var(--ln2);
+  color: var(--ink2);
+}
+[data-theme="vintage"] .btn:hover {
+  background: rgba(107,66,38,0.06);
+  border-color: var(--ln3);
+  color: var(--ink1);
+}
+[data-theme="vintage"] .bp {
+  background: var(--ac);
+  border-color: var(--ac);
+  color: #FDF6E3;
+  font-family: var(--font-title);
+  letter-spacing: .05em;
+}
+[data-theme="vintage"] .bp:hover {
+  background: #6B1B00;
+  color: #FDF6E3;
+}
+
+/* Vintage inputs */
+[data-theme="vintage"] .fi, [data-theme="vintage"] .fs, [data-theme="vintage"] .ft {
+  font-family: var(--font-vintage);
+  background: #FFFDF5;
+  border-color: var(--ln2);
+  border-radius: 2px;
+  color: var(--ink1);
+}
+[data-theme="vintage"] .fi:focus, [data-theme="vintage"] .fs:focus, [data-theme="vintage"] .ft:focus {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 3px rgba(139,37,0,0.08);
+}
+
+/* Vintage kanban */
+[data-theme="vintage"] .kbc {
+  background: var(--surf);
+  border: 1px solid var(--ln2);
+  border-radius: 2px;
+  border-top: 3px solid var(--ink3);
+}
+[data-theme="vintage"] .kbcard {
+  background: #FFFDF5;
+  border: 1px solid var(--ln2);
+  border-radius: 1px;
+  border-left: 4px solid transparent;
+}
+[data-theme="vintage"] .kbcard:hover {
+  background: var(--elev);
+  box-shadow: 2px 2px 0 rgba(107,66,38,0.1);
+}
+[data-theme="vintage"] .kbn {
+  font-family: var(--font-vintage);
+  font-weight: 700;
+  color: var(--ink1);
+}
+[data-theme="vintage"] .kbct {
+  font-family: var(--font-title);
+  letter-spacing: .1em;
+  font-size: 10px;
+  color: var(--ink2);
+}
+
+/* Vintage priority feed */
+[data-theme="vintage"] .pf-item {
+  background: var(--surf);
+  border: 1px solid var(--ln2);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0 rgba(107,66,38,0.06);
+}
+[data-theme="vintage"] .pf-t {
+  font-family: var(--font-vintage);
+  font-weight: 700;
+}
+[data-theme="vintage"] .pf-s {
+  font-family: var(--font-felt);
+  font-style: italic;
+}
+
+/* Vintage DC cards */
+[data-theme="vintage"] .dc-card {
+  background: var(--surf);
+  border: 1px solid var(--ln2);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0 rgba(107,66,38,0.08);
+}
+[data-theme="vintage"] .dc-num {
+  font-family: "Cinzel", serif;
+  font-weight: 400;
+}
+[data-theme="vintage"] .dc-lbl {
+  font-family: var(--font-title);
+  letter-spacing: .1em;
+}
+[data-theme="vintage"] .dc-dir {
+  font-family: var(--font-felt);
+  font-style: italic;
+}
+
+/* Vintage work plan */
+[data-theme="vintage"] .wp-item {
+  border-bottom: 1px solid var(--ln);
+}
+[data-theme="vintage"] .wp-t {
+  font-family: var(--font-vintage);
+}
+[data-theme="vintage"] .wp-cb.on {
+  background: var(--ac);
+  border-color: var(--ac);
+}
+[data-theme="vintage"] .wday {
+  border-radius: 2px;
+  font-family: var(--font-title);
+}
+[data-theme="vintage"] .wday.on {
+  background: var(--ac-d);
+  border-color: var(--ac);
+}
+[data-theme="vintage"] .wday-n {
+  font-size: 8px;
+  letter-spacing: .12em;
+}
+
+/* Vintage tiles */
+[data-theme="vintage"] .tile {
+  background: var(--surf);
+  border-radius: 2px;
+  border: 1px solid var(--ln2);
+  box-shadow: 3px 3px 0 rgba(107,66,38,0.10);
+}
+[data-theme="vintage"] .tile:hover {
+  box-shadow: 4px 4px 0 rgba(107,66,38,0.15);
+  transform: translateY(-2px);
+}
+[data-theme="vintage"] .tile-name {
+  font-family: var(--font-title);
+  letter-spacing: .04em;
+  font-size: 13px;
+}
+[data-theme="vintage"] .tile-desc {
+  font-family: var(--font-felt);
+  font-style: italic;
+}
+
+/* Vintage bundle view */
+[data-theme="vintage"] #bvh {
+  background: linear-gradient(180deg, #2C1810 0%, #3D2214 100%);
+  border-bottom: 3px solid #8B2500;
+}
+[data-theme="vintage"] .bv-title {
+  font-family: var(--font-title);
+  color: #F4ECD8;
+  letter-spacing: .06em;
+}
+[data-theme="vintage"] .bv-back {
+  color: #D4A853;
+  font-family: var(--font-vintage);
+}
+[data-theme="vintage"] .pht {
+  font-family: var(--font-title);
+  letter-spacing: .04em;
+  font-size: 12px;
+}
+[data-theme="vintage"] .clt {
+  font-family: var(--font-vintage);
+}
+[data-theme="vintage"] .cli-cb.on {
+  background: var(--ac);
+  border-color: var(--ac);
+}
+
+/* Vintage RAG */
+[data-theme="vintage"] .rag-card {
+  border-radius: 2px;
+  border-left-width: 5px;
+  box-shadow: 2px 2px 0 rgba(107,66,38,0.08);
+}
+[data-theme="vintage"] .rag-card .f14 {
+  font-family: var(--font-title);
+  letter-spacing: .03em;
+  font-size: 13px;
+}
+
+/* Vintage port strip */
+[data-theme="vintage"] .pchip {
+  border-radius: 2px;
+  border: 1px solid var(--ln2);
+  box-shadow: 2px 2px 0 rgba(107,66,38,0.06);
+}
+[data-theme="vintage"] .pchip.on {
+  border-color: var(--ac);
+  background: var(--ac-d);
+}
+[data-theme="vintage"] .pcn {
+  font-family: var(--font-title);
+  letter-spacing: .04em;
+}
+[data-theme="vintage"] .pt-tab {
+  font-family: var(--font-title);
+  letter-spacing: .05em;
+  font-size: 11px;
+  border-radius: 2px;
+}
+[data-theme="vintage"] .pt-tab.on {
+  background: var(--ac-d);
+  border-color: var(--ac);
+  color: var(--ac);
+}
+
+/* Vintage reports */
+[data-theme="vintage"] .rep-pre {
+  font-family: "Courier New", Courier, monospace;
+  background: #FFFDF5;
+  border: 1px solid var(--ln2);
+  color: var(--ink1);
+  line-height: 2;
+  border-radius: 2px;
+  box-shadow: inset 0 1px 4px rgba(107,66,38,0.08);
+}
+
+/* Vintage stats */
+[data-theme="vintage"] .stat {
+  background: var(--surf);
+  border: 1px solid var(--ln2);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0 rgba(107,66,38,0.06);
+}
+[data-theme="vintage"] .sl {
+  font-family: var(--font-title);
+  letter-spacing: .1em;
+}
+[data-theme="vintage"] .sn {
+  font-family: "Cinzel", serif;
+}
+
+/* Vintage badges */
+[data-theme="vintage"] .bdg {
+  border-radius: 2px;
+  font-family: var(--font-title);
+  letter-spacing: .05em;
+  font-size: 9.5px;
+}
+
+/* Vintage modal */
+[data-theme="vintage"] .modal {
+  background: var(--surf);
+  border-radius: 2px;
+  border: 2px solid var(--ln2);
+  box-shadow: 6px 6px 0 rgba(107,66,38,0.15);
+}
+[data-theme="vintage"] .mtt {
+  font-family: var(--font-title);
+  letter-spacing: .06em;
+  font-size: 13px;
+}
+[data-theme="vintage"] .mh {
+  background: rgba(107,66,38,0.05);
+  border-bottom: 2px solid var(--ln2);
+}
+
+/* Vintage mobile nav */
+[data-theme="vintage"] #mobnav {
+  background: linear-gradient(0deg, #2C1810, #3D2214);
+  border-top: 2px solid #8B2500;
+}
+[data-theme="vintage"] .mobit {
+  color: #C4A882;
+  font-family: var(--font-title);
+  font-size: 9px;
+  letter-spacing: .06em;
+}
+[data-theme="vintage"] .mobit.on {
+  color: #D4A853;
+}
+[data-theme="vintage"] .mobit-ic {
+  font-size: 17px;
+}
+
+/* Vintage sync dot */
+[data-theme="vintage"] .sync-dot {
+  background: #D4A853;
+}
+
+/* Vintage draft visualiser */
+[data-theme="vintage"] .draft-fill {
+  background: #1A3A5C;
+}
+[data-theme="vintage"] .draft-val {
+  color: #1A3A5C;
+  font-family: "Cinzel", serif;
+}
+[data-theme="vintage"] .draft-bw {
+  border: 1px solid var(--ln2);
+  background: rgba(107,66,38,0.05);
+}
+
+/* Vintage CND summary cards */
+[data-theme="vintage"] .cnd-sum-val {
+  font-family: "Cinzel", serif;
+  color: var(--ac);
+}
+[data-theme="vintage"] .cnd-sum-lbl {
+  font-family: var(--font-title);
+}
+
+/* Decorative compass rose in corner */
+[data-theme="vintage"] #pg-today::before {
+  content: "✦";
+  position: fixed;
+  top: 70px;
+  right: 15px;
+  font-size: 80px;
+  color: rgba(139,37,0,0.04);
+  pointer-events: none;
+  z-index: 0;
+  font-family: serif;
+}
+
+/* Vintage scrollbar */
+[data-theme="vintage"] ::-webkit-scrollbar-thumb {
+  background: rgba(107,66,38,0.25);
+}
+
+/* Vintage section labels in sidebar */
+[data-theme="vintage"] .ng {
+  border-top: 1px solid var(--ln);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
 </style>
 </head><body>
 <div id="shell">
@@ -578,6 +1104,30 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
             <div style="font-size:12px;font-weight:800;color:#FF8C42;text-shadow:0 0 8px rgba(255,140,66,0.5);letter-spacing:.08em">NAUTICAL</div>
             <div id="tc-ck-nautical" style="width:15px;height:15px;border-radius:50%;background:#FF8C42;box-shadow:0 0 8px rgba(255,140,66,0.6);display:none;align-items:center;justify-content:center;font-size:9px;color:#020B18;font-weight:900">&#10003;</div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb12">
+    <div class="ch"><div class="ct">Theme &mdash; Vintage Chart</div><div class="cm">Old nautical journal aesthetic</div></div>
+    <div class="cb">
+      <div class="tc" id="tc-vintage" onclick="setTheme('vintage')" style="width:100%">
+        <div style="background:#F4ECD8;padding:14px;display:flex;align-items:center;gap:16px;background-image:repeating-linear-gradient(0deg,transparent,transparent 9px,rgba(107,66,38,0.05) 9px,rgba(107,66,38,0.05) 10px)">
+          <div style="font-size:32px">&#128220;</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#2C1810;letter-spacing:.06em;font-family:Georgia,serif">VINTAGE NAUTICAL CHART</div>
+            <div style="font-size:12px;color:#6B4226;font-style:italic;font-family:Georgia,serif;margin-top:2px">Parchment paper &bull; Serif typography &bull; Old journal aesthetic</div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <div style="width:16px;height:16px;border-radius:50%;background:#8B2500"></div>
+              <div style="width:16px;height:16px;border-radius:50%;background:#D4A853"></div>
+              <div style="width:16px;height:16px;border-radius:50%;background:#1A3A5C"></div>
+              <div style="width:16px;height:16px;border-radius:50%;background:#F4ECD8;border:1px solid #8B2500"></div>
+            </div>
+          </div>
+          <div id="tc-ck-vintage" style="margin-left:auto;width:22px;height:22px;border-radius:50%;background:#D4A853;display:none;align-items:center;justify-content:center;font-size:12px;color:#2C1810;font-weight:900;flex-shrink:0">&#10003;</div>
+        </div>
+        <div style="background:#2C1810;padding:8px 14px;border-top:2px solid #8B2500">
+          <div style="font-size:10px;font-weight:700;color:#D4A853;letter-spacing:.15em;font-family:Georgia,serif">Click to apply Vintage Chart theme</div>
         </div>
       </div>
     </div>
@@ -2315,10 +2865,10 @@ function applyTheme(t) {
   S.theme = t;
   document.documentElement.setAttribute('data-theme', t==='dark' ? '' : t);
   var btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = t==='light' ? '🌙' : t==='nautical' ? '⚓' : '☀';
+    if (btn) btn.textContent = t==='light' ? '🌙' : t==='nautical' ? '⚓' : t==='vintage' ? '📜' : '☀';
   var tm = document.getElementById('theme-meta');
-  if (tm) tm.setAttribute('content', t==='nautical'?'#020B18':t==='light'?'#f1f5f9':'#0d1117');
-  ['dark','light','nautical'].forEach(function(name) {
+  if (tm) tm.setAttribute('content', t==='nautical'?'#020B18':t==='light'?'#f1f5f9':t==='vintage'?'#2C1810':'#0d1117');
+  ['dark','light','nautical','vintage'].forEach(function(name) {
     var card = document.getElementById('tc-'+name);
     var ck = document.getElementById('tc-ck-'+name);
     if (card) {
@@ -2330,7 +2880,7 @@ function applyTheme(t) {
 }
 function setTheme(t) { applyTheme(t); autoSave(); }
 function cycleTheme() {
-  var order = ['dark','nautical','light'];
+  var order = ['dark','nautical','light','vintage'];
   var next = order[(order.indexOf(S.theme)+1)%order.length];
   setTheme(next);
 }
@@ -3984,14 +4534,27 @@ function pwaInit(){
 }
 function pwaRegisterSW(){
   if(!('serviceWorker' in navigator))return;
-  // Skip SW registration on localhost/preview environments
-  var host = window.location.hostname;
-  var isPreview = host==='localhost'||host.indexOf('claudeusercontent')>=0||host.indexOf('127.0.0.1')>=0;
-  if(isPreview){console.log('SW skipped in preview');return;}
   navigator.serviceWorker.register('./sw.js').then(function(reg){
     console.log('SW registered, scope:', reg.scope);
+    // Check for SW updates periodically
+    setInterval(function(){ reg.update(); }, 60000);
+    // When a new SW is found, activate it immediately
+    reg.addEventListener('updatefound', function() {
+      var newSW = reg.installing;
+      if (!newSW) return;
+      newSW.addEventListener('statechange', function() {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          newSW.postMessage('skipWaiting');
+        }
+      });
+    });
   }).catch(function(err){
     console.warn('SW reg failed:', err.message);
+  });
+  // Reload when new SW takes control = new version loaded automatically
+  var refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (!refreshing) { refreshing = true; window.location.reload(); }
   });
 }
 function pwaRenderStatus(installed){
