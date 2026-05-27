@@ -2,12 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian C/O">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
 <title>Meridian C/O</title>
+<meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -728,8 +732,20 @@ function fbInit() {
 // ── PUSH: write S to Firestore ────────────────────────────────
 async function fbPush() {
   if (!fbDoc || !navigator.onLine) return;
+  // SAFETY: never push empty/blank data that would wipe cloud
+  var hasRealData = (S.jobs&&S.jobs.length>0) || 
+                    (S.ports&&S.ports.length>0) ||
+                    (S.rag&&S.rag.length>0) ||
+                    (S.drills&&S.drills.length>0) ||
+                    (S.dcounters&&S.dcounters.length>0) ||
+                    (S.vessel&&S.vessel.name&&S.vessel.name!=='MV Vessel');
+  if (!hasRealData) {
+    console.log('[Firebase] Skipping push - no real data yet, will pull instead');
+    fbPull();
+    return;
+  }
   try {
-    var payload = JSON.parse(JSON.stringify(S)); // deep copy
+    var payload = JSON.parse(JSON.stringify(S));
     payload._device = DEVICE_ID;
     payload._ts = Date.now();
     fbLastWritten = payload._ts;
@@ -751,8 +767,17 @@ async function fbPull() {
       var remote = snap.data();
       var remoteTs = remote._ts || 0;
       var localTs  = S.updated || 0;
-      console.log('[Firebase] Remote ts:', remoteTs, 'Local ts:', localTs);
-      if (remoteTs > localTs) {
+      // Check if local has any real data
+      var localHasData = (S.jobs&&S.jobs.length>0) ||
+                         (S.ports&&S.ports.length>0) ||
+                         (S.rag&&S.rag.length>0) ||
+                         (S.vessel&&S.vessel.name&&S.vessel.name!=='MV Vessel');
+      console.log('[Firebase] Remote ts:', remoteTs, 'Local ts:', localTs, 'Local has data:', localHasData);
+      if (!localHasData) {
+        // Local is empty/fresh install - ALWAYS pull from cloud
+        console.log('[Firebase] Local empty, pulling cloud data');
+        fbMerge(remote);
+      } else if (remoteTs > localTs) {
         // Cloud is newer - pull it down
         fbMerge(remote);
         console.log('[Firebase] Pulled newer cloud data');
@@ -786,9 +811,15 @@ function fbListen() {
     var remoteTs = remote._ts || 0;
     var localTs = S.updated || 0;
     if (remoteTs > localTs) {
-      console.log('[Firebase] Received update from', remote._device);
-      fbMerge(remote);
-      showToast('Synced from another device');
+      // Only merge if remote actually has data
+      var remoteHasData = (remote.jobs&&remote.jobs.length>0) ||
+                          (remote.ports&&remote.ports.length>0) ||
+                          (remote.rag&&remote.rag.length>0);
+      if (remoteHasData) {
+        console.log('[Firebase] Received update from', remote._device);
+        fbMerge(remote);
+        showToast('Synced from ' + (remote._device||'another device').substring(0,12));
+      }
     }
   }, function(err) {
     console.warn('[Firebase] Listener error:', err.message);
@@ -829,7 +860,9 @@ function fbSetStatus(state) {
 // ── START SYNC ────────────────────────────────────────────────
 async function fbStartSync() {
   fbSetStatus('syncing');
-  await fbPull();     // get latest from cloud first
+  // Always pull first on boot - cloud is the source of truth
+  // This prevents empty local state from overwriting cloud data
+  await fbPull();
   fbListen();         // then listen for future changes
   window.addEventListener('online', function() {
     fbSetStatus('syncing');
@@ -848,11 +881,12 @@ var fbPushTimer = null;
 window.fbPush = fbPush;
 
 // Debounced push - waits 2 seconds after last change before pushing
-// (more efficient than pushing every keystroke)
+var fbUserMadeChange = false; // Only push after user actually makes a change
 window.fbSchedulePush = function() {
+  fbUserMadeChange = true;
   clearTimeout(fbPushTimer);
   fbPushTimer = setTimeout(function() {
-    fbPush();
+    if (fbUserMadeChange) fbPush();
   }, 2000);
 };
 
@@ -1981,7 +2015,7 @@ var S = {
   cldata: {},
   custom_bundles: [],
   deleted_bundles: [],
-  updated: Date.now()
+  updated: 0  // Zero means fresh install - cloud always wins
 };
 
 // ── INDEXEDDB ────────────────────────────────────────────────
