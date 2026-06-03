@@ -2674,6 +2674,23 @@ function setSyncDot(state) {
   if (window._fbUpdateBadge) window._fbUpdateBadge(state === 'offline' ? 'offline' : 'synced');
 }
 
+// ── TOAST NOTIFICATION ───────────────────────────────────────
+function showToast(msg, duration) {
+  duration = duration || 3000;
+  var existing = document.getElementById('mco-toast');
+  if (existing) existing.remove();
+  var t = document.createElement('div');
+  t.id = 'mco-toast';
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
+    'background:var(--elev);border:1px solid var(--ln2);color:var(--ink1);' +
+    'padding:11px 18px;border-radius:var(--rl);font-size:13px;font-weight:500;' +
+    'z-index:99998;box-shadow:0 8px 32px rgba(0,0,0,.4);max-width:320px;' +
+    'text-align:center;white-space:nowrap;font-family:var(--font)';
+  document.body.appendChild(t);
+  setTimeout(function() { if(t.parentNode) t.parentNode.removeChild(t); }, duration);
+}
+
 // ── SAVE BACKUP TO FILE ───────────────────────────────────────
 var _fileHandle = null;
 
@@ -4088,6 +4105,12 @@ var ORD_COLS = ['draft','submitted','confirmed','onboard'];
 var ORD_LABELS = {draft:'Draft',submitted:'Submitted',confirmed:'Confirmed',onboard:'On Board'};
 
 function renderOrders(){
+  // Ensure all order columns exist
+  if(!S.orders) S.orders={draft:[],submitted:[],confirmed:[],onboard:[]};
+  if(!S.orders.draft)     S.orders.draft=[];
+  if(!S.orders.submitted) S.orders.submitted=[];
+  if(!S.orders.confirmed) S.orders.confirmed=[];
+  if(!S.orders.onboard)   S.orders.onboard=[];
   var np=document.getElementById('np-orders');
   if(np)np.textContent=((S.orders.draft||[]).length+(S.orders.submitted||[]).length);
   var el=document.getElementById('kb-orders'); if(!el)return;
@@ -4165,9 +4188,21 @@ function orderAdd(col){
     '<button class="btn bp bsm" onclick="orderSaveNew(\''+col+'\')">Add</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
 function orderSaveNew(col){
-  var d=(document.getElementById('oa-desc')||{}).value; if(d)d=d.trim(); if(!d)return;
-  if(!S.orders[col])S.orders[col]=[];
-  S.orders[col].push({id:Date.now(),code:(document.getElementById('oa-code')||{}).value||'-',desc:d,qty:(document.getElementById('oa-qty')||{}).value||'1',unit:(document.getElementById('oa-unit')||{}).value||'pcs',cat:(document.getElementById('oa-cat')||{}).value||'Deck Stores',pri:(document.getElementById('oa-pri')||{}).value||'normal'});
+  var descEl = document.getElementById('oa-desc');
+  var d = descEl ? descEl.value.trim() : '';
+  if(!d) { alert('Please enter a description'); return; }
+  // Ensure S.orders and all columns exist
+  if(!S.orders) S.orders = {draft:[],submitted:[],confirmed:[],onboard:[]};
+  if(!S.orders[col]) S.orders[col] = [];
+  S.orders[col].push({
+    id: Date.now(),
+    code: (document.getElementById('oa-code')||{}).value||'-',
+    desc: d,
+    qty:  (document.getElementById('oa-qty')||{}).value||'1',
+    unit: (document.getElementById('oa-unit')||{}).value||'pcs',
+    cat:  (document.getElementById('oa-cat')||{}).value||'Deck Stores',
+    pri:  (document.getElementById('oa-pri')||{}).value||'normal'
+  });
   autoSave(); closeModal(); renderOrders();
 }
 function ordersExport(){
@@ -4511,7 +4546,21 @@ function openModal(title,body,foot){
   document.getElementById('m-body').innerHTML=body;
   document.getElementById('m-foot').innerHTML=foot||'';
   document.getElementById('mwrap').classList.add('open');
-  setTimeout(function(){var fi=document.querySelector('#m-body .fi,#m-body .ft,#m-body .fs');if(fi)fi.focus();},80);
+  setTimeout(function(){
+    var fi=document.querySelector('#m-body input.fi:not([type="date"]):not([type="datetime-local"]):not([type="number"])');
+    if(fi) fi.focus();
+    // Enter key on text inputs triggers primary button
+    var inputs=document.querySelectorAll('#m-body input.fi:not([type="date"]):not([type="datetime-local"]):not([type="number"])');
+    inputs.forEach(function(inp){
+      inp.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          var btn=document.querySelector('#m-foot .btn.bp');
+          if(btn) btn.click();
+        }
+      });
+    });
+  },100);
 }
 function closeModal(){document.getElementById('mwrap').classList.remove('open');}
 
