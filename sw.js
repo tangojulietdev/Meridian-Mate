@@ -1,18 +1,27 @@
-const CACHE = 'meridian-co-v5';
+// Meridian C/O Service Worker v7
+// Strategy: Cache everything for offline, but always try network first for HTML
+
+const CACHE = 'meridian-co-v7';
 const BASE = self.location.pathname.replace('/sw.js', '');
 
-// On install - cache assets
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE).then(function(c) {
-      return c.addAll([BASE + '/', BASE + '/index.html']).catch(function(){});
+      // Cache all files needed for offline
+      return c.addAll([
+        BASE + '/',
+        BASE + '/index.html',
+        BASE + '/manifest.json',
+        BASE + '/icon-192.png',
+        BASE + '/icon-512.png',
+      ]).catch(function(err) {
+        console.log('Cache addAll partial fail:', err);
+      });
     })
   );
-  // Take over immediately - don't wait for old SW to die
   self.skipWaiting();
 });
 
-// On activate - delete ALL old caches
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
@@ -20,43 +29,44 @@ self.addEventListener('activate', function(e) {
         keys.filter(function(k) { return k !== CACHE; })
             .map(function(k) { return caches.delete(k); })
       );
-    }).then(function() {
-      // Take control of all open clients immediately
-      return clients.claim();
-    })
+    }).then(function() { return clients.claim(); })
   );
 });
 
-// Fetch strategy:
-// HTML pages  → Network first, fall back to cache
-// Everything else → Cache first, fall back to network
 self.addEventListener('fetch', function(e) {
   var url = e.request.url;
-
-  // Only handle same-origin
   if (url.indexOf(self.location.origin) !== 0) return;
 
-  // For HTML (navigation requests) - ALWAYS try network first
-  if (e.request.mode === 'navigate' || 
-      e.request.headers.get('accept').indexOf('text/html') >= 0) {
+  var isHTML = e.request.mode === 'navigate' ||
+    (e.request.headers.get('accept') || '').indexOf('text/html') >= 0;
+
+  if (isHTML) {
+    // HTML: network first with cache fallback
+    // Add cache-busting to ensure fresh fetch
     e.respondWith(
-      fetch(e.request).then(function(networkRes) {
-        // Got fresh HTML from network - update cache
-        if (networkRes && networkRes.ok) {
-          var clone = networkRes.clone();
-          caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
+      fetch(e.request, {
+        cache: 'no-cache',
+        headers: {'Cache-Control': 'no-cache'}
+      }).then(function(res) {
+        if (res && res.ok) {
+          // Update cache with fresh version
+          var clone = res.clone();
+          caches.open(CACHE).then(function(c) {
+            c.put(e.request, clone);
+          });
         }
-        return networkRes;
+        return res;
       }).catch(function() {
         // Offline - serve from cache
-        return caches.match(e.request)
+        console.log('[SW] Offline - serving from cache');
+        return caches.match(BASE + '/index.html')
           .then(function(r) { return r || caches.match(BASE + '/'); });
       })
     );
     return;
   }
 
-  // For other assets (CSS, JS, images) - cache first
+  // Other assets: cache first
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) return cached;
@@ -67,13 +77,12 @@ self.addEventListener('fetch', function(e) {
         }
         return res;
       }).catch(function() {
-        return caches.match(BASE + '/');
+        return caches.match(BASE + '/index.html');
       });
     })
   );
 });
 
-// Listen for message from app to skip waiting
 self.addEventListener('message', function(e) {
   if (e.data === 'skipWaiting') self.skipWaiting();
 });
