@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian C/O">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian C/O v2.3.0</title>
+<title>Meridian C/O v3.0.0</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -833,6 +833,57 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
 
 </style>
 </head><body>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:999999;background:var(--base);display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:380px">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="font-size:48px;margin-bottom:12px">&#9875;</div>
+      <div style="font-size:28px;font-weight:800;letter-spacing:-0.02em">Meridian <span style="color:var(--ac)">C/O</span></div>
+      <div style="font-size:13px;color:var(--ink3);margin-top:6px">Chief Officer Personal Operations</div>
+    </div>
+    <!-- Login card -->
+    <div style="background:var(--surf);border:1px solid var(--ln2);border-radius:var(--rxl);padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px">Enter your Vessel Code</div>
+      <div style="font-size:12px;color:var(--ink3);margin-bottom:20px;line-height:1.6">
+        Each vessel code gives you a private space in the cloud.<br>
+        Share the same code with your crew to sync together.
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:6px;letter-spacing:.05em">VESSEL CODE</label>
+        <input id="login-code" class="fi" placeholder="e.g. KITE-ARROW or MY-VESSEL" 
+          style="width:100%;text-transform:uppercase;letter-spacing:.08em;font-weight:600;font-size:15px"
+          oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter')loginSubmit()">
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:6px;letter-spacing:.05em">YOUR NAME / RANK</label>
+        <input id="login-name" class="fi" placeholder="e.g. C/O Santos or 2/O Tango"
+          style="width:100%;font-size:15px"
+          onkeydown="if(event.key==='Enter')loginSubmit()">
+      </div>
+      <button onclick="loginSubmit()" style="width:100%;height:46px;background:var(--ac);border:none;border-radius:var(--r);color:#0d1117;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font);letter-spacing:.02em">
+        Enter &#8594;
+      </button>
+      <div id="login-err" style="display:none;margin-top:12px;color:var(--red);font-size:12px;text-align:center"></div>
+    </div>
+    <!-- Info -->
+    <div style="margin-top:20px;text-align:center">
+      <div style="font-size:11px;color:var(--ink3);line-height:1.8">
+        &#9679; Your code = your private data space<br>
+        &#9679; Share code with crew to sync together<br>
+        &#9679; Works offline &bull; No email needed
+      </div>
+    </div>
+    <!-- Change vessel link -->
+    <div style="margin-top:16px;text-align:center">
+      <button onclick="loginShowChange()" style="background:none;border:none;color:var(--ink3);font-size:11px;cursor:pointer;font-family:var(--font);text-decoration:underline">
+        Already have a code? Switch vessel
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="shell">
 <header id="topbar">
   <div class="logo">Meridian <em>C/O</em></div>
@@ -1047,10 +1098,13 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
 
 <div class="page" id="pg-settings">
   <div class="ph">
-    <div><div class="ph-t">Settings</div></div>
+    <div>
+      <div class="ph-t">Settings</div>
+      <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
+    </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v2.3.0</div>
-      <div class="f10 c3">03 Jun 2026</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v3.0.0</div>
+      <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
   <div class="card mb12">
@@ -1172,6 +1226,14 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
       <div class="f11 c3 mt8">
         Push = send YOUR data up &bull; Pull = get cloud data &bull; Restore = recover from auto-backup
       </div>
+      <div class="dvd" style="margin-top:14px"></div>
+      <div class="flex gap8 mt8" style="align-items:center;flex-wrap:wrap">
+        <div>
+          <div class="f13 fw6">Vessel Code: <span id="fb-vessel-code" style="color:var(--ac);font-family:var(--mono)">-</span></div>
+          <div class="f11 c3">All devices with this code share data</div>
+        </div>
+        <button class="btn bsm" onclick="loginShowChange()" style="margin-left:auto">&#128257; Switch Vessel</button>
+      </div>
       <div id="fb-last-sync" class="f11 c3 mt8"></div>
     </div>
   </div>
@@ -1262,7 +1324,9 @@ const firebaseConfig = {
 function getDeviceId() {
   var id = localStorage.getItem('mco_device_id');
   if (!id) { id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); localStorage.setItem('mco_device_id', id); }
-  return id;
+  // Include user name in device ID for better tracking
+  var name = (window.getUserName && window.getUserName()) || '';
+  return id + (name ? '_' + name.replace(/\s+/g,'_').substring(0,10) : '');
 }
 
 var fbApp=null, fbDb=null, fbDocMain=null, fbDocBackup=null;
@@ -1415,8 +1479,12 @@ async function fbInit() {
   try {
     fbApp = initializeApp(firebaseConfig);
     fbDb  = getFirestore(fbApp);
-    fbDocMain   = doc(fbDb, 'meridian_co', 'shared_data');
-    fbDocBackup = doc(fbDb, 'meridian_co', 'backup_data');
+    // Use vessel code as document ID - each vessel gets its own data
+    var code = (window.getVesselCode && window.getVesselCode()) || 'shared_data';
+    var safeCode = code.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+    fbDocMain   = doc(fbDb, 'meridian_co', safeCode);
+    fbDocBackup = doc(fbDb, 'meridian_co', safeCode + '_backup');
+    console.log('[FB] Using vessel doc:', safeCode);
     fbSetStatus('syncing');
     await fbPull();
     fbListen();
@@ -2441,6 +2509,140 @@ cndRender = function() {
 };
 </script>
 
+<script>
+// ── VESSEL CODE LOGIN SYSTEM ──────────────────────────────────
+var VESSEL_CODE = null;
+var USER_NAME   = null;
+var CODE_KEY    = 'mco_vessel_code';
+var NAME_KEY    = 'mco_user_name';
+
+function loginInit() {
+  // Check if already logged in
+  var saved = localStorage.getItem(CODE_KEY);
+  var name  = localStorage.getItem(NAME_KEY);
+  if (saved && saved.length >= 3) {
+    VESSEL_CODE = saved;
+    USER_NAME   = name || 'Chief';
+    loginSuccess(true); // silent login
+  } else {
+    loginShowScreen();
+  }
+}
+
+function loginShowScreen() {
+  var ls = document.getElementById('login-screen');
+  var sh = document.getElementById('shell');
+  if (ls) ls.style.display = 'flex';
+  if (sh) sh.style.display = 'none';
+  setTimeout(function() {
+    var el = document.getElementById('login-code');
+    if (el) el.focus();
+  }, 100);
+}
+
+function loginSubmit() {
+  var codeEl = document.getElementById('login-code');
+  var nameEl = document.getElementById('login-name');
+  var errEl  = document.getElementById('login-err');
+  var code = codeEl ? codeEl.value.trim().toUpperCase() : '';
+  var name = nameEl ? nameEl.value.trim() : '';
+
+  if (!code || code.length < 3) {
+    if (errEl) { errEl.style.display='block'; errEl.textContent='Please enter a vessel code (min 3 characters)'; }
+    return;
+  }
+  if (!name) {
+    if (errEl) { errEl.style.display='block'; errEl.textContent='Please enter your name or rank'; }
+    return;
+  }
+
+  // Sanitise code - only alphanumeric and hyphens
+  code = code.replace(/[^A-Z0-9\-]/g,'');
+  if (code.length < 3) {
+    if (errEl) { errEl.style.display='block'; errEl.textContent='Code must have at least 3 characters (A-Z, 0-9, -)'; }
+    return;
+  }
+
+  VESSEL_CODE = code;
+  USER_NAME   = name;
+  localStorage.setItem(CODE_KEY, code);
+  localStorage.setItem(NAME_KEY, name);
+  loginSuccess(false);
+}
+
+function loginSuccess(silent) {
+  // Hide login, show app
+  var ls = document.getElementById('login-screen');
+  var sh = document.getElementById('shell');
+  if (ls) ls.style.display = 'none';
+  if (sh) sh.style.display = 'flex';
+
+  // Update topbar with vessel code
+  loginUpdateTopbar();
+
+  if (!silent) {
+    // Fresh login - boot app
+    boot();
+  }
+}
+
+function loginUpdateTopbar() {
+  var vlbl = document.getElementById('vlbl');
+  if (vlbl) vlbl.textContent = VESSEL_CODE || 'No Code';
+}
+
+function loginShowChange() {
+  // Show a small modal to change vessel code
+  openModal('Switch Vessel Code',
+    '<div class="fg"><label>Current Code</label>'+
+    '<div style="background:var(--elev);border:1px solid var(--ln2);border-radius:var(--r);padding:10px 12px;font-weight:700;font-family:var(--mono);letter-spacing:.1em">'+(VESSEL_CODE||'-')+'</div></div>'+
+    '<div class="fg"><label>New Vessel Code</label>'+
+    '<input class="fi" id="new-code" placeholder="Enter new code" style="text-transform:uppercase;letter-spacing:.08em" oninput="this.value=this.value.toUpperCase()"></div>'+
+    '<div class="fg"><label>Your Name / Rank</label>'+
+    '<input class="fi" id="new-name" value="'+(USER_NAME||'')+'" placeholder="e.g. C/O Santos"></div>'+
+    '<div class="f11 c3" style="line-height:1.8;margin-top:8px">&#9888; Switching vessel code will load that vessel\'s data.<br>Your current data stays saved under code: <strong>'+(VESSEL_CODE||'-')+'</strong></div>',
+    '<button class="btn bp bsm" onclick="loginChangeCode()">Switch</button>'+
+    '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
+}
+
+function loginChangeCode() {
+  var newCode = (document.getElementById('new-code')||{}).value;
+  var newName = (document.getElementById('new-name')||{}).value;
+  if (newCode) newCode = newCode.trim().toUpperCase().replace(/[^A-Z0-9\-]/g,'');
+  if (!newCode || newCode.length < 3) { alert('Please enter a valid code'); return; }
+  if (!newName || !newName.trim()) { alert('Please enter your name'); return; }
+
+  VESSEL_CODE = newCode;
+  USER_NAME   = newName.trim();
+  localStorage.setItem(CODE_KEY, newCode);
+  localStorage.setItem(NAME_KEY, newName.trim());
+  closeModal();
+  loginUpdateTopbar();
+
+  // Reset S to defaults and reload from new vessel's Firebase doc
+  showToast('Switching to ' + newCode + '...');
+  setTimeout(function() {
+    // Reset state
+    S = {
+      vessel:{name:newCode,imo:'',cs:'',flag:'',coname:USER_NAME,eta:''},
+      theme: S.theme || 'dark', // keep theme
+      jobs:[],rag:[],drills:[],
+      orders:{draft:[],submitted:[],confirmed:[],onboard:[]},
+      ports:[],holds:[],dcounters:[],wplans:{},cldata:{},
+      custom_bundles:[],deleted_bundles:[],
+      updated: 0
+    };
+    // Re-init Firebase with new code as document ID
+    if (window.fbInit) window.fbInit();
+    else boot();
+  }, 500);
+}
+
+// Expose for Firebase module to use
+window.getVesselCode = function() { return VESSEL_CODE; };
+window.getUserName   = function() { return USER_NAME; };
+</script>
+
 </body>
 </html>
 <script>
@@ -2829,8 +3031,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '2.3.0';
-var BUILD_DATE  = '03 Jun 2026';
+var APP_VERSION = '3.0.0';
+var BUILD_DATE  = '04 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'timeline';
 var ACTIVE_BUNDLE = null;
@@ -2856,6 +3058,9 @@ function boot() {
 }
 
 function boot2() {
+  // Update vessel code display in Firebase card
+  var fvc = document.getElementById('fb-vessel-code');
+  if (fvc && window.getVesselCode) fvc.textContent = window.getVesselCode() || '-';
   applyTheme(S.theme);
   updateVessel();
   tick(); clearInterval(window._tickI); window._tickI = setInterval(tick, 1000);
@@ -2941,9 +3146,12 @@ function cycleTheme() {
 
 // ── TODAY PAGE ────────────────────────────────────────────────
 function renderToday() {
+  // Update settings code label
+  var scl = document.getElementById('settings-code-lbl');
+  if (scl && window.getVesselCode) scl.textContent = 'Vessel Code: ' + (window.getVesselCode()||'-');
   var h = new Date().getUTCHours();
   var greet = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
-  var tg = document.getElementById('today-h'); if (tg) tg.textContent = greet + ', ' + (S.vessel.coname ? S.vessel.coname.split(' ')[0] : 'Chief');
+  var tg = document.getElementById('today-h'); if (tg) tg.textContent = greet + ', ' + (window.getUserName ? (window.getUserName().split(' ')[0]||'Chief') : (S.vessel.coname ? S.vessel.coname.split(' ')[0] : 'Chief'));
   var td = document.getElementById('today-d');
   // Get next port live from voyage data
   var nextPortStr = (function() {
@@ -4695,5 +4903,10 @@ function updateVessel(){
 }
 
 // ── START ─────────────────────────────────────────────────────
-boot();
+// Boot handled by login system
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", function() { loginInit(); });
+} else {
+  loginInit();
+}
 </script>
