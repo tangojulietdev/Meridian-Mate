@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian C/O">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian C/O v3.0.0</title>
+<title>Meridian C/O v3.1.0</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -902,6 +902,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
   <div class="ng"><div class="ngl">Daily</div>
     <div class="ni on" onclick="showPage('today')"><span class="ic">&#9673;</span>Today<span class="npill nred" id="np-today">0</span></div>
     <div class="ni" onclick="showPage('workplan')"><span class="ic">&#128203;</span>Day Work Plan</div>
+    <div class="ni" onclick="showPage('todo')"><span class="ic">&#9998;</span>Todo List<span class="npill nteal" id="np-todo">0</span></div>
   </div>
   <div class="ng"><div class="ngl">Operations</div>
     <div class="ni" onclick="showPage('bundles')"><span class="ic">&#9645;</span>Operations</div>
@@ -988,6 +989,40 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
       <textarea class="ft w100" id="wp-snotes" placeholder="Key points, attendance..." style="min-height:80px" oninput="wpSaveSafety()"></textarea>
     </div>
   </div>
+</div>
+
+<div class="page" id="pg-todo">
+  <div class="ph">
+    <div><div class="ph-t">Todo List</div><div class="ph-s">Quick notes &bull; reminders &bull; things to remember</div></div>
+    <div class="flex gap8">
+      <button class="btn bsm" onclick="todoClear()">Clear Done</button>
+      <button class="btn bp bsm" onclick="todoAddModal()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- Quick add bar -->
+  <div class="card mb12">
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 15px">
+      <span style="font-size:18px;color:var(--ac)">&#9998;</span>
+      <input class="add-inp" id="todo-quick-inp" placeholder="Quick add — type and press Enter..."
+        style="flex:1;font-size:14px"
+        onkeydown="if(event.key==='Enter')todoQuickAdd()">
+      <button class="btn bp bsm" onclick="todoQuickAdd()">Add</button>
+    </div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="flex gap6 mb12" style="flex-wrap:wrap">
+    <button class="btn bsm bp" id="todo-f-all"    onclick="todoFilter('all')">All</button>
+    <button class="btn bsm"    id="todo-f-active" onclick="todoFilter('active')">Active</button>
+    <button class="btn bsm"    id="todo-f-done"   onclick="todoFilter('done')">Done</button>
+    <div class="spacer"></div>
+    <span class="f11 c3" id="todo-count" style="align-self:center"></span>
+  </div>
+
+  <!-- Todo list -->
+  <div id="todo-list"></div>
+
 </div>
 
 <div class="page" id="pg-bundles">
@@ -1103,7 +1138,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v3.0.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v3.1.0</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -1271,6 +1306,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
   <div class="mobits">
     <div class="mobit on" onclick="showPage('today')"><div class="mobit-ic">&#9673;</div>Today</div>
     <div class="mobit" onclick="showPage('workplan')"><div class="mobit-ic">&#128203;</div>Work</div>
+    <div class="mobit" onclick="showPage('todo')"><div class="mobit-ic">&#9998;</div>Todo</div>
     <div class="mobit" onclick="showPage('bundles')"><div class="mobit-ic">&#9645;</div>Ops</div>
     <div class="mobit" onclick="showPage('voyage')"><div class="mobit-ic">&#9875;</div>Voyage</div>
     <div class="mobit" onclick="showPage('pms')"><div class="mobit-ic">&#9633;</div>Jobs</div>
@@ -1348,7 +1384,7 @@ function hasRealData(d) {
 function fbApply(remote) {
   var keys = ['vessel','theme','jobs','rag','drills','orders','ports',
               'holds','dcounters','wplans','cldata','custom_bundles',
-              'deleted_bundles','updated'];
+              'deleted_bundles','todos','updated'];
   keys.forEach(function(k) { if (remote[k] !== undefined) window.S[k] = remote[k]; });
   window.dbSave && window.dbSave();
   window.boot2 && window.boot2();
@@ -2810,6 +2846,7 @@ var S = {
   cldata: {},
   custom_bundles: [],
   deleted_bundles: [],
+  todos: [],
   updated: 0  // Zero means fresh install - cloud always wins
 };
 
@@ -3031,8 +3068,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '3.0.0';
-var BUILD_DATE  = '04 Jun 2026';
+var APP_VERSION = '3.1.0';
+var BUILD_DATE  = '09 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'timeline';
 var ACTIVE_BUNDLE = null;
@@ -3067,7 +3104,7 @@ function boot2() {
   window.addEventListener('online', function() { setSyncDot('saved'); });
   window.addEventListener('offline', function() { setSyncDot('offline'); });
   if (!navigator.onLine) setSyncDot('offline');
-  renderToday(); renderWP(); renderTiles();
+  renderToday(); renderWP(); renderTiles(); todoInit();
   renderPortStrip(); if (ACTIVE_PORT) renderPortDetail(ACTIVE_PORT); renderPOC();
   renderJobs(); renderRAG(); renderDrills();
   renderDraft(); renderHolds(); renderOrders();
@@ -4819,6 +4856,190 @@ function fbUpdateBadge(state) {
 
 // Override fbSetStatus to also update settings card
 window._fbUpdateBadge = fbUpdateBadge;
+
+// ── TODO LIST ─────────────────────────────────────────────────
+var TODO_FILTER = 'all';
+
+var TODO_CATS = {
+  general:  {label:'General',   color:'var(--ink3)'},
+  urgent:   {label:'Urgent',    color:'var(--red)'},
+  ship:     {label:'Ship',      color:'var(--blu)'},
+  personal: {label:'Personal',  color:'var(--pur)'},
+  followup: {label:'Follow Up', color:'var(--amb)'},
+};
+
+function todoInit() {
+  if (!S.todos) S.todos = [];
+  renderTodo();
+}
+
+function todoQuickAdd() {
+  var inp = document.getElementById('todo-quick-inp');
+  var text = inp ? inp.value.trim() : '';
+  if (!text) return;
+  if (!S.todos) S.todos = [];
+  S.todos.unshift({
+    id: Date.now(),
+    text: text,
+    done: false,
+    cat: 'general',
+    priority: 'normal',
+    note: '',
+    created: new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})
+  });
+  if (inp) inp.value = '';
+  autoSave();
+  renderTodo();
+  // refocus
+  setTimeout(function(){ if(inp) inp.focus(); }, 30);
+}
+
+function todoAddModal() {
+  openModal('Add Todo',
+    '<div class="fg"><label>Task / Note</label><input class="fi" id="ta-text" placeholder="What do you need to do?"></div>'+
+    '<div class="g2">'+
+      '<div class="fg"><label>Category</label><select class="fs" id="ta-cat">'+
+        Object.keys(TODO_CATS).map(function(k){return '<option value="'+k+'">'+TODO_CATS[k].label+'</option>';}).join('')+
+      '</select></div>'+
+      '<div class="fg"><label>Priority</label><select class="fs" id="ta-pri">'+
+        '<option value="normal">Normal</option>'+
+        '<option value="high">High</option>'+
+        '<option value="urgent">Urgent</option>'+
+      '</select></div>'+
+    '</div>'+
+    '<div class="fg"><label>Note (optional)</label><textarea class="ft w100" id="ta-note" style="min-height:60px" placeholder="Extra details..."></textarea></div>',
+    '<button class="btn bp bsm" onclick="todoSaveNew()">Add</button>'+
+    '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
+}
+
+function todoSaveNew() {
+  var text = (document.getElementById('ta-text')||{}).value;
+  if (text) text = text.trim();
+  if (!text) return;
+  if (!S.todos) S.todos = [];
+  S.todos.unshift({
+    id: Date.now(),
+    text: text,
+    done: false,
+    cat:  (document.getElementById('ta-cat')||{}).value  || 'general',
+    priority: (document.getElementById('ta-pri')||{}).value || 'normal',
+    note: (document.getElementById('ta-note')||{}).value || '',
+    created: new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})
+  });
+  autoSave(); closeModal(); renderTodo();
+}
+
+function todoToggle(id) {
+  var t = (S.todos||[]).find(function(x){return x.id===id;});
+  if (t) { t.done = !t.done; t.doneAt = t.done ? new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : null; }
+  autoSave(); renderTodo();
+}
+
+function todoEdit(id) {
+  var t = (S.todos||[]).find(function(x){return x.id===id;}); if (!t) return;
+  openModal('Edit Todo',
+    '<div class="fg"><label>Task</label><input class="fi" id="te-text" value="'+t.text.replace(/"/g,'&quot;')+'"></div>'+
+    '<div class="g2">'+
+      '<div class="fg"><label>Category</label><select class="fs" id="te-cat">'+
+        Object.keys(TODO_CATS).map(function(k){return '<option value="'+k+'"'+(t.cat===k?' selected':'')+'>'+TODO_CATS[k].label+'</option>';}).join('')+
+      '</select></div>'+
+      '<div class="fg"><label>Priority</label><select class="fs" id="te-pri">'+
+        ['normal','high','urgent'].map(function(p){return '<option value="'+p+'"'+(t.priority===p?' selected':'')+'>'+p.charAt(0).toUpperCase()+p.slice(1)+'</option>';}).join('')+
+      '</select></div>'+
+    '</div>'+
+    '<div class="fg"><label>Note</label><textarea class="ft w100" id="te-note" style="min-height:60px">'+t.note+'</textarea></div>',
+    '<button class="btn bp bsm" onclick="todoSaveEdit('+id+')">Save</button>'+
+    '<button class="btn bdn bxs" onclick="todoDel('+id+')">Delete</button>'+
+    '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
+}
+
+function todoSaveEdit(id) {
+  var t = (S.todos||[]).find(function(x){return x.id===id;}); if (!t) return;
+  var text = (document.getElementById('te-text')||{}).value;
+  if (text) text = text.trim();
+  if (!text) return;
+  t.text     = text;
+  t.cat      = (document.getElementById('te-cat')||{}).value  || t.cat;
+  t.priority = (document.getElementById('te-pri')||{}).value  || t.priority;
+  t.note     = (document.getElementById('te-note')||{}).value || '';
+  autoSave(); closeModal(); renderTodo();
+}
+
+function todoDel(id) {
+  if (!confirm('Delete this todo?')) return;
+  S.todos = (S.todos||[]).filter(function(x){return x.id!==id;});
+  autoSave(); closeModal(); renderTodo();
+}
+
+function todoClear() {
+  var done = (S.todos||[]).filter(function(t){return t.done;}).length;
+  if (!done) { showToast('No completed todos to clear'); return; }
+  if (!confirm('Remove all ' + done + ' completed todos?')) return;
+  S.todos = (S.todos||[]).filter(function(t){return !t.done;});
+  autoSave(); renderTodo();
+}
+
+function todoFilter(f) {
+  TODO_FILTER = f;
+  ['all','active','done'].forEach(function(x){
+    var btn = document.getElementById('todo-f-'+x);
+    if (btn) btn.classList.toggle('bp', x===f);
+  });
+  renderTodo();
+}
+
+function renderTodo() {
+  if (!S.todos) S.todos = [];
+  var all    = S.todos;
+  var active = all.filter(function(t){return !t.done;});
+  var done   = all.filter(function(t){return t.done;});
+  var list   = TODO_FILTER==='active' ? active : TODO_FILTER==='done' ? done : all;
+
+  // Update nav pill
+  var np = document.getElementById('np-todo');
+  if (np) np.textContent = active.length || '';
+
+  // Update count label
+  var cnt = document.getElementById('todo-count');
+  if (cnt) cnt.textContent = active.length + ' active' + (done.length ? ' · ' + done.length + ' done' : '');
+
+  var el = document.getElementById('todo-list');
+  if (!el) return;
+
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--ink3)">'+
+      '<div style="font-size:36px;margin-bottom:12px">&#9998;</div>'+
+      '<div class="f14 fw6 mb8">'+(TODO_FILTER==='done'?'No completed todos yet':TODO_FILTER==='active'?'All done! Nothing active':'Your todo list is empty')+'</div>'+
+      '<div class="f12">'+( TODO_FILTER!=='done' ? 'Type something above or tap + Add' : '')+'</div>'+
+    '</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(function(t) {
+    var cat   = TODO_CATS[t.cat] || TODO_CATS.general;
+    var priClr = t.priority==='urgent' ? 'var(--red)' : t.priority==='high' ? 'var(--amb)' : 'transparent';
+    var priBadge = t.priority!=='normal' ?
+      '<span class="bdg '+(t.priority==='urgent'?'dr':'da')+'" style="font-size:9px">'+t.priority.toUpperCase()+'</span>' : '';
+    return '<div style="background:var(--surf);border:1px solid var(--ln);border-radius:var(--rl);margin-bottom:8px;'+
+      'border-left:4px solid '+cat.color+';'+
+      (t.done?'opacity:0.55;':'')+'transition:all .13s" onclick="todoEdit('+t.id+')" class="pf-item">'+
+      '<div class="wp-cb '+(t.done?'on':'')+'" style="flex-shrink:0" onclick="event.stopPropagation();todoToggle('+t.id+')"></div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px">'+
+          '<span style="font-size:13.5px;font-weight:600;'+(t.done?'text-decoration:line-through;color:var(--ink3)':'')+
+            ';word-break:break-word">'+t.text+'</span>'+
+          priBadge+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+          '<span class="bdg dgr" style="font-size:9.5px">'+cat.label+'</span>'+
+          (t.note?'<span class="f11 c3" style="font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">'+t.note+'</span>':'')+
+          '<span class="f10 c3">'+( t.done && t.doneAt ? '&#10003; '+t.doneAt : t.created||'')+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<button class="btn bxs bgh" onclick="event.stopPropagation();todoEdit('+t.id+')" style="flex-shrink:0;opacity:.5">&#9998;</button>'+
+    '</div>';
+  }).join('');
+}
 
 function pwaInit(){
   if(window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true){pwaRenderStatus(true);return;}
