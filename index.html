@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian Mate">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian Mate v3.3.0</title>
+<title>Meridian Mate v3.4.0</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -834,7 +834,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
 </style>
 </head><body>
 <!-- LOGIN SCREEN -->
-<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:999999;background:var(--base);display:flex;align-items:center;justify-content:center;padding:24px">
+<div id="login-screen" style="position:fixed;inset:0;z-index:999999;background:var(--base);display:flex;align-items:center;justify-content:center;padding:24px">
   <div style="width:100%;max-width:380px">
     <!-- Logo -->
     <div style="text-align:center;margin-bottom:36px">
@@ -884,7 +884,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
   </div>
 </div>
 
-<div id="shell">
+<div id="shell" style="display:none">
 <header id="topbar">
   <div class="logo">Meridian <em>Mate</em></div>
   <div class="vsep"></div>
@@ -1138,7 +1138,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v3.3.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v3.4.0</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -1251,7 +1251,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
     <div class="cb">
       <!-- App identity -->
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
-        <div style="width:56px;height:56px;border-radius:16px;background:var(--ac-d);border:1px solid var(--ac-b);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">&#9875;</div>
+        <div style="width:56px;height:56px;border-radius:16px;background:var(--ac-d);border:1px solid var(--ac-b);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">&#128187;</div>
         <div>
           <div style="font-size:18px;font-weight:800;letter-spacing:-0.01em">Meridian <span style="color:var(--ac)">Mate</span></div>
           <div style="font-size:12px;color:var(--ink3);margin-top:2px;font-style:italic">Maritime tools for Chief Mates</div>
@@ -1263,8 +1263,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
       <div style="display:flex;align-items:center;gap:12px;padding:12px 0">
         <div style="width:36px;height:36px;border-radius:10px;background:var(--elev);border:1px solid var(--ln2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#128187;</div>
         <div>
-          <div style="font-size:13px;font-weight:700">Tango Juliet Dev</div>
-          <div style="font-size:11px;color:var(--ink3)">Independent maritime software developer</div>
+          <div style="font-size:13px;font-weight:700">tangojulietdev</div>
         </div>
       </div>
       <div class="dvd"></div>
@@ -1319,7 +1318,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
     <div class="ch"><div class="ct">Install App</div><div class="cm">Add to home screen &bull; works offline</div></div>
     <div class="cb">
       <div class="flex gap12 mb12">
-        <div style="width:50px;height:50px;border-radius:13px;background:var(--ac-d);border:1px solid var(--ac-b);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">&#9875;</div>
+        <div style="width:50px;height:50px;border-radius:13px;background:var(--ac-d);border:1px solid var(--ac-b);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">&#128187;</div>
         <div><div class="f14 fw7 mb8">Meridian Mate</div><div class="f12 c3">Works offline &bull; No data sent anywhere</div></div>
       </div>
       <div id="pwa-btn-area"></div>
@@ -2296,13 +2295,17 @@ var CODE_KEY    = 'mco_vessel_code';
 var NAME_KEY    = 'mco_user_name';
 
 function loginInit() {
+  // Hide shell until login confirmed
+  var sh = document.getElementById('shell');
+  if (sh) sh.style.display = 'none';
+
   // Check if already logged in
   var saved = localStorage.getItem(CODE_KEY);
   var name  = localStorage.getItem(NAME_KEY);
   if (saved && saved.length >= 3) {
     VESSEL_CODE = saved;
     USER_NAME   = name || 'Chief';
-    loginSuccess(true); // silent login
+    loginSuccess(false); // always boot to load IndexedDB
   } else {
     loginShowScreen();
   }
@@ -2359,10 +2362,8 @@ function loginSuccess(silent) {
   // Update topbar with vessel code
   loginUpdateTopbar();
 
-  if (!silent) {
-    // Fresh login - boot app
-    boot();
-  }
+  // ALWAYS boot - loads IndexedDB data every time
+  boot();
 }
 
 function loginUpdateTopbar() {
@@ -2401,18 +2402,8 @@ function loginChangeCode() {
   // Reset S to defaults and reload from new vessel's Firebase doc
   showToast('Switching to ' + newCode + '...');
   setTimeout(function() {
-    // Reset state
-    S = {
-      vessel:{name:newCode,imo:'',cs:'',flag:'',coname:USER_NAME,eta:''},
-      theme: S.theme || 'dark', // keep theme
-      jobs:[],rag:[],drills:[],
-      orders:{draft:[],submitted:[],confirmed:[],onboard:[]},
-      ports:[],holds:[],dcounters:[],wplans:{},cldata:{},
-      custom_bundles:[],deleted_bundles:[],
-      updated: 0
-    };
-    // Re-init Firebase with new code as document ID
-  }, 500);
+    boot();
+  }, 300);
 }
 
 // Expose for Firebase module to use
@@ -2511,11 +2502,11 @@ var COLORS = ['#3b82f6','#8b5cf6','#ef4444','#f97316','#eab308','#14b8a6','#a855
 // ── DEFAULT DATA ─────────────────────────────────────────────
 var DEFAULT_JOBS = [
   {id:1,name:'Liferaft FR-3 Port - Annual Service',cat:'LSA/FFA',pri:'critical',port:'Singapore',prog:'todo',done:false,note:'Arrange certified technician'},
-  {id:2,name:'Windlass Hydraulic Hose No.2',cat:'Deck Maintenance',pri:'safety',port:'Singapore',prog:'inprog',done:false,note:'Oil seep observed'},
+  {id:2,name:'Windlass Hydraulic Hose No.2',cat:'Deck Machinery',pri:'safety',port:'Singapore',prog:'inprog',done:false,note:'Oil seep observed'},
   {id:3,name:'Hold No.3 Bilge Strainer',cat:'Cargo Gear',pri:'routine',port:'Port Klang',prog:'todo',done:false,note:'Clean before loading'},
   {id:4,name:'Bridge Logbook - PSC Deficiency',cat:'Admin',pri:'psc',port:'Singapore',prog:'inprog',done:false,note:'Reconstruct entries 3-10 Jan'},
-  {id:5,name:'Fire Pump No.2 - Monthly Test',cat:'Safety Equipment',pri:'safety',port:'Singapore',prog:'todo',done:false,note:'Test to 7 bar'},
-  {id:6,name:'CO2 Bottle Weighing - E/R',cat:'Safety Equipment',pri:'safety',port:'-',prog:'done',done:true,note:'Annual weighing complete'},
+  {id:5,name:'Fire Pump No.2 - Monthly Test',cat:'FFA - Fire Fighting',pri:'safety',port:'Singapore',prog:'todo',done:false,note:'Test to 7 bar'},
+  {id:6,name:'CO2 Bottle Weighing - E/R',cat:'FFA - Fire Fighting',pri:'safety',port:'-',prog:'done',done:true,note:'Annual weighing complete'},
 ];
 var DEFAULT_RAG = [
   {id:1,name:'Lifeboats',sub:'Falls, davits, releases',status:'g',note:'Last checked 18 Jan',longNote:'',tasks:[]},
@@ -2806,10 +2797,10 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '3.3.0';
-var BUILD_DATE  = '10 Jun 2026';
+var APP_VERSION = '3.4.0';
+var BUILD_DATE  = '16 Jun 2026';
 var ACTIVE_PORT = '';
-var ACTIVE_PORT_SEC = 'timeline';
+var ACTIVE_PORT_SEC = 'overview';
 var ACTIVE_BUNDLE = null;
 var BV_PHASES = {};
 var BV_SECS = {};
@@ -3824,7 +3815,7 @@ function jobAdd(){
   openModal('Add Job',
     '<div class="fg"><label>Job Name</label><input class="fi" id="ja-n" placeholder="e.g. Repair deck light"></div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>Category</label><input class="fi" id="ja-cat" value="Deck Maintenance" list="jcats"><datalist id="jcats"><option>Deck Maintenance</option><option>LSA/FFA</option><option>Safety Equipment</option><option>Cargo Gear</option><option>Navigation</option><option>Admin</option><option>Safety Spares</option></datalist></div>'+
+      '<div class="fg"><label>Category</label><input class="fi" id="ja-cat" value="Deck Maintenance" list="jcats"><datalist id="jcats"><option>Deck</option><option>Bridge</option><option>Navigation</option><option>LSA</option><option>FFA</option><option>Electrical</option><option>Cargo</option><option>Mooring</option><option>Hull</option><option>Accommodation</option><option>GMDSS</option><option>Certificates</option><option>ISM / SMS</option><option>ISPS</option><option>MLC</option><option>Environmental</option><option>Medical</option><option>Stores</option><option>Admin</option><option>Other</option></datalist></div>'+
       '<div class="fg"><label>Priority</label><select class="fs" id="ja-pri"><option value="routine">Routine</option><option value="safety">Safety</option><option value="critical">Critical</option><option value="psc">PSC</option></select></div>'+
     '</div>'+
     '<div class="fg"><label>Port</label><input class="fi" id="ja-port" placeholder="e.g. Singapore"></div>'+
@@ -3924,7 +3915,8 @@ function ragDel(id){
 function ragAdd(){
   openModal('Add Safety Item',
     '<div class="fg"><label>Name</label><input class="fi" id="raa-n" placeholder="e.g. Fire Equipment"></div>'+
-    '<div class="fg"><label>Sub-title</label><input class="fi" id="raa-s" placeholder="e.g. Extinguishers, hoses, pumps"></div>'+
+    '<div class="fg"><label>Sub-title / Area</label><input class="fi" id="raa-s" placeholder="e.g. Extinguishers, hoses, pumps" list="rag-cats">'+
+    '<datalist id="rag-cats"><option>Deck</option><option>Bridge</option><option>Navigation</option><option>LSA</option><option>FFA</option><option>Electrical</option><option>Cargo</option><option>Mooring</option><option>Hull</option><option>Accommodation</option><option>GMDSS</option><option>Certificates</option><option>ISM / SMS</option><option>ISPS</option><option>MLC</option><option>Environmental</option><option>Medical</option><option>Stores</option><option>Admin</option><option>Other</option></datalist></div>'+
     '<div class="fg"><label>Initial Status</label><select class="fs" id="raa-st"><option value="g">Green</option><option value="a">Amber</option><option value="r">Red</option></select></div>'+
     '<div class="fg"><label>Note</label><input class="fi" id="raa-nt" placeholder="Short note shown on card"></div>',
     '<button class="btn bp bsm" onclick="ragSaveNew()">Add</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -4169,7 +4161,7 @@ function orderAdd(col){
       '<div class="fg"><label>Unit</label><input class="fi" id="oa-unit" placeholder="pcs"></div>'+
     '</div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>Category</label><input class="fi" id="oa-cat" value="Deck Stores" list="ocats"><datalist id="ocats"><option>Deck Stores</option><option>LSA/FFA</option><option>Safety Spares</option><option>Navigation</option><option>Engine Room</option></datalist></div>'+
+      '<div class="fg"><label>Category</label><input class="fi" id="oa-cat" value="Deck Stores" list="ocats"><datalist id="ocats"><option>Deck</option><option>Bridge</option><option>Navigation</option><option>LSA</option><option>FFA</option><option>Electrical</option><option>Cargo</option><option>Mooring</option><option>Hull</option><option>Accommodation</option><option>GMDSS</option><option>Certificates</option><option>ISM / SMS</option><option>ISPS</option><option>MLC</option><option>Environmental</option><option>Medical</option><option>Stores</option><option>Admin</option><option>Other</option></datalist></div>'+
       '<div class="fg"><label>Priority</label><select class="fs" id="oa-pri"><option value="normal">Normal</option><option value="critical">Critical</option></select></div>'+
     '</div>',
     '<button class="btn bp bsm" onclick="orderSaveNew(\''+col+'\')">Add</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -4289,8 +4281,8 @@ function portSaveNew(){
 function renderPortDetail(id){
   var p=S.ports.find(function(x){return x.id===id;}); if(!p)return;
   var el=document.getElementById('port-detail'); if(!el)return;
-  var tabs=['timeline','jobs','orders','crew','inspections','notes'];
-  var tabLabels={timeline:'Timeline',jobs:'Jobs',orders:'Load/Land',crew:'Crew',inspections:'Inspections',notes:'Notes'};
+  var tabs=['overview','timeline','jobs','orders','crew','inspections','notes'];
+  var tabLabels={overview:'Overview',timeline:'Timeline',jobs:'Jobs',orders:'Load/Land',crew:'Crew',inspections:'Inspections',notes:'Notes'};
   var sec=ACTIVE_PORT_SEC;
   var tabHtml=tabs.map(function(t){return '<button class="pt-tab'+(t===sec?' on':'')+'" onclick="showPS(\''+t+'\')">'+tabLabels[t]+'</button>';}).join('');
   var content='';
@@ -4346,6 +4338,57 @@ function renderPortDetail(id){
     '<div style="padding:12px 15px"><button class="btn bp bsm" onclick="inspAdd(\''+id+'\')">+ Add Inspection</button></div>';
   } else if(sec==='notes'){
     content='<div style="padding:14px"><textarea class="ft w100" style="min-height:160px" id="port-notes-'+id+'" oninput="portSaveNotes(\''+id+'\')">'+p.notes+'</textarea></div>';
+  }
+  if(sec==='overview'){
+    var ovHtml='';
+    ovHtml+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:14px 15px;border-bottom:1px solid var(--ln)">';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">ETA</div><div class="f13 fw7 mono">'+p.eta+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">ETD</div><div class="f13 fw7 mono">'+p.etd+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Berth</div><div class="f13">'+p.berth+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Draft Limit</div><div class="f13 fw6 ct">'+p.draft+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Agent</div><div class="f13">'+(p.agent||'-')+'</div></div>';
+    ovHtml+='</div>';
+    var pending=p.alerts.filter(function(a){return !a.done;});
+    if(p.alerts.length){
+      ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
+      ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Timeline ('+pending.length+' pending)</div>';
+      ovHtml+=p.alerts.map(function(a){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+(a.done?'var(--grn)':'var(--red)')+'"></div><span class="f11 c3" style="min-width:55px">'+a.when+'</span><span class="f12" style="'+(a.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+a.text+'</span></div>';}).join('');
+      ovHtml+='</div>';
+    }
+    if(p.jobs.length){
+      ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
+      ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Jobs ('+p.jobs.length+')</div>';
+      ovHtml+=p.jobs.map(function(j){var clr=j.pri==='critical'?'var(--red)':j.pri==='safety'?'var(--amb)':'var(--blu)';return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+clr+'"></div><span class="f12">'+j.name+'</span><span class="bdg '+(j.pri==='critical'?'dr':j.pri==='safety'?'da':'db')+'" style="margin-left:auto">'+j.pri+'</span></div>';}).join('');
+      ovHtml+='</div>';
+    }
+    if(p.orders.length){
+      ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
+      ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Load / Land ('+p.orders.length+')</div>';
+      ovHtml+=p.orders.map(function(o){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="bdg '+(o.dir==='LOAD'?'dg':'da')+'">'+o.dir+'</span><span class="f12">'+o.item+'</span><span class="f11 c3" style="margin-left:auto">'+o.qty+'</span></div>';}).join('');
+      ovHtml+='</div>';
+    }
+    if(p.crew.length){
+      ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
+      ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Crew Changes ('+p.crew.length+')</div>';
+      ovHtml+=p.crew.map(function(c){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="bdg '+(c.dir==='ON'?'dg':'da')+'">'+c.dir+'</span><span class="f12 fw6">'+c.name+'</span><span class="f11 c3">'+c.rank+'</span></div>';}).join('');
+      ovHtml+='</div>';
+    }
+    if(p.inspections.length){
+      ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
+      ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Inspections ('+p.inspections.length+')</div>';
+      ovHtml+=p.inspections.map(function(ins){var clr=ins.lvl==='r'?'var(--red)':ins.lvl==='a'?'var(--amb)':ins.lvl==='b'?'var(--blu)':'var(--grn)';return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+clr+'"></div><div><div class="f12 fw6">'+ins.name+'</div><div class="f11 c3">'+ins.sub+'</div></div></div>';}).join('');
+      ovHtml+='</div>';
+    }
+    if(p.notes){
+      ovHtml+='<div style="padding:11px 15px">';
+      ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Notes</div>';
+      ovHtml+='<div class="f12 c2" style="line-height:1.7">'+p.notes+'</div>';
+      ovHtml+='</div>';
+    }
+    if(!p.alerts.length&&!p.jobs.length&&!p.orders.length&&!p.crew.length&&!p.inspections.length&&!p.notes){
+      ovHtml+='<div class="f12 c3" style="padding:24px;text-align:center">No data for this port yet.</div>';
+    }
+    content=ovHtml;
   }
   el.innerHTML=
     '<div class="card">'+
