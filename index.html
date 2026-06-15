@@ -8,9 +8,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Meridian C/O">
+<meta name="apple-mobile-web-app-title" content="Meridian Mate">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian C/O v3.1.0</title>
+<title>Meridian Mate v3.3.0</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -851,14 +851,14 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
       </div>
       <div style="margin-bottom:14px">
         <label style="display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:6px;letter-spacing:.05em">VESSEL CODE</label>
-        <input id="login-code" class="fi" placeholder="e.g. KITE-ARROW or MY-VESSEL" 
+        <input id="login-code" class="fi" placeholder="e.g. AURORA or MY-VESSEL" 
           style="width:100%;text-transform:uppercase;letter-spacing:.08em;font-weight:600;font-size:15px"
           oninput="this.value=this.value.toUpperCase()"
           onkeydown="if(event.key==='Enter')loginSubmit()">
       </div>
       <div style="margin-bottom:20px">
         <label style="display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:6px;letter-spacing:.05em">YOUR NAME / RANK</label>
-        <input id="login-name" class="fi" placeholder="e.g. C/O Santos or 2/O Tango"
+        <input id="login-name" class="fi" placeholder="e.g. C/O Smith or 2/O James"
           style="width:100%;font-size:15px"
           onkeydown="if(event.key==='Enter')loginSubmit()">
       </div>
@@ -886,7 +886,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
 
 <div id="shell">
 <header id="topbar">
-  <div class="logo">Meridian <em>C/O</em></div>
+  <div class="logo">Meridian <em>Mate</em></div>
   <div class="vsep"></div>
   <div class="vlbl" id="vlbl">MV Vessel</div>
   <div class="off-pill" id="offpill"><div style="width:5px;height:5px;border-radius:50%;background:var(--red)"></div>Offline</div>
@@ -1138,7 +1138,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v3.1.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v3.3.0</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -1245,33 +1245,63 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
   </div>
   <div class="card mb12">
     <div class="ch">
-      <div><div class="ct">Firebase Cloud Sync</div><div class="cm">Real-time sync across all your devices</div></div>
-      <div id="fb-status-badge" class="bdg dgr">Connecting...</div>
+      <div><div class="ct">About Meridian Mate</div><div class="cm">Maritime tools for Chief Mates</div></div>
+      <div class="bdg dt">v<span id="about-ver">3.2.0</span></div>
     </div>
     <div class="cb">
-      <div id="fb-status-detail" class="f12 c2 mb12" style="line-height:1.8">
-        Syncing your data to Firebase cloud. Changes save automatically and sync to all devices instantly.
-      </div>
-      <div class="flex gap8" style="flex-wrap:wrap">
-        <button class="btn bp bsm" onclick="fbForcePush()">&#11014; Push My Data</button>
-        <button class="btn bsm" onclick="fbForcePull()">&#11015; Pull from Cloud</button>
-        <button class="btn bsm" onclick="fbRestoreBackup()">&#128268; Restore Backup</button>
-        <button class="btn bsm" onclick="fbShowInfo()">&#8505; Info</button>
-      </div>
-      <div class="f11 c3 mt8">
-        Push = send YOUR data up &bull; Pull = get cloud data &bull; Restore = recover from auto-backup
-      </div>
-      <div class="dvd" style="margin-top:14px"></div>
-      <div class="flex gap8 mt8" style="align-items:center;flex-wrap:wrap">
+      <!-- App identity -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+        <div style="width:56px;height:56px;border-radius:16px;background:var(--ac-d);border:1px solid var(--ac-b);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">&#9875;</div>
         <div>
-          <div class="f13 fw6">Vessel Code: <span id="fb-vessel-code" style="color:var(--ac);font-family:var(--mono)">-</span></div>
-          <div class="f11 c3">All devices with this code share data</div>
+          <div style="font-size:18px;font-weight:800;letter-spacing:-0.01em">Meridian <span style="color:var(--ac)">Mate</span></div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px;font-style:italic">Maritime tools for Chief Mates</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:4px">v<span id="about-ver2"></span> &bull; <span id="about-date"></span></div>
         </div>
-        <button class="btn bsm" onclick="loginShowChange()" style="margin-left:auto">&#128257; Switch Vessel</button>
       </div>
-      <div id="fb-last-sync" class="f11 c3 mt8"></div>
+      <div class="dvd"></div>
+      <!-- Developer info -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--elev);border:1px solid var(--ln2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#128187;</div>
+        <div>
+          <div style="font-size:13px;font-weight:700">Tango Juliet Dev</div>
+          <div style="font-size:11px;color:var(--ink3)">Independent maritime software developer</div>
+        </div>
+      </div>
+      <div class="dvd"></div>
+      <!-- Contact / Feedback -->
+      <div style="margin-top:4px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px">Contact &amp; Feedback</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <a href="mailto:tangojulietdev@gmail.com?subject=Meridian Mate Feedback" 
+             style="display:flex;align-items:center;gap:10px;background:var(--elev);border:1px solid var(--ln2);border-radius:var(--r);padding:10px 13px;text-decoration:none;color:var(--ink1);transition:all .13s"
+             onmouseover="this.style.borderColor='var(--ac)'" onmouseout="this.style.borderColor='var(--ln2)'">
+            <span style="font-size:18px">&#9993;</span>
+            <div>
+              <div style="font-size:13px;font-weight:600">Send Feedback</div>
+              <div style="font-size:11px;color:var(--ink3)">tangojulietdev@gmail.com</div>
+            </div>
+            <span style="margin-left:auto;font-size:12px;color:var(--ac)">&#8594;</span>
+          </a>
+          <a href="mailto:tangojulietdev@gmail.com?subject=Meridian Mate - Bug Report&body=Version: v'+APP_VERSION+'%0ADescribe the issue:" 
+             style="display:flex;align-items:center;gap:10px;background:var(--elev);border:1px solid var(--ln2);border-radius:var(--r);padding:10px 13px;text-decoration:none;color:var(--ink1);transition:all .13s"
+             onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--ln2)'">
+            <span style="font-size:18px">&#128030;</span>
+            <div>
+              <div style="font-size:13px;font-weight:600">Report a Bug</div>
+              <div style="font-size:11px;color:var(--ink3)">Include steps to reproduce</div>
+            </div>
+            <span style="margin-left:auto;font-size:12px;color:var(--red)">&#8594;</span>
+          </a>
+        </div>
+      </div>
+      <div class="dvd"></div>
+      <div class="f11 c3" style="text-align:center;line-height:1.8">
+        Built for seafarers, by a seafarer<br>
+        &copy; 2026 Tango Juliet Dev &bull; All rights reserved
+      </div>
     </div>
   </div>
+
   <div class="card mb12">
     <div class="ch"><div class="ct">Backup &amp; Restore</div><div class="cm">Save to file &bull; restore from file</div></div>
     <div class="cb">
@@ -1290,7 +1320,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
     <div class="cb">
       <div class="flex gap12 mb12">
         <div style="width:50px;height:50px;border-radius:13px;background:var(--ac-d);border:1px solid var(--ac-b);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">&#9875;</div>
-        <div><div class="f14 fw7 mb8">Meridian C/O</div><div class="f12 c3">Works offline &bull; No data sent anywhere</div></div>
+        <div><div class="f14 fw7 mb8">Meridian Mate</div><div class="f12 c3">Works offline &bull; No data sent anywhere</div></div>
       </div>
       <div id="pwa-btn-area"></div>
       <div class="dvd"></div>
@@ -1341,294 +1371,7 @@ input[type="datetime-local"],input[type="date"]{color-scheme:dark}
   </div>
 </div>
 
-<script type="module">
-// ── FIREBASE SYNC v4 - TWO DOCUMENT STRATEGY ─────────────────
-// shared_data = latest sync (may be overwritten)
-// backup_data = last known GOOD data (only overwritten if hasRealData)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDH5f5Fz7WF_NGH1e3emKrjM2DcFOvDHkw",
-  authDomain: "meridian-mate.firebaseapp.com",
-  projectId: "meridian-mate",
-  storageBucket: "meridian-mate.firebasestorage.app",
-  messagingSenderId: "899931535256",
-  appId: "1:899931535256:web:bbb1350c2e16eadcf71ded"
-};
-
-function getDeviceId() {
-  var id = localStorage.getItem('mco_device_id');
-  if (!id) { id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); localStorage.setItem('mco_device_id', id); }
-  // Include user name in device ID for better tracking
-  var name = (window.getUserName && window.getUserName()) || '';
-  return id + (name ? '_' + name.replace(/\s+/g,'_').substring(0,10) : '');
-}
-
-var fbApp=null, fbDb=null, fbDocMain=null, fbDocBackup=null;
-var fbListening=false, fbBooting=true;
-var DEVICE_ID = getDeviceId();
-var fbPushTimer = null;
-
-// ── REAL DATA CHECK ───────────────────────────────────────────
-function hasRealData(d) {
-  if (!d) return false;
-  return (d.jobs   && d.jobs.length   > 0) ||
-         (d.ports  && d.ports.length  > 0) ||
-         (d.rag    && d.rag.length    > 0) ||
-         (d.drills && d.drills.length > 0) ||
-         (d.vessel && d.vessel.name   && d.vessel.name !== 'MV Vessel');
-}
-
-// ── APPLY remote data to app ──────────────────────────────────
-function fbApply(remote) {
-  var keys = ['vessel','theme','jobs','rag','drills','orders','ports',
-              'holds','dcounters','wplans','cldata','custom_bundles',
-              'deleted_bundles','todos','updated'];
-  keys.forEach(function(k) { if (remote[k] !== undefined) window.S[k] = remote[k]; });
-  window.dbSave && window.dbSave();
-  window.boot2 && window.boot2();
-  fbSetStatus('synced');
-  window.fbUpdateBadge && window.fbUpdateBadge('synced');
-  console.log('[FB] Applied remote data ts:', remote._ts);
-}
-
-// ── PUSH: write to BOTH main and backup (only if real data) ───
-async function fbPush() {
-  if (!fbDocMain || !navigator.onLine) return;
-  if (fbBooting) { console.log('[FB] Push blocked - booting'); return; }
-  if (!hasRealData(window.S)) { console.log('[FB] Push blocked - no real data'); return; }
-
-  try {
-    var payload = JSON.parse(JSON.stringify(window.S));
-    payload._device = DEVICE_ID;
-    payload._ts = Date.now();
-    window.S.updated = payload._ts;
-
-    // Write to main doc
-    await setDoc(fbDocMain, payload);
-    // Write to backup doc (safe copy - only real data ever gets here)
-    await setDoc(fbDocBackup, payload);
-
-    fbSetStatus('synced');
-    window.fbUpdateBadge && window.fbUpdateBadge('synced');
-    console.log('[FB] Pushed + backed up ts:', payload._ts);
-  } catch(e) {
-    console.warn('[FB] Push failed:', e.message);
-    fbSetStatus('error');
-  }
-}
-
-// ── PULL: get best available data ─────────────────────────────
-async function fbPull() {
-  if (!fbDocMain) return;
-  try {
-    // Read BOTH docs in parallel
-    var results = await Promise.all([getDoc(fbDocMain), getDoc(fbDocBackup)]);
-    var snapMain   = results[0];
-    var snapBackup = results[1];
-
-    // Get best remote data - prefer backup if main is empty/missing
-    var remote = null;
-    if (snapMain.exists() && hasRealData(snapMain.data())) {
-      remote = snapMain.data();
-    } else if (snapBackup.exists() && hasRealData(snapBackup.data())) {
-      remote = snapBackup.data();
-      console.log('[FB] Main was empty - using backup data');
-      // Restore main from backup
-      await setDoc(fbDocMain, remote);
-    }
-
-    if (!remote) {
-      console.log('[FB] No cloud data at all');
-      fbBooting = false;
-      if (hasRealData(window.S)) fbPush();
-      return;
-    }
-
-    var remoteTs = remote._ts || 0;
-    var localTs  = window.S ? (window.S.updated || 0) : 0;
-    var localReal  = hasRealData(window.S);
-    var remoteReal = hasRealData(remote);
-
-    console.log('[FB] remoteTs:', remoteTs, 'localTs:', localTs,
-                'localReal:', localReal, 'remoteReal:', remoteReal);
-
-    if (!localReal && remoteReal) {
-      // Local empty → always use cloud
-      console.log('[FB] Local empty → pulling');
-      fbApply(remote);
-    } else if (remoteReal && remoteTs > localTs) {
-      // Cloud strictly newer → pull
-      console.log('[FB] Cloud newer → pulling');
-      fbApply(remote);
-    } else if (localReal && localTs >= remoteTs) {
-      // Local same or newer → push
-      console.log('[FB] Local newer or equal → pushing');
-      fbBooting = false;
-      fbPush();
-    }
-    fbBooting = false;
-  } catch(e) {
-    console.warn('[FB] Pull failed:', e.message);
-    fbBooting = false;
-  }
-}
-
-// ── LISTEN for changes from other devices ─────────────────────
-function fbListen() {
-  if (!fbDocMain || fbListening) return;
-  fbListening = true;
-  setTimeout(function() {
-    onSnapshot(fbDocMain, function(snap) {
-      if (fbBooting || !snap.exists()) return;
-      var remote = snap.data();
-      if (remote._device === DEVICE_ID) return; // our own push
-      if (!hasRealData(remote)) return;          // empty data
-      var remoteTs = remote._ts || 0;
-      var localTs  = window.S ? (window.S.updated || 0) : 0;
-      if (remoteTs <= localTs) return;           // not newer
-      console.log('[FB] Live update from', remote._device);
-      fbApply(remote);
-      window.showToast && window.showToast('Synced from another device');
-    }, function(err) {
-      console.warn('[FB] Listener error:', err.message);
-      fbListening = false;
-    });
-  }, 3000);
-}
-
-// ── STATUS DOT ────────────────────────────────────────────────
-function fbSetStatus(state) {
-  var dot = document.getElementById('sync-dot');
-  if (!dot) return;
-  dot.className = 'sync-dot';
-  if (state==='syncing'){dot.classList.add('saving');dot.style.background='';}
-  else if(state==='synced'){dot.style.background='var(--grn)';}
-  else if(state==='error'){dot.style.background='var(--red)';}
-  else{dot.style.background='var(--ink3)';}
-  dot.title=state==='synced'?'Synced to cloud':state==='syncing'?'Syncing...':state==='error'?'Sync error':'Offline';
-}
-
-// ── INIT ──────────────────────────────────────────────────────
-async function fbInit() {
-  try {
-    fbApp = initializeApp(firebaseConfig);
-    fbDb  = getFirestore(fbApp);
-    // Use vessel code as document ID - each vessel gets its own data
-    var code = (window.getVesselCode && window.getVesselCode()) || 'shared_data';
-    var safeCode = code.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
-    fbDocMain   = doc(fbDb, 'meridian_co', safeCode);
-    fbDocBackup = doc(fbDb, 'meridian_co', safeCode + '_backup');
-    console.log('[FB] Using vessel doc:', safeCode);
-    fbSetStatus('syncing');
-    await fbPull();
-    fbListen();
-    window.addEventListener('online', function() {
-      fbSetStatus('syncing');
-      setTimeout(function() { if (!fbBooting) fbPush(); }, 2000);
-    });
-    window.addEventListener('offline', function() { fbSetStatus('offline'); });
-    if (!navigator.onLine) fbSetStatus('offline');
-  } catch(e) {
-    console.warn('[FB] Init failed:', e.message);
-    fbBooting = false;
-  }
-}
-
-// ── SCHEDULE PUSH ─────────────────────────────────────────────
-window.fbSchedulePush = function() {
-  if (fbBooting) return;
-  clearTimeout(fbPushTimer);
-  fbPushTimer = setTimeout(fbPush, 2500);
-};
-
-// ── EXPOSE ───────────────────────────────────────────────────
-window.fbInit = fbInit;
-
-window.fbForcePush = async function() {
-  if (!hasRealData(window.S)) { window.showToast&&window.showToast('No real data to push'); return; }
-  fbBooting = false;
-  window.S.updated = Date.now();
-  await fbPush();
-  window.showToast&&window.showToast('Your data pushed to cloud and backup');
-};
-
-window.fbForcePull = async function() {
-  if (!fbDocMain) { window.showToast&&window.showToast('Not connected'); return; }
-  // Always try backup first for safety
-  var snapB = await getDoc(fbDocBackup);
-  var snapM = await getDoc(fbDocMain);
-  var best = null;
-  if (snapB.exists() && hasRealData(snapB.data())) best = snapB.data();
-  if (snapM.exists() && hasRealData(snapM.data())) {
-    var md = snapM.data();
-    if (!best || md._ts > best._ts) best = md;
-  }
-  if (best) { fbApply(best); window.showToast&&window.showToast('Cloud data pulled successfully'); }
-  else { window.showToast&&window.showToast('No valid cloud data found'); }
-};
-
-window.fbRestoreBackup = async function() {
-  if (!fbDocBackup) return;
-  var snap = await getDoc(fbDocBackup);
-  if (snap.exists() && hasRealData(snap.data())) {
-    fbApply(snap.data());
-    window.showToast&&window.showToast('Backup restored!');
-  } else {
-    window.showToast&&window.showToast('No backup found');
-  }
-};
-
-window.fbShowInfo = function() {
-  window.openModal && window.openModal('Meridian C/O — Info',
-    '<div style="font-size:13px">'+
-    '<div style="background:var(--ac-d);border:1px solid var(--ac-b);border-radius:var(--rl);padding:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">'+
-      '<div><div class="fw8" style="font-size:16px">Meridian C/O</div><div class="c3 f12">Chief Officer Personal Operations</div></div>'+
-      '<div style="text-align:right"><div class="fw7 mono" style="color:var(--ac);font-size:18px">v'+(window.APP_VERSION||'2.2.0')+'</div><div class="c3 f11">'+(window.BUILD_DATE||'')+'</div></div>'+
-    '</div>'+
-    '<div class="f12 c2" style="line-height:2.2">'+
-    '&#9729; Firebase: meridian-mate<br>'+
-    '&#10003; Two-document sync (main + backup)<br>'+
-    '&#10003; Empty data can never overwrite cloud<br>'+
-    '&#10003; Backup auto-restores if main is wiped<br>'+
-    '<span class="c3 f11">Device: '+DEVICE_ID+'</span>'+
-    '</div></div>',
-    '<button class="btn bp bsm" onclick="fbForcePush();closeModal()">Push My Data</button>'+
-    '<button class="btn bsm" onclick="fbForcePull();closeModal()">Pull from Cloud</button>'+
-    '<button class="btn bsm" onclick="fbRestoreBackup();closeModal()">Restore Backup</button>'+
-    '<button class="btn bgh bsm" onclick="closeModal()">Close</button>');
-};
-
-window.fbUpdateBadge = function(state) {
-  var badge = document.getElementById('fb-status-badge');
-  var sub = document.getElementById('fb-status-detail');
-  var last = document.getElementById('fb-last-sync');
-  if (!badge) return;
-  if (state==='synced') {
-    badge.className='bdg dg'; badge.textContent='Synced';
-    if(sub) sub.textContent='All data synced. Main + backup both updated.';
-    if(last) last.textContent='Last sync: '+new Date().toLocaleTimeString();
-  } else if(state==='syncing'){
-    badge.className='bdg da'; badge.textContent='Syncing...';
-  } else if(state==='error'){
-    badge.className='bdg dr'; badge.textContent='Error';
-  } else {
-    badge.className='bdg dgr'; badge.textContent='Offline';
-  }
-};
-
-// Patch autoSave after DOM ready
-document.addEventListener('DOMContentLoaded', function() {
-  var orig = window.autoSave;
-  window.autoSave = function() {
-    if (orig) orig();
-    window.fbSchedulePush();
-  };
-});
-
-fbInit();
-</script>
 
 <script>
 // ── CND FILE READER ───────────────────────────────────────────
@@ -2635,7 +2378,7 @@ function loginShowChange() {
     '<div class="fg"><label>New Vessel Code</label>'+
     '<input class="fi" id="new-code" placeholder="Enter new code" style="text-transform:uppercase;letter-spacing:.08em" oninput="this.value=this.value.toUpperCase()"></div>'+
     '<div class="fg"><label>Your Name / Rank</label>'+
-    '<input class="fi" id="new-name" value="'+(USER_NAME||'')+'" placeholder="e.g. C/O Santos"></div>'+
+    '<input class="fi" id="new-name" value="'+(USER_NAME||'')+'" placeholder="e.g. C/O Smith"></div>'+
     '<div class="f11 c3" style="line-height:1.8;margin-top:8px">&#9888; Switching vessel code will load that vessel\'s data.<br>Your current data stays saved under code: <strong>'+(VESSEL_CODE||'-')+'</strong></div>',
     '<button class="btn bp bsm" onclick="loginChangeCode()">Switch</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -2669,8 +2412,6 @@ function loginChangeCode() {
       updated: 0
     };
     // Re-init Firebase with new code as document ID
-    if (window.fbInit) window.fbInit();
-    else boot();
   }, 500);
 }
 
@@ -2802,18 +2543,18 @@ var DEFAULT_ORDERS = {
   onboard:[{id:6,code:'IMPA 551620',desc:'Manila Line 18mm x 100m',qty:2,unit:'coil',cat:'Deck Stores',pri:'normal'}],
 };
 var DEFAULT_PORTS = [
-  {id:'sgp',name:'Singapore',cc:'SG',eta:'21 Jan 08:00',etd:'22 Jan 18:00',berth:'SBG Terminal Berth 12',agent:'Pacific Coast Shipping',draft:'11.4m max',
+  {id:'sgp',name:'Singapore',cc:'SG',eta:'21 Jan 08:00',etd:'22 Jan 18:00',berth:'Container Terminal Berth 3',agent:'Global Maritime Agents',draft:'11.4m max',
    alerts:[{when:'1 Week',text:'Confirm crew change flights',done:false},{when:'3 Days',text:'Pre-arrival paperwork',done:true},{when:'1 Day',text:'Contact agent - confirm berth',done:true},{when:'Arrival',text:'Pre-Arrival bundle complete',done:false}],
    jobs:[{name:'Liferaft FR-3 - Service',pri:'critical'},{name:'Windlass Hydraulic Hose',pri:'safety'},{name:'Bridge Logbook - PSC',pri:'critical'}],
    orders:[{dir:'LOAD',item:'Fresh provisions',qty:'-',note:'Chandler'},{dir:'LOAD',item:'Fresh water',qty:'200 MT',note:'Barge'},{dir:'LAND',item:'Expired flare pack',qty:'1 set',note:'Via agent'}],
    crew:[{dir:'OFF',name:'A/B Cruz R.',rank:'Able Seaman',info:'Flight BX441 22 Jan 14:00',note:'Arrange transport'},{dir:'ON',name:'O/S Mendoza J.',rank:'Ordinary Seaman',info:'Cab 22 Jan 10:00',note:'Assign cabin 4A'}],
    inspections:[{name:'MPA Singapore - PSC',sub:'Expected on arrival',lvl:'r'},{name:'P&I Surveyor',sub:'Cargo condition survey',lvl:'a'}],
    notes:'Air draft restriction at SBG - max 42m.'},
-  {id:'pkl',name:'Port Klang',cc:'MY',eta:'24 Jan 14:00',etd:'26 Jan 08:00',berth:'Westport Terminal',agent:'Straits Shipping',draft:'12.0m max',
+  {id:'pkl',name:'Port Klang',cc:'MY',eta:'24 Jan 14:00',etd:'26 Jan 08:00',berth:'Westport Terminal',agent:'Eastern Port Services',draft:'12.0m max',
    alerts:[{when:'3 Days',text:'Confirm berth and cargo plan',done:false}],jobs:[{name:'Hold No.3 Bilge Strainer',pri:'routine'}],orders:[],crew:[],inspections:[],notes:''},
-  {id:'col',name:'Colombo',cc:'LK',eta:'28 Jan 06:00',etd:'29 Jan 20:00',berth:'JCT Terminal',agent:'Aitken Spence',draft:'13.5m max',
+  {id:'col',name:'Colombo',cc:'LK',eta:'28 Jan 06:00',etd:'29 Jan 20:00',berth:'JCT Terminal',agent:'Ceylon Maritime Agency',draft:'13.5m max',
    alerts:[{when:'1 Week',text:'Class surveyor - documents ready',done:false}],jobs:[],orders:[],crew:[],inspections:[{name:'Class Surveyor - Annual',sub:'Prepare class certificates',lvl:'b'}],notes:''},
-  {id:'jbl',name:'Jebel Ali',cc:'AE',eta:'03 Feb 09:00',etd:'05 Feb 06:00',berth:'DP World T1',agent:'GAC UAE',draft:'14.0m max',
+  {id:'jbl',name:'Jebel Ali',cc:'AE',eta:'03 Feb 09:00',etd:'05 Feb 06:00',berth:'Main Cargo Terminal',agent:'Gulf Shipping Services',draft:'14.0m max',
    alerts:[],jobs:[],orders:[],crew:[],inspections:[],notes:''},
 ];
 var DEFAULT_HOLDS = [
@@ -2833,7 +2574,7 @@ var DEFAULT_DC = [
 
 // ── LIVE STATE ───────────────────────────────────────────────
 var S = {
-  vessel:{name:'MV Vessel',imo:'9123456',cs:'ABCD1',flag:'Panama',coname:'C/O Santos',eta:'Singapore 21 Jan 08:00'},
+  vessel:{name:'MV Vessel',imo:'9000000',cs:'ABCD1',flag:'',coname:'Chief Officer',eta:''},
   theme:'dark',
   jobs: JSON.parse(JSON.stringify(DEFAULT_JOBS)),
   rag:  JSON.parse(JSON.stringify(DEFAULT_RAG)),
@@ -2906,11 +2647,8 @@ function setSyncDot(state) {
   var dot = document.getElementById('sync-dot');
   if (!dot) return;
   dot.className = 'sync-dot';
-  if (state === 'saving') { dot.classList.add('saving'); dot.title = 'Saving locally...'; }
-  else if (state === 'offline') { dot.classList.add('offline'); dot.title = 'Offline - data saved locally'; }
-  else { dot.title = 'Saved locally'; }
-  // Also update FB badge if available
-  if (window._fbUpdateBadge) window._fbUpdateBadge(state === 'offline' ? 'offline' : 'synced');
+  if (state === 'saving') { dot.classList.add('saving'); dot.title = 'Saving...'; }
+  else { dot.style.background = 'var(--grn)'; dot.title = 'Saved to device'; }
 }
 
 // ── TOAST NOTIFICATION ───────────────────────────────────────
@@ -2953,7 +2691,7 @@ async function saveBackup() {
     }
     try {
       _fileHandle = await window.showSaveFilePicker({
-        suggestedName:'meridian-co-backup.json',
+        suggestedName:'meridian-mate-backup.json',
         types:[{description:'JSON backup',accept:{'application/json':['.json']}}]
       });
       var w = await _fileHandle.createWritable();
@@ -2966,7 +2704,7 @@ async function saveBackup() {
   var date = new Date().toISOString().split('T')[0];
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
-  a.href = url; a.download = 'meridian-co-backup-'+date+'.json'; a.click();
+  a.href = url; a.download = 'meridian-mate-backup-'+date+'.json'; a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -3068,8 +2806,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '3.1.0';
-var BUILD_DATE  = '09 Jun 2026';
+var APP_VERSION = '3.3.0';
+var BUILD_DATE  = '10 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'timeline';
 var ACTIVE_BUNDLE = null;
@@ -3095,9 +2833,13 @@ function boot() {
 }
 
 function boot2() {
-  // Update vessel code display in Firebase card
-  var fvc = document.getElementById('fb-vessel-code');
-  if (fvc && window.getVesselCode) fvc.textContent = window.getVesselCode() || '-';
+  // Update about version display
+  var av1 = document.getElementById('about-ver');
+  var av2 = document.getElementById('about-ver2');
+  var avd = document.getElementById('about-date');
+  if (av1) av1.textContent = APP_VERSION || '3.2.0';
+  if (av2) av2.textContent = APP_VERSION || '3.2.0';
+  if (avd) avd.textContent = BUILD_DATE  || '';
   applyTheme(S.theme);
   updateVessel();
   tick(); clearInterval(window._tickI); window._tickI = setInterval(tick, 1000);
@@ -3326,7 +3068,7 @@ function genBrief() {
     'ORDERS     : '+((S.orders.draft||[]).length)+' draft / '+((S.orders.submitted||[]).length)+' submitted','',
     'DECK WORK TODAY',todayTasks,'',
     'DAYS COUNTERS',S.dcounters.map(function(c){return '  '+c.label+': '+dcDir(c);}).join('\n'),'',
-    '='.repeat(48),'Generated '+new Date().toUTCString(),'Meridian C/O - '+S.vessel.name
+    '='.repeat(48),'Generated '+new Date().toUTCString(),'Meridian Mate - '+S.vessel.name
   ];
   var txt = lines.join('\n');
   var ba = document.getElementById('brief-out');
@@ -4810,52 +4552,6 @@ function openModal(title,body,foot){
 function closeModal(){document.getElementById('mwrap').classList.remove('open');}
 
 // ── PWA ───────────────────────────────────────────────────────
-function fbShowInfo() {
-  openModal('Meridian C/O — Info',
-    '<div style="font-size:13px">'+
-    '<div style="background:var(--ac-d);border:1px solid var(--ac-b);border-radius:var(--rl);padding:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">'+
-      '<div><div class="fw8" style="font-size:16px">Meridian C/O</div><div class="c3 f12">Chief Officer Personal Operations</div></div>'+
-      '<div style="text-align:right"><div class="fw7 mono" style="color:var(--ac);font-size:18px">v'+APP_VERSION+'</div><div class="c3 f11">'+BUILD_DATE+'</div></div>'+
-    '</div>'+
-    '<div class="dvd"></div>'+
-    '<div class="f12 c2" style="line-height:2.2">'+
-    '&#9729; Firebase Cloud Sync: meridian-mate<br>'+
-    '&#10003; Auto-saves every 2 seconds<br>'+
-    '&#10003; Works across all devices<br>'+
-    '&#10003; Syncs when back online<br>'+
-    '<span class="c3 f11">Device: '+localStorage.getItem('mco_device_id')+'</span>'+
-    '</div></div>',
-    '<button class="btn bp bsm" onclick="fbForceSync();closeModal()">Sync Now</button>'+
-    '<button class="btn bgh bsm" onclick="closeModal()">Close</button>');
-}
-
-// Update Firebase status badge in settings
-function fbUpdateBadge(state) {
-  var badge = document.getElementById('fb-status-badge');
-  var detail = document.getElementById('fb-status-detail');
-  var lastSync = document.getElementById('fb-last-sync');
-  if (!badge) return;
-  if (state === 'synced') {
-    badge.className = 'bdg dg';
-    badge.textContent = 'Synced';
-    if (detail) detail.textContent = 'All data synced to cloud. Changes save automatically.';
-    if (lastSync) lastSync.textContent = 'Last sync: ' + new Date().toLocaleTimeString();
-  } else if (state === 'syncing') {
-    badge.className = 'bdg da';
-    badge.textContent = 'Syncing...';
-  } else if (state === 'error') {
-    badge.className = 'bdg dr';
-    badge.textContent = 'Sync Error';
-    if (detail) detail.textContent = 'Check your internet connection.';
-  } else {
-    badge.className = 'bdg dgr';
-    badge.textContent = 'Offline';
-    if (detail) detail.textContent = 'Working offline. Will sync when connection returns.';
-  }
-}
-
-// Override fbSetStatus to also update settings card
-window._fbUpdateBadge = fbUpdateBadge;
 
 // ── TODO LIST ─────────────────────────────────────────────────
 var TODO_FILTER = 'all';
@@ -5083,12 +4779,12 @@ function pwaRenderStatus(installed){
     return;
   }
   if(_pwaPrompt){
-    ba.innerHTML='<button class="btn bp" onclick="pwaTriggerInstall()" style="width:100%">&#8687; Install Meridian C/O</button>';
+    ba.innerHTML='<button class="btn bp" onclick="pwaTriggerInstall()" style="width:100%">&#8687; Install Meridian Mate</button>';
   } else {
     ba.innerHTML='<div class="flex gap8"><div style="width:10px;height:10px;border-radius:50%;background:var(--ink3)"></div><span class="c3 f12">Install via browser menu below</span></div>';
   }
   if(mi){
-    if(isIOS){mi.innerHTML='1. Tap the <strong style="color:var(--ac)">Share</strong> button in Safari<br>2. Tap <strong style="color:var(--ac)">Add to Home Screen</strong><br>3. Tap <strong style="color:var(--ac)">Add</strong> top right<br>4. Meridian C/O appears on your home screen';}
+    if(isIOS){mi.innerHTML='1. Tap the <strong style="color:var(--ac)">Share</strong> button in Safari<br>2. Tap <strong style="color:var(--ac)">Add to Home Screen</strong><br>3. Tap <strong style="color:var(--ac)">Add</strong> top right<br>4. Meridian Mate appears on your home screen';}
     else if(isAndroid){mi.innerHTML='1. Tap <strong style="color:var(--ac)">&#8942; menu</strong> in Chrome<br>2. Tap <strong style="color:var(--ac)">Add to Home screen</strong> or <strong style="color:var(--ac)">Install app</strong><br>3. Tap <strong style="color:var(--ac)">Install</strong>';}
     else{mi.innerHTML='<strong>Chrome/Edge:</strong> &#8942; menu &rarr; Install app<br><strong>Safari (iOS):</strong> Share &rarr; Add to Home Screen<br><strong>Firefox:</strong> &#8942; menu &rarr; Install<br><span class="c3">Once installed, works fully offline.</span>';}
   }
