@@ -1,7 +1,7 @@
 {
-  "name": "Meridian C/O",
+  "name": "Meridian Mate",
   "short_name": "Meridian",
-  "description": "Chief Officer Personal Operations",
+  "description": "Maritime tools for Chief Mates — by Tango Juliet Dev",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
@@ -22,8 +22,5 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": [
-    "productivity",
-    "utilities"
-  ]
+  "categories": ["productivity", "utilities"]
 }

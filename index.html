@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian Mate">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian Mate v4.1.0</title>
+<title>Meridian Mate v4.3.3</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1944,58 +1944,7 @@ input[type="date"] { color-scheme: dark; }
 </style>
 
 </head><body>
-<!-- LOGIN SCREEN -->
-<div id="login-screen" style="position:fixed;inset:0;z-index:999999;background:var(--base);display:flex;align-items:center;justify-content:center;padding:24px">
-  <div style="width:100%;max-width:380px">
-    <!-- Logo -->
-    <div style="text-align:center;margin-bottom:36px">
-      <div style="font-size:48px;margin-bottom:12px">&#9875;</div>
-      <div style="font-size:28px;font-weight:800;letter-spacing:-0.02em">Meridian <span style="color:var(--ac)">C/O</span></div>
-      <div style="font-size:13px;color:var(--ink3);margin-top:6px">Chief Officer Personal Operations</div>
-    </div>
-    <!-- Login card -->
-    <div style="background:var(--surf);border:1px solid var(--ln2);border-radius:var(--rxl);padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-      <div style="font-size:15px;font-weight:700;margin-bottom:6px">Enter your Vessel Code</div>
-      <div style="font-size:12px;color:var(--ink3);margin-bottom:20px;line-height:1.6">
-        Each vessel code gives you a private space in the cloud.<br>
-        Share the same code with your crew to sync together.
-      </div>
-      <div style="margin-bottom:14px">
-        <label style="display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:6px;letter-spacing:.05em">VESSEL CODE</label>
-        <input id="login-code" class="fi" placeholder="e.g. AURORA or MY-VESSEL" 
-          style="width:100%;text-transform:uppercase;letter-spacing:.08em;font-weight:600;font-size:15px"
-          oninput="this.value=this.value.toUpperCase()"
-          onkeydown="if(event.key==='Enter')loginSubmit()">
-      </div>
-      <div style="margin-bottom:20px">
-        <label style="display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:6px;letter-spacing:.05em">YOUR NAME / RANK</label>
-        <input id="login-name" class="fi" placeholder="e.g. C/O Smith or 2/O James"
-          style="width:100%;font-size:15px"
-          onkeydown="if(event.key==='Enter')loginSubmit()">
-      </div>
-      <button onclick="loginSubmit()" style="width:100%;height:46px;background:var(--ac);border:none;border-radius:var(--r);color:#0d1117;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font);letter-spacing:.02em">
-        Enter &#8594;
-      </button>
-      <div id="login-err" style="display:none;margin-top:12px;color:var(--red);font-size:12px;text-align:center"></div>
-    </div>
-    <!-- Info -->
-    <div style="margin-top:20px;text-align:center">
-      <div style="font-size:11px;color:var(--ink3);line-height:1.8">
-        &#9679; Your code = your private data space<br>
-        &#9679; Share code with crew to sync together<br>
-        &#9679; Works offline &bull; No email needed
-      </div>
-    </div>
-    <!-- Change vessel link -->
-    <div style="margin-top:16px;text-align:center">
-      <button onclick="loginShowChange()" style="background:none;border:none;color:var(--ink3);font-size:11px;cursor:pointer;font-family:var(--font);text-decoration:underline">
-        Already have a code? Switch vessel
-      </button>
-    </div>
-  </div>
-</div>
-
-<div id="shell" style="display:none">
+<div id="shell">
 <header id="topbar">
   <div class="logo">Meridian <em>Mate</em></div>
   <div class="vsep"></div>
@@ -2018,17 +1967,12 @@ input[type="date"] { color-scheme: dark; }
   <div class="ng"><div class="ngl">Operations</div>
     <div class="ni" onclick="showPage('bundles')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>Operations</div>
     <div class="ni" onclick="showPage('voyage')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg></span>Voyage</div>
-    <div class="ni" onclick="showPage('portoverview')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg></span>Port Overview</div>
   </div>
   <div class="ng"><div class="ngl">Jobs &amp; Safety</div>
     <div class="ni" onclick="showPage('pms')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>PMS &amp; Jobs<span class="npill nred" id="np-pms">0</span></div>
     <div class="ni" onclick="showPage('safety')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>Safety Board</div>
     <div class="ni" onclick="showPage('drills')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="12" y1="2" x2="12" y2="3"/></svg></span>Drills<span class="npill nred" id="np-drills">0</span></div>
-  </div>
-  <div class="ng"><div class="ngl">Ship</div>
-    <div class="ni" onclick="showPage('cargo')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>Cargo &amp; Stability</div>
     <div class="ni" onclick="showPage('orders')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>Orders<span class="npill nteal" id="np-orders">0</span></div>
-    <div class="ni" onclick="showPage('reports')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>Reports</div>
   </div>
   <div class="ng"><div class="ngl">System</div>
     <div class="ni" onclick="showPage('settings')"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>Settings</div>
@@ -2072,8 +2016,7 @@ input[type="date"] { color-scheme: dark; }
       <div><div class="ct" id="wp-day-lbl">Work Plan</div><div class="cm" id="wp-team-lbl">Deck Team</div></div>
       <div class="flex gap8">
         <select class="fs" id="wp-status" style="height:28px;font-size:12px;width:auto;padding:0 10px" onchange="wpSetStatus(this.value)">
-          <option value="working">Working Day</option><option value="port">In Port</option>
-          <option value="anchor">At Anchor</option><option value="rest">Rest Day</option><option value="badwx">Bad Weather</option>
+          <option value="sea">🌊 At Sea</option><option value="port">🏗️ In Port</option><option value="anchor">⚓ At Anchor</option><option value="rest">😴 Rest Day</option><option value="weather">⛈️ Bad Weather</option><option value="working">📋 Working Day</option>
         </select>
         <button class="btn bxs bgh" onclick="wpTeamModal()">Team</button>
         <button class="btn bxs" onclick="wpAllDone()">All Done</button>
@@ -2151,11 +2094,6 @@ input[type="date"] { color-scheme: dark; }
   <div class="ph"><div><div class="ph-t">Voyage Planner</div><div class="ph-s">Tap port to manage</div></div><button class="btn bp bsm" onclick="portAdd()">+ Add Port</button></div>
   <div class="port-strip" id="port-strip"></div>
   <div id="port-detail"></div>
-</div>
-
-<div class="page" id="pg-portoverview">
-  <div class="ph"><div><div class="ph-t">All Ports &mdash; Overview</div><div class="ph-s">Voyage at a glance</div></div><button class="btn bsm" onclick="showPage('voyage')">Manage &rarr;</button></div>
-  <div id="poc-list"></div>
 </div>
 
 <div class="page" id="pg-pms">
@@ -2249,7 +2187,7 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v4.1.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v4.3.3</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -2362,7 +2300,12 @@ input[type="date"] { color-scheme: dark; }
     <div class="cb">
       <!-- App identity -->
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
-        <div style="width:56px;height:56px;border-radius:16px;background:var(--ac-d);border:1px solid var(--ac-b);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">&#128187;</div>
+        <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#F7C860,#C7921C);display:flex;align-items:center;justify-content:center;color:#1a1408;flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="6" y="4" width="12" height="2.6" rx="1.3" fill="currentColor"/>
+<rect x="5" y="8.2" width="14" height="2.6" rx="1.3" fill="currentColor"/>
+<rect x="4" y="12.4" width="16" height="2.6" rx="1.3" fill="currentColor"/>
+<path d="M12 16.5L15 19.5L12 22.5L9 19.5Z" fill="currentColor"/>
+</svg></div>
         <div>
           <div style="font-size:18px;font-weight:800;letter-spacing:-0.01em">Meridian <span style="color:var(--ac)">Mate</span></div>
           <div style="font-size:12px;color:var(--ink3);margin-top:2px;font-style:italic">Maritime tools for Chief Mates</div>
@@ -2429,7 +2372,12 @@ input[type="date"] { color-scheme: dark; }
     <div class="ch"><div class="ct">Install App</div><div class="cm">Add to home screen &bull; works offline</div></div>
     <div class="cb">
       <div class="flex gap12 mb12">
-        <div style="width:50px;height:50px;border-radius:13px;background:var(--ac-d);border:1px solid var(--ac-b);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">&#128187;</div>
+        <div style="width:50px;height:50px;border-radius:13px;background:linear-gradient(135deg,#F7C860,#C7921C);display:flex;align-items:center;justify-content:center;color:#1a1408;flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="6" y="4" width="12" height="2.6" rx="1.3" fill="currentColor"/>
+<rect x="5" y="8.2" width="14" height="2.6" rx="1.3" fill="currentColor"/>
+<rect x="4" y="12.4" width="16" height="2.6" rx="1.3" fill="currentColor"/>
+<path d="M12 16.5L15 19.5L12 22.5L9 19.5Z" fill="currentColor"/>
+</svg></div>
         <div><div class="f14 fw7 mb8">Meridian Mate</div><div class="f12 c3">Works offline &bull; No data sent anywhere</div></div>
       </div>
       <div id="pwa-btn-area"></div>
@@ -2452,9 +2400,9 @@ input[type="date"] { color-scheme: dark; }
     <div class="mobit" onclick="showPage('pms')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>Jobs</div>
     <div class="mobit" onclick="showPage('safety')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Safety</div>
     <div class="mobit" onclick="showPage('drills')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>Drills</div>
-    <div class="mobit" onclick="showPage('cargo')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>Cargo</div>
+
     <div class="mobit" onclick="showPage('orders')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>Orders</div>
-    <div class="mobit" onclick="showPage('reports')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>Reports</div>
+
     <div class="mobit" onclick="showPage('settings')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>Settings</div>
   </div>
 </nav>
@@ -3398,129 +3346,7 @@ cndRender = function() {
 };
 </script>
 
-<script>
-// ── VESSEL CODE LOGIN SYSTEM ──────────────────────────────────
-var VESSEL_CODE = null;
-var USER_NAME   = null;
-var CODE_KEY    = 'mco_vessel_code';
-var NAME_KEY    = 'mco_user_name';
 
-function loginInit() {
-  // Hide shell until login confirmed
-  var sh = document.getElementById('shell');
-  if (sh) sh.style.display = 'none';
-
-  // Check if already logged in
-  var saved = localStorage.getItem(CODE_KEY);
-  var name  = localStorage.getItem(NAME_KEY);
-  if (saved && saved.length >= 3) {
-    VESSEL_CODE = saved;
-    USER_NAME   = name || 'Chief';
-    loginSuccess(false); // always boot to load IndexedDB
-  } else {
-    loginShowScreen();
-  }
-}
-
-function loginShowScreen() {
-  var ls = document.getElementById('login-screen');
-  var sh = document.getElementById('shell');
-  if (ls) ls.style.display = 'flex';
-  if (sh) sh.style.display = 'none';
-  setTimeout(function() {
-    var el = document.getElementById('login-code');
-    if (el) el.focus();
-  }, 100);
-}
-
-function loginSubmit() {
-  var codeEl = document.getElementById('login-code');
-  var nameEl = document.getElementById('login-name');
-  var errEl  = document.getElementById('login-err');
-  var code = codeEl ? codeEl.value.trim().toUpperCase() : '';
-  var name = nameEl ? nameEl.value.trim() : '';
-
-  if (!code || code.length < 3) {
-    if (errEl) { errEl.style.display='block'; errEl.textContent='Please enter a vessel code (min 3 characters)'; }
-    return;
-  }
-  if (!name) {
-    if (errEl) { errEl.style.display='block'; errEl.textContent='Please enter your name or rank'; }
-    return;
-  }
-
-  // Sanitise code - only alphanumeric and hyphens
-  code = code.replace(/[^A-Z0-9\-]/g,'');
-  if (code.length < 3) {
-    if (errEl) { errEl.style.display='block'; errEl.textContent='Code must have at least 3 characters (A-Z, 0-9, -)'; }
-    return;
-  }
-
-  VESSEL_CODE = code;
-  USER_NAME   = name;
-  localStorage.setItem(CODE_KEY, code);
-  localStorage.setItem(NAME_KEY, name);
-  loginSuccess(false);
-}
-
-function loginSuccess(silent) {
-  // Hide login, show app
-  var ls = document.getElementById('login-screen');
-  var sh = document.getElementById('shell');
-  if (ls) ls.style.display = 'none';
-  if (sh) sh.style.display = 'flex';
-
-  // Update topbar with vessel code
-  loginUpdateTopbar();
-
-  // ALWAYS boot - loads IndexedDB data every time
-  boot();
-}
-
-function loginUpdateTopbar() {
-  var vlbl = document.getElementById('vlbl');
-  if (vlbl) vlbl.textContent = VESSEL_CODE || 'No Code';
-}
-
-function loginShowChange() {
-  // Show a small modal to change vessel code
-  openModal('Switch Vessel Code',
-    '<div class="fg"><label>Current Code</label>'+
-    '<div style="background:var(--elev);border:1px solid var(--ln2);border-radius:var(--r);padding:10px 12px;font-weight:700;font-family:var(--mono);letter-spacing:.1em">'+(VESSEL_CODE||'-')+'</div></div>'+
-    '<div class="fg"><label>New Vessel Code</label>'+
-    '<input class="fi" id="new-code" placeholder="Enter new code" style="text-transform:uppercase;letter-spacing:.08em" oninput="this.value=this.value.toUpperCase()"></div>'+
-    '<div class="fg"><label>Your Name / Rank</label>'+
-    '<input class="fi" id="new-name" value="'+(USER_NAME||'')+'" placeholder="e.g. C/O Smith"></div>'+
-    '<div class="f11 c3" style="line-height:1.8;margin-top:8px">&#9888; Switching vessel code will load that vessel\'s data.<br>Your current data stays saved under code: <strong>'+(VESSEL_CODE||'-')+'</strong></div>',
-    '<button class="btn bp bsm" onclick="loginChangeCode()">Switch</button>'+
-    '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
-}
-
-function loginChangeCode() {
-  var newCode = (document.getElementById('new-code')||{}).value;
-  var newName = (document.getElementById('new-name')||{}).value;
-  if (newCode) newCode = newCode.trim().toUpperCase().replace(/[^A-Z0-9\-]/g,'');
-  if (!newCode || newCode.length < 3) { alert('Please enter a valid code'); return; }
-  if (!newName || !newName.trim()) { alert('Please enter your name'); return; }
-
-  VESSEL_CODE = newCode;
-  USER_NAME   = newName.trim();
-  localStorage.setItem(CODE_KEY, newCode);
-  localStorage.setItem(NAME_KEY, newName.trim());
-  closeModal();
-  loginUpdateTopbar();
-
-  // Reset S to defaults and reload from new vessel's Firebase doc
-  showToast('Switching to ' + newCode + '...');
-  setTimeout(function() {
-    boot();
-  }, 300);
-}
-
-// Expose for Firebase module to use
-window.getVesselCode = function() { return VESSEL_CODE; };
-window.getUserName   = function() { return USER_NAME; };
-</script>
 
 </body>
 </html>
@@ -3904,7 +3730,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '4.1.0';
+var APP_VERSION = '4.3.3';
 var BUILD_DATE  = '16 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
@@ -4030,8 +3856,6 @@ function cycleTheme() {
 // ── TODAY PAGE ────────────────────────────────────────────────
 function renderToday() {
   // Update settings code label
-  var scl = document.getElementById('settings-code-lbl');
-  if (scl && window.getVesselCode) scl.textContent = 'Vessel Code: ' + (window.getVesselCode()||'-');
   var h = new Date().getUTCHours();
   var greet = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   var tg = document.getElementById('today-h'); if (tg) tg.textContent = greet + ', ' + (window.getUserName ? (window.getUserName().split(' ')[0]||'Chief') : (S.vessel.coname ? S.vessel.coname.split(' ')[0] : 'Chief'));
@@ -4288,11 +4112,12 @@ function dcDel(id) {
 <script>
 // ── WORK PLAN ─────────────────────────────────────────────────
 var WP_STATUS = {
-  working:{label:'Working Day',icon:'⚙'},
-  port:{label:'In Port',icon:'⚓'},
-  anchor:{label:'At Anchor',icon:'⚓'},
-  rest:{label:'Rest Day',icon:'-'},
-  badwx:{label:'Bad Weather',icon:'~'},
+  sea:    {label:'At Sea',      icon:'🌊'},
+  port:   {label:'In Port',     icon:'🏗️'},
+  anchor: {label:'At Anchor',   icon:'⚓'},
+  rest:   {label:'Rest Day',    icon:'😴'},
+  weather:{label:'Bad Weather', icon:'⛈️'},
+  working:{label:'Working Day', icon:'📋'},
 };
 
 function renderWP() {
@@ -4373,7 +4198,7 @@ function renderWPDay() {
         '<div class="wp-num">'+(i+1)+'.</div>'+
         '<div style="flex:1">'+cf+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+w.text+'</span></div>'+
         (!isPast&&!w.done?'<button class="btn bxs bgh" onclick="wpShift(\''+k+'\','+w.id+',\''+nk+'\',\''+ndL+'\')" style="font-size:11px;opacity:.55" title="Move to '+ndL+'">→'+ndL+'</button>':'')+
-        (!isPast?'<button class="btn bxs bgh" onclick="wpEditTask(\\\'\'+k+\'\\\',\'+w.id+\')">Edit</button>':'')+
+        (!isPast?'<button class="btn bxs bgh" onclick="wpEditTask(&quot;'+k+'&quot;,'+w.id+')">✎</button>':'')+
         (!isPast?'<button class="btn bxs bgh cr" onclick="wpDel(\''+k+'\','+w.id+')" style="margin-left:3px">x</button>':'')+
       '</div>';
     }).join('');
@@ -4422,13 +4247,13 @@ function wpEditTask(k,id) {
   var labels = {urgent:'Urgent',high:'High',normal:'Normal',low:'Low'};
   var priBtns = ['urgent','high','normal','low'].map(function(p){
     var on = p===_wpePri;
-    return '<button type="button" class="btn bsm'+(on?' bp':'')+'" id="wpe-'+p+'" onclick="wpePriClick('+JSON.stringify(p)+')" style="'+(on?'':'border-color:'+clrs[p]+';color:'+clrs[p]+'')+'">' + labels[p] + '</button>';
+    return '<button type="button" class="btn bsm'+(on?' bp':'')+'" id="wpe-'+p+'" onclick="wpePriClick(&quot;'+p+'&quot;)" style="'+(on?'':'border-color:'+clrs[p]+';color:'+clrs[p]+'')+'">' + labels[p] + '</button>';
   }).join('');
   openModal('Edit Task',
     '<div class="fg"><label>Task</label><input class="fi" id="wpe-text" value="'+task.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+'"></div>'+
     '<div class="fg"><label>Priority</label><div class="flex gap6" style="flex-wrap:wrap">'+priBtns+'</div></div>',
-    '<button class="btn bp bsm" onclick="wpSaveEditTask('+JSON.stringify(k)+','+id+')">Save</button>'+
-    '<button class="btn bdn bxs" onclick="wpDel('+JSON.stringify(k)+','+id+');closeModal()">Delete</button>'+
+    '<button class="btn bp bsm" onclick="wpSaveEditTask(&quot;'+k+'&quot;,'+id+')">Save</button>'+
+    '<button class="btn bdn bxs" onclick="wpDel(&quot;'+k+'&quot;,'+id+');closeModal()">Delete</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
 function wpSaveEditTask(k,id) {
@@ -4775,7 +4600,7 @@ function bvTogglePhase(bid,pname){BV_PHASES[bid+pname]=BV_PHASES[bid+pname]===fa
 function bvEditPhaseTitleModal(bid,pi,oldName){
   openModal('Edit Phase Title',
     '<div class="fg"><label>Phase Name</label><input class="fi" id="ept-inp" value="'+oldName.replace(/"/g,'&quot;')+'"></div>',
-    '<button class="btn bp bsm" onclick="bvSavePhaseTitle('+JSON.stringify(bid)+','+pi+')">Save</button>'+
+    '<button class="btn bp bsm" onclick="bvSavePhaseTitle(&quot;'+bid+'&quot;,'+pi+')">Save</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
   setTimeout(function(){var el=document.getElementById('ept-inp');if(el){el.focus();el.select();}},80);
 }
@@ -4928,7 +4753,7 @@ function jobAdd(){
   openModal('Add Job',
     '<div class="fg"><label>Job Name</label><input class="fi" id="ja-n" placeholder="e.g. Repair deck light"></div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>Category</label><input class="fi" id="ja-cat" value="Deck Maintenance" list="jcats"><datalist id="jcats"><option>Deck</option><option>Bridge</option><option>Navigation</option><option>LSA</option><option>FFA</option><option>Electrical</option><option>Cargo</option><option>Mooring</option><option>Hull</option><option>Accommodation</option><option>GMDSS</option><option>Certificates</option><option>ISM / SMS</option><option>ISPS</option><option>MLC</option><option>Environmental</option><option>Medical</option><option>Stores</option><option>Admin</option><option>Other</option></datalist></div>'+
+      '<div class="fg"><label>Category</label><select class="fs" id="ja-cat"><option>Deck</option><option>Bridge</option><option>Navigation</option><option>LSA</option><option>FFA</option><option>Electrical</option><option>Cargo</option><option>Mooring</option><option>Hull</option><option>Engine</option><option>Other</option></select></div>'+
       '<div class="fg"><label>Priority</label><select class="fs" id="ja-pri"><option value="routine">Routine</option><option value="safety">Safety</option><option value="critical">Critical</option><option value="psc">PSC</option></select></div>'+
     '</div>'+
     '<div class="fg"><label>Port</label><input class="fi" id="ja-port" placeholder="e.g. Singapore"></div>'+
@@ -5274,7 +5099,7 @@ function orderAdd(col){
       '<div class="fg"><label>Unit</label><input class="fi" id="oa-unit" placeholder="pcs"></div>'+
     '</div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>Category</label><input class="fi" id="oa-cat" value="Deck Stores" list="ocats"><datalist id="ocats"><option>Deck</option><option>Bridge</option><option>Navigation</option><option>LSA</option><option>FFA</option><option>Electrical</option><option>Cargo</option><option>Mooring</option><option>Hull</option><option>Accommodation</option><option>GMDSS</option><option>Certificates</option><option>ISM / SMS</option><option>ISPS</option><option>MLC</option><option>Environmental</option><option>Medical</option><option>Stores</option><option>Admin</option><option>Other</option></datalist></div>'+
+      '<div class="fg"><label>Category</label><select class="fs" id="oa-cat"><option>Deck Stores</option><option>Bridge</option><option>Navigation</option><option>LSA</option><option>FFA</option><option>Electrical</option><option>Cargo</option><option>Mooring</option><option>Engine</option><option>Catering</option><option>Other</option></select></div>'+
       '<div class="fg"><label>Priority</label><select class="fs" id="oa-pri"><option value="normal">Normal</option><option value="critical">Critical</option></select></div>'+
     '</div>',
     '<button class="btn bp bsm" onclick="orderSaveNew(\''+col+'\')">Add</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -5331,7 +5156,7 @@ function renderPortStrip(){
     '<span class="f12 c3">+</span><span class="f10 c3">Port</span>'+
   '</div>';
 }
-function selectPort(id){ACTIVE_PORT=id;ACTIVE_PORT_SEC='timeline';renderPortStrip();renderPortDetail(id);}
+function selectPort(id){ACTIVE_PORT=id;ACTIVE_PORT_SEC='overview';renderPortStrip();renderPortDetail(id);}
 function portDel(id){
   if(!confirm('Delete this port and all its data?'))return;
   S.ports=S.ports.filter(function(p){return p.id!==id;});
@@ -5599,33 +5424,7 @@ function portSaveNotes(pid){
 }
 
 // ── PORT OVERVIEW ─────────────────────────────────────────────
-function renderPOC(){
-  var el=document.getElementById('poc-list'); if(!el)return;
-  el.innerHTML=S.ports.map(function(p){
-    var isOpen=true;
-    var pscChips=p.inspections&&p.inspections.filter(function(i){return i.lvl==='r';}).map(function(i){return '<span class="poc-chip cr">'+i.name+'</span>';}).join('');
-    var jobChips=(p.jobs||[]).map(function(j){return '<span class="poc-chip '+(j.pri==='critical'?'cr':j.pri==='safety'?'ca':'')+'">'+j.name+'</span>';}).join('');
-    var alertChips=(p.alerts||[]).filter(function(a){return !a.done;}).map(function(a){return '<span class="poc-chip ca">'+a.when+': '+a.text+'</span>';}).join('');
-    return '<div class="poc">'+
-      '<div class="poch" onclick="this.nextSibling.classList.toggle(\'open\');this.querySelector(\'.bsc\').classList.toggle(\'open\')">'+
-        '<div>'+
-          '<div class="pocn">'+p.name+' <span class="bdg dgr f10">'+p.cc+'</span></div>'+
-          '<div class="poce">ETA: '+p.eta+' / ETD: '+p.etd+' / '+p.berth+'</div>'+
-        '</div>'+
-        '<div class="bsc open">&#8250;</div>'+
-      '</div>'+
-      '<div class="pocb open">'+
-        (jobChips?'<div class="poc-s"><div class="poc-l">Jobs</div><div class="poc-c">'+jobChips+'</div></div>':'')+
-        (alertChips?'<div class="poc-s"><div class="poc-l">Actions</div><div class="poc-c">'+alertChips+'</div></div>':'')+
-        (pscChips?'<div class="poc-s"><div class="poc-l">PSC Risk</div><div class="poc-c">'+pscChips+'</div></div>':'')+
-        (p.notes?'<div class="poc-s"><div class="poc-l">Notes</div><div class="poc-c"><span class="poc-chip">'+p.notes+'</span></div></div>':'')+
-        (!jobChips&&!alertChips&&!pscChips&&!p.notes?'<div class="f12 c3" style="padding:11px 17px">No items for this port.</div>':'')+
-      '</div>'+
-    '</div>';
-  }).join('');
-}
 
-// ── REPORTS ───────────────────────────────────────────────────
 function repShow(type){
   _repGen=type;
   var el=document.getElementById('rep-area'); if(!el)return;
@@ -5978,8 +5777,8 @@ function updateVessel(){
 // ── START ─────────────────────────────────────────────────────
 // Boot handled by login system
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", function() { loginInit(); });
+  document.addEventListener("DOMContentLoaded", function() { boot(); });
 } else {
-  loginInit();
+  boot();
 }
 </script>
