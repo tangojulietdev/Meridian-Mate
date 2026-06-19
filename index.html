@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian Mate">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian Mate v4.3.3</title>
+<title>Meridian Mate v4.5.4</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png?v=2">
@@ -1941,6 +1941,248 @@ input[type="date"] { color-scheme: dark; }
   }
 }
 
+
+/* ── MONTH CALENDAR VIEW ─────────────────────────────────── */
+.mcal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  align-items: start;
+}
+.mcal-dow {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding-bottom: 8px;
+}
+.mcal-cell {
+  height: 124px;
+  border-radius: var(--r);
+  border: 1px solid var(--ln2);
+  background: var(--elev);
+  padding: 8px;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.mcal-cell.open {
+  z-index: 5;
+  border-color: var(--ac);
+  box-shadow: 0 0 0 1px var(--ac), 0 8px 28px rgba(0,0,0,0.45);
+  overflow-y: auto;
+}
+.mcal-cell-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  margin-bottom: 6px;
+}
+.mcal-cell:hover {
+  border-color: var(--ac-b);
+  background: var(--hov);
+  transform: translateY(-1px);
+}
+.mcal-cell.empty {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+.mcal-cell.empty:hover { transform: none; border-color: transparent; }
+.mcal-cell.today {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 1px var(--ac), 0 0 16px var(--ac-d);
+}
+.mcal-cell.future { opacity: 0.85; }
+.mcal-day-num {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink2);
+  line-height: 1;
+}
+.mcal-cell.today .mcal-day-num { color: var(--ac); font-weight: 800; }
+.mcal-status-ic { font-size: 13px; line-height: 1; }
+.mcal-progress {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+  flex: 0 0 auto;
+}
+.mcal-pbar {
+  flex: 1;
+  height: 3px;
+  background: var(--ln2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.mcal-pfill { height: 100%; border-radius: 2px; transition: width .3s; }
+.mcal-count {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--ink3);
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+.mcal-cell.has-urgent::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 10px 10px 0 0;
+  border-color: var(--red) transparent transparent transparent;
+}
+@media(max-width:600px) {
+  .mcal-cell { height: 104px; padding: 6px; }
+  .mcal-day-num { font-size: 12px; }
+  .mcal-dow { font-size: 9px; }
+}
+
+
+.mcal-expand {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ln2);
+  cursor: default;
+}
+.mcal-tasklist {
+  max-height: 140px;
+  overflow-y: auto;
+  margin-bottom: 6px;
+}
+.mcal-task {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  font-size: 11px;
+}
+.mcal-task.done .mcal-task-txt {
+  text-decoration: line-through;
+  color: var(--ink3);
+}
+.mcal-task-cb {
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--ln3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .12s;
+}
+.mcal-task-cb.on {
+  background: var(--ac);
+  border-color: var(--ac);
+}
+.mcal-task-txt {
+  flex: 1;
+  word-break: break-word;
+  line-height: 1.3;
+}
+.mcal-task-del {
+  font-size: 13px;
+  color: var(--ink3);
+  cursor: pointer;
+  padding: 0 3px;
+  flex-shrink: 0;
+}
+.mcal-task-del:hover { color: var(--red); }
+.mcal-addrow {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.mcal-add-inp {
+  flex: 1;
+  background: var(--surf);
+  border: 1px solid var(--ln2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  color: var(--ink1);
+  font-family: var(--font);
+  min-width: 0;
+}
+.mcal-add-inp:focus { outline: none; border-color: var(--ac); }
+.mcal-add-btn {
+  width: 24px; height: 24px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 1px solid var(--ac-b);
+  background: var(--ac-d);
+  color: var(--ac);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mcal-add-btn:hover { background: var(--ac); color: var(--base); }
+.mcal-openday {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ac);
+  cursor: pointer;
+  text-align: center;
+  padding: 4px 0;
+}
+.mcal-openday:hover { text-decoration: underline; }
+
+
+.mcal-minilist {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+.mcal-mini-task {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  line-height: 1.3;
+  color: var(--ink2);
+}
+.mcal-mini-task.done {
+  color: var(--ink3);
+}
+.mcal-mini-task.done .mcal-mini-txt {
+  text-decoration: line-through;
+}
+.mcal-mini-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--ink3);
+  flex-shrink: 0;
+}
+.mcal-mini-task.done .mcal-mini-dot { background: var(--grn); }
+.mcal-mini-txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.mcal-mini-more {
+  font-size: 9.5px;
+  color: var(--ink3);
+  font-weight: 600;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+@media(max-width:600px) {
+  .mcal-mini-task { font-size: 8.5px; }
+}
+@media(max-width:600px) {
+  .mcal-mini-task { font-size: 8.5px; }
+}
+
 </style>
 
 </head><body>
@@ -2001,7 +2243,12 @@ input[type="date"] { color-scheme: dark; }
 <div class="page" id="pg-workplan">
   <div class="ph">
     <div><div class="ph-t">Day Work Plan</div><div class="ph-s">Plan ahead &bull; track today &bull; review history</div></div>
-    <div class="flex gap8"><button class="btn bsm" onclick="wpCopy()">Copy Plan</button><button class="btn bp bsm" onclick="wpAddModal()">+ Add Task</button></div>
+    <div class="flex gap8">
+      <button class="btn bsm" id="wp-view-day" onclick="wpSetView('day')">Day</button>
+      <button class="btn bsm bp" id="wp-view-month" onclick="wpSetView('month')">Month</button>
+      <button class="btn bsm" onclick="wpCopy()">Copy Plan</button>
+      <button class="btn bp bsm" onclick="wpAddModal()">+ Add Task</button>
+    </div>
   </div>
   <div class="card mb12"><div style="padding:10px 12px;overflow-x:auto"><div id="wk-strip" style="display:flex;gap:6px;min-width:max-content"></div></div></div>
   <div class="flex gap8 mb12" style="flex-wrap:wrap">
@@ -2041,6 +2288,20 @@ input[type="date"] { color-scheme: dark; }
     <div class="cb">
       <input class="fi mb8 w100" id="wp-stopic" placeholder="Topic title..." oninput="wpSaveSafety()">
       <textarea class="ft w100" id="wp-snotes" placeholder="Key points, attendance..." style="min-height:80px" oninput="wpSaveSafety()"></textarea>
+    </div>
+  </div>
+
+  <!-- MONTH VIEW -->
+  <div id="wp-month-view" style="display:none">
+    <div class="card mb12">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px">
+        <button class="btn bsm" onclick="wpMonthNav(-1)">&larr; Prev</button>
+        <div id="wp-month-lbl" class="f15 fw7" style="color:var(--ac)"></div>
+        <button class="btn bsm" onclick="wpMonthNav(1)">Next &rarr;</button>
+      </div>
+    </div>
+    <div class="card">
+      <div id="wp-month-grid" style="padding:12px"></div>
     </div>
   </div>
 </div>
@@ -2187,7 +2448,7 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v4.3.3</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v4.5.4</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -3730,7 +3991,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '4.3.3';
+var APP_VERSION = '4.5.4';
 var BUILD_DATE  = '16 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
@@ -3771,7 +4032,7 @@ function boot2() {
   window.addEventListener('offline', function() { setSyncDot('offline'); });
   if (!navigator.onLine) setSyncDot('offline');
   renderToday(); renderWP(); renderTiles(); todoInit();
-  renderPortStrip(); if (ACTIVE_PORT) renderPortDetail(ACTIVE_PORT); renderPOC();
+  renderPortStrip(); if (ACTIVE_PORT) renderPortDetail(ACTIVE_PORT);
   renderJobs(); renderRAG(); renderDrills();
   renderDraft(); renderHolds(); renderOrders();
   renderDCList(); renderHiddenOps(); repShow('noon');
@@ -3817,7 +4078,7 @@ function showPage(name) {
     var oc = n.getAttribute('onclick')||'';
     if (oc.indexOf("'"+name+"'") >= 0) n.classList.add('on');
   });
-  if (name==='portoverview') renderPOC();
+
   if (name==='settings') { updateVessel(); renderDCList(); renderHiddenOps(); }
   document.getElementById('main').scrollTop = 0;
 }
@@ -4127,9 +4388,10 @@ function renderWP() {
 function renderWPStrip() {
   var el = document.getElementById('wk-strip'); if (!el) return;
   var today = todayKey();
+  var centerDate = dateFromKey(WP_DATE) || new Date();
   var days = [];
   for (var i=-7; i<=14; i++) {
-    var d = new Date(); d.setDate(d.getDate()+i); days.push(keyFromDate(d));
+    var d = new Date(centerDate); d.setDate(d.getDate()+i); days.push(keyFromDate(d));
   }
   el.innerHTML = days.map(function(k) {
     var d = dateFromKey(k);
@@ -4153,6 +4415,176 @@ function renderWPStrip() {
   }).join('');
   setTimeout(function(){var a=el.querySelector('.wday.on');if(a)a.scrollIntoView({inline:'center',behavior:'smooth'});},50);
 }
+// ── MONTH VIEW ────────────────────────────────────────────────
+var WP_VIEW = 'day';
+var WP_MONTH_DATE = new Date();
+
+function wpSetView(view) {
+  WP_VIEW = view;
+  var dayEls  = ['wk-strip','wp-nav-lbl'];
+  var dayBtn  = document.getElementById('wp-view-day');
+  var monBtn  = document.getElementById('wp-view-month');
+  if (dayBtn) dayBtn.classList.toggle('bp', view==='day');
+  if (monBtn) monBtn.classList.toggle('bp', view==='month');
+
+  var monthView = document.getElementById('wp-month-view');
+  // Day view elements - find all the day-mode cards by walking siblings
+  var dayCards = document.querySelectorAll('#pg-workplan > .card, #pg-workplan > .flex, #pg-workplan > #wp-carry');
+
+  if (view === 'month') {
+    if (monthView) monthView.style.display = '';
+    dayCards.forEach(function(el){ if(el.id!=='wp-month-view') el.style.display='none'; });
+    WP_MONTH_DATE = dateFromKey(WP_DATE) || new Date();
+    renderWPMonth();
+  } else {
+    if (monthView) monthView.style.display = 'none';
+    dayCards.forEach(function(el){ el.style.display=''; });
+    renderWPStrip();
+    renderWPDay();
+  }
+}
+
+function wpMonthNav(dir) {
+  WP_MONTH_DATE = new Date(WP_MONTH_DATE.getFullYear(), WP_MONTH_DATE.getMonth()+dir, 1);
+  renderWPMonth();
+}
+
+function wpJumpToDay(key) {
+  WP_DATE = key;
+  wpSetView('day');
+}
+
+function renderWPMonth() {
+  var grid = document.getElementById('wp-month-grid');
+  var lbl  = document.getElementById('wp-month-lbl');
+  if (!grid) return;
+
+  var year = WP_MONTH_DATE.getFullYear();
+  var month = WP_MONTH_DATE.getMonth();
+  if (lbl) lbl.textContent = WP_MONTH_DATE.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+
+  var firstDay = new Date(year, month, 1);
+  var lastDay  = new Date(year, month+1, 0);
+  var daysInMonth = lastDay.getDate();
+  var startWeekday = firstDay.getDay();
+  startWeekday = (startWeekday === 0) ? 6 : startWeekday - 1;
+
+  var today = todayKey();
+  var dows = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  var html = '<div class="mcal-grid">';
+  dows.forEach(function(d){ html += '<div class="mcal-dow">'+d+'</div>'; });
+
+  for (var i=0; i<startWeekday; i++) {
+    html += '<div class="mcal-cell empty"></div>';
+  }
+
+  for (var day=1; day<=daysInMonth; day++) {
+    var d = new Date(year, month, day);
+    var key = keyFromDate(d);
+    var wplan = S.wplans[key];
+    var tasks = wplan ? wplan.tasks : [];
+    var done = tasks.filter(function(t){return t.done;}).length;
+    var total = tasks.length;
+    var hasUrgent = tasks.some(function(t){return t.urgent && !t.done;});
+    var isToday = key === today;
+    var isFuture = key > today;
+    var isOpen = (MCAL_OPEN === key);
+    var pct = total > 0 ? Math.round((done/total)*100) : 0;
+
+    var statusIcons = {sea:'\uD83C\uDF0A',port:'\uD83C\uDFD7',anchor:'\u2693',rest:'\uD83D\uDE34',weather:'\u26C8',working:'\uD83D\uDCCB'};
+    var statusIc = wplan && wplan.status ? (statusIcons[wplan.status]||'') : '';
+    var barColor = pct===100 ? 'var(--grn)' : pct>0 ? 'var(--amb)' : 'var(--ln3)';
+
+    html += '<div class="mcal-cell'+(isToday?' today':'')+(isFuture?' future':'')+(hasUrgent?' has-urgent':'')+(isOpen?' open':'')+'" data-key="'+key+'" onclick="mcalToggle(\''+key+'\')" ondblclick="event.stopPropagation();wpJumpToDay(\''+key+'\')">'+
+      '<div class="mcal-cell-top">'+
+        '<div class="mcal-day-num">'+day+'</div>'+
+        (statusIc?'<div class="mcal-status-ic">'+statusIc+'</div>':'')+
+      '</div>';
+
+    if (!isOpen) {
+      // Collapsed default view - show mini task overview list
+      if (total > 0) {
+        html += '<div class="mcal-progress">'+
+            '<div class="mcal-pbar"><div class="mcal-pfill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'+
+          '</div>'+
+          '<div class="mcal-count">'+done+'/'+total+'</div>'+
+          '<div class="mcal-minilist">'+
+            tasks.slice(0,3).map(function(t){
+              return '<div class="mcal-mini-task'+(t.done?' done':'')+'">'+
+                '<span class="mcal-mini-dot"></span>'+
+                '<span class="mcal-mini-txt">'+t.text+'</span>'+
+              '</div>';
+            }).join('')+
+            (tasks.length>3 ? '<div class="mcal-mini-more">+'+(tasks.length-3)+' more</div>' : '')+
+          '</div>';
+      } else {
+        html += '<div class="mcal-count" style="opacity:.4">-</div>';
+      }
+    } else {
+      // Expanded view - full interactive task list + add input
+      html += '<div class="mcal-expand">'+
+        '<div class="mcal-tasklist">'+
+        (tasks.length ? tasks.map(function(t){
+          return '<div class="mcal-task'+(t.done?' done':'')+'">'+
+            '<div class="mcal-task-cb'+(t.done?' on':'')+'" onclick="event.stopPropagation();mcalToggleTask(\''+key+'\','+t.id+')"></div>'+
+            '<span class="mcal-task-txt">'+t.text+'</span>'+
+            '<span class="mcal-task-del" onclick="event.stopPropagation();mcalDelTask(\''+key+'\','+t.id+')">&times;</span>'+
+          '</div>';
+        }).join('') : '<div class="f10 c3" style="padding:4px 0">No tasks yet</div>')+
+        '</div>'+
+        '<div class="mcal-addrow">'+
+          '<input class="mcal-add-inp" id="mcal-inp-'+key+'" placeholder="Add task..." onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key===\'Enter\')mcalAddTask(\''+key+'\')">'+
+          '<button class="mcal-add-btn" onclick="event.stopPropagation();mcalAddTask(\''+key+'\')">+</button>'+
+        '</div>'+
+        '<div class="mcal-openday" onclick="event.stopPropagation();wpJumpToDay(\''+key+'\')">Open full day view &rarr;</div>'+
+      '</div>';
+    }
+
+    html += '</div>';
+  }
+
+  html += '</div>';
+  grid.innerHTML = html;
+
+  if (MCAL_OPEN) {
+    var inp = document.getElementById('mcal-inp-'+MCAL_OPEN);
+    if (inp) setTimeout(function(){ inp.focus(); }, 50);
+  }
+}
+
+var MCAL_OPEN = null;
+
+function mcalToggle(key) {
+  MCAL_OPEN = (MCAL_OPEN === key) ? null : key;
+  renderWPMonth();
+}
+
+function mcalAddTask(key) {
+  var inp = document.getElementById('mcal-inp-'+key);
+  var text = inp ? inp.value.trim() : '';
+  if (!text) return;
+  getDay(key).tasks.push({id:Date.now(),text:text,done:false,urgent:false,carriedFrom:null});
+  autoSave();
+  renderWPMonth();
+}
+
+function mcalToggleTask(key,id) {
+  var day = getDay(key);
+  var t = day.tasks.find(function(x){return x.id===id;});
+  if (t) t.done = !t.done;
+  autoSave();
+  renderWPMonth();
+}
+
+function mcalDelTask(key,id) {
+  var day = getDay(key);
+  day.tasks = day.tasks.filter(function(x){return x.id!==id;});
+  autoSave();
+  renderWPMonth();
+}
+
+
 function renderWPDay() {
   var k = WP_DATE, today = todayKey();
   var isToday = k===today, isPast = k<today, isFuture = k>today;
@@ -4164,7 +4596,7 @@ function renderWPDay() {
   var dlbl = document.getElementById('wp-day-lbl');
   if (dlbl) dlbl.textContent = isToday ? 'Work Plan - Today' : isFuture ? 'Pre-Plan - '+d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}) : 'History - '+d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
   var clbl = document.getElementById('wp-team-lbl'); if (clbl) clbl.textContent = day.team||'Deck Team';
-  var sel = document.getElementById('wp-status'); if (sel) { sel.value=day.status||'working'; sel.disabled=isPast; }
+  var sel = document.getElementById('wp-status'); if (sel) { sel.value=day.status||'working'; sel.disabled=false; }
   // Carry banner
   var carry = document.getElementById('wp-carry');
   if (carry) {
@@ -4182,7 +4614,7 @@ function renderWPDay() {
   // Tasks
   var el = document.getElementById('wp-items'); if (!el) return;
   if (!day.tasks.length) {
-    el.innerHTML='<div class="f12 c3" style="padding:13px 15px">'+(isPast?'No tasks recorded.':'No tasks yet - add below.')+'</div>';
+    el.innerHTML='<div class="f12 c3" style="padding:13px 15px">No tasks yet - add below.</div>';
   } else {
     el.innerHTML = day.tasks.map(function(w,i) {
       var cf = w.carriedFrom ? '<span class="bdg da" style="font-size:9px;margin-right:5px">&#8617; Carried</span>' : '';
@@ -4194,19 +4626,19 @@ function renderWPDay() {
       var nk=keyFromDate(nd);
       var ndL=isToday?'Tomorrow':nd.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
       return '<div class="wp-item">'+
-        '<div class="wp-cb '+(w.done?'on':'')+'" style="'+(isPast?'opacity:.4;pointer-events:none':'')+'" onclick="wpToggle(\''+k+'\','+w.id+')"></div>'+
+        '<div class="wp-cb '+(w.done?'on':'')+'" onclick="wpToggle(\''+k+'\','+w.id+')"></div>'+
         '<div class="wp-num">'+(i+1)+'.</div>'+
         '<div style="flex:1">'+cf+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+w.text+'</span></div>'+
-        (!isPast&&!w.done?'<button class="btn bxs bgh" onclick="wpShift(\''+k+'\','+w.id+',\''+nk+'\',\''+ndL+'\')" style="font-size:11px;opacity:.55" title="Move to '+ndL+'">→'+ndL+'</button>':'')+
-        (!isPast?'<button class="btn bxs bgh" onclick="wpEditTask(&quot;'+k+'&quot;,'+w.id+')">✎</button>':'')+
-        (!isPast?'<button class="btn bxs bgh cr" onclick="wpDel(\''+k+'\','+w.id+')" style="margin-left:3px">x</button>':'')+
+        (!w.done?'<button class="btn bxs bgh" onclick="wpShift(\''+k+'\','+w.id+',\''+nk+'\',\''+ndL+'\')" style="font-size:11px;opacity:.55" title="Move to '+ndL+'">→'+ndL+'</button>':'')+
+        '<button class="btn bxs bgh" onclick="wpEditTask(&quot;'+k+'&quot;,'+w.id+')">✎</button>'+
+        '<button class="btn bxs bgh cr" onclick="wpDel(\''+k+'\','+w.id+')" style="margin-left:3px">x</button>'+
       '</div>';
     }).join('');
   }
-  var addRow = document.getElementById('wp-add-row'); if (addRow) addRow.style.display=isPast?'none':'';
+  var addRow = document.getElementById('wp-add-row'); if (addRow) addRow.style.display='';
   var st=document.getElementById('wp-stopic'),sn=document.getElementById('wp-snotes');
-  if(st){st.value=day.safetyTopic||'';st.readOnly=isPast;}
-  if(sn){sn.value=day.safetyNotes||'';sn.readOnly=isPast;}
+  if(st){st.value=day.safetyTopic||'';st.readOnly=false;}
+  if(sn){sn.value=day.safetyNotes||'';sn.readOnly=false;}
 }
 function wpNav(dir) {
   if (dir===0) { WP_DATE=todayKey(); }
