@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian Mate">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian Mate v4.5.4</title>
+<title>Meridian Mate v4.6.1</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png?v=2">
@@ -2183,6 +2183,35 @@ input[type="date"] { color-scheme: dark; }
   .mcal-mini-task { font-size: 8.5px; }
 }
 
+
+.wp-reorder {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.wp-ro-btn {
+  width: 16px;
+  height: 13px;
+  border: none;
+  background: transparent;
+  color: var(--ink3);
+  font-size: 7px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .12s;
+  padding: 0;
+}
+.wp-ro-btn:hover:not(:disabled) { background: var(--elev); color: var(--ac); }
+.wp-ro-btn:disabled { opacity: .2; cursor: default; }
+.wp-item-linked {
+  background: var(--ac-d);
+  border-left: 2px solid var(--ac);
+}
+
 </style>
 
 </head><body>
@@ -2448,7 +2477,7 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v4.5.4</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v4.6.1</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -3991,7 +4020,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '4.5.4';
+var APP_VERSION = '4.6.1';
 var BUILD_DATE  = '16 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
@@ -4585,6 +4614,18 @@ function mcalDelTask(key,id) {
 }
 
 
+function wpReorder(k,id,dir) {
+  var day = getDay(k);
+  var idx = day.tasks.findIndex(function(x){return x.id===id;});
+  if (idx<0) return;
+  var newIdx = idx+dir;
+  if (newIdx<0 || newIdx>=day.tasks.length) return;
+  var tmp = day.tasks[idx];
+  day.tasks[idx] = day.tasks[newIdx];
+  day.tasks[newIdx] = tmp;
+  autoSave(); renderWPDay();
+}
+
 function renderWPDay() {
   var k = WP_DATE, today = todayKey();
   var isToday = k===today, isPast = k<today, isFuture = k>today;
@@ -4618,6 +4659,7 @@ function renderWPDay() {
   } else {
     el.innerHTML = day.tasks.map(function(w,i) {
       var cf = w.carriedFrom ? '<span class="bdg da" style="font-size:9px;margin-right:5px">&#8617; Carried</span>' : '';
+      var portTag = w.fromPortAlert ? '<span class="bdg dt" style="font-size:9px;margin-right:5px" title="Auto-created from port timeline">&#8987; Port Alert</span>' : '';
       var priDot = w.urgent ? '<span class="bdg dr" style="font-size:9px;margin-right:5px">URGENT</span>' :
         w.priority==='high'?'<span class="bdg da" style="font-size:9px;margin-right:5px">HIGH</span>':
         w.priority==='low'?'<span class="dgr bdg" style="font-size:9px;margin-right:5px">LOW</span>':'';
@@ -4625,10 +4667,15 @@ function renderWPDay() {
       var nd=new Date(dateFromKey(k).getTime()+86400000);
       var nk=keyFromDate(nd);
       var ndL=isToday?'Tomorrow':nd.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-      return '<div class="wp-item">'+
+      var isFirst = i===0, isLast = i===day.tasks.length-1;
+      return '<div class="wp-item'+(w.fromPortAlert?' wp-item-linked':'')+'">'+
+        '<div class="wp-reorder">'+
+          '<button class="wp-ro-btn" onclick="wpReorder(\''+k+'\','+w.id+',-1)" '+(isFirst?'disabled':'')+' title="Move up">&#9650;</button>'+
+          '<button class="wp-ro-btn" onclick="wpReorder(\''+k+'\','+w.id+',1)" '+(isLast?'disabled':'')+' title="Move down">&#9660;</button>'+
+        '</div>'+
         '<div class="wp-cb '+(w.done?'on':'')+'" onclick="wpToggle(\''+k+'\','+w.id+')"></div>'+
         '<div class="wp-num">'+(i+1)+'.</div>'+
-        '<div style="flex:1">'+cf+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+w.text+'</span></div>'+
+        '<div style="flex:1">'+cf+portTag+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+w.text+'</span></div>'+
         (!w.done?'<button class="btn bxs bgh" onclick="wpShift(\''+k+'\','+w.id+',\''+nk+'\',\''+ndL+'\')" style="font-size:11px;opacity:.55" title="Move to '+ndL+'">→'+ndL+'</button>':'')+
         '<button class="btn bxs bgh" onclick="wpEditTask(&quot;'+k+'&quot;,'+w.id+')">✎</button>'+
         '<button class="btn bxs bgh cr" onclick="wpDel(\''+k+'\','+w.id+')" style="margin-left:3px">x</button>'+
@@ -5614,6 +5661,7 @@ function portEdit(id){
 }
 function portSaveEdit(id){
   var p=S.ports.find(function(x){return x.id===id;}); if(!p)return;
+  var oldEta = p.eta;
   p.name=(document.getElementById('pe-n')||{}).value.trim()||p.name;
   p.cc=(document.getElementById('pe-cc')||{}).value||p.cc;
   p.draft=(document.getElementById('pe-dr')||{}).value||p.draft;
@@ -5623,6 +5671,7 @@ function portSaveEdit(id){
   p.etd=_ed?dtToDisplay(_ed):p.etd;
   p.berth=(document.getElementById('pe-b')||{}).value||p.berth;
   p.agent=(document.getElementById('pe-a')||{}).value||p.agent;
+  if(p.eta !== oldEta) recalcPortAlerts(id);
   autoSave();closeModal();renderPortStrip();renderPortDetail(id);
 }
 function portAdd(){
@@ -5658,11 +5707,14 @@ function renderPortDetail(id){
   var content='';
   if(sec==='timeline'){
     content=p.alerts.map(function(a,i){
+      var relBadge = (a.relDays!==undefined && a.relDays!==null) ?
+        '<span class="bdg dt" style="font-size:9px;margin-left:6px">'+(a.linkedDateKey?dateFromKey(a.linkedDateKey).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'unscheduled')+'</span>' : '';
       return '<div class="tl-row">'+
         '<div class="tl-w">'+a.when+'</div>'+
         '<div class="tl-d" style="background:'+(a.done?'var(--grn)':'var(--red)')+'"></div>'+
-        '<div class="tl-t" style="'+(a.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+a.text+'</div>'+
+        '<div class="tl-t" style="'+(a.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+a.text+relBadge+'</div>'+
         '<button class="btn bxs bgh" onclick="markAlert(\''+id+'\','+i+')">'+(a.done?'Undo':'Done')+'</button>'+
+        '<button class="btn bxs bgh" onclick="alertEdit(\''+id+'\','+i+')">&#9998;</button>'+
         '<button class="btn bxs bgh cr" onclick="delAlert(\''+id+'\','+i+')">x</button>'+
       '</div>';
     }).join('')+
@@ -5772,25 +5824,217 @@ function renderPortDetail(id){
     '</div>';
 }
 function showPS(sec){ACTIVE_PORT_SEC=sec;renderPortDetail(ACTIVE_PORT);}
-function markAlert(pid,i){var p=S.ports.find(function(x){return x.id===pid;});if(p&&p.alerts[i])p.alerts[i].done=!p.alerts[i].done;autoSave();renderPortDetail(pid);}
-function delAlert(pid,i){var p=S.ports.find(function(x){return x.id===pid;});if(p)p.alerts.splice(i,1);autoSave();renderPortDetail(pid);}
+// ── ETA PARSING ────────────────────────────────────────────────
+// Parses display strings like "21 Jan 08:00" or "21 Jan 2026 08:00" into a Date
+function etaParse(str){
+  if(!str || str==='-') return null;
+  var months={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  var m = str.match(/(\d{1,2})\s+(\w{3})(?:\s+(\d{4}))?(?:\s+(\d{1,2}):(\d{2}))?/);
+  if(!m) return null;
+  var day=parseInt(m[1]), mon=months[m[2]];
+  if(mon===undefined) return null;
+  var now=new Date();
+  var year=m[3]?parseInt(m[3]):now.getFullYear();
+  var hh=m[4]?parseInt(m[4]):0, mm=m[5]?parseInt(m[5]):0;
+  var d=new Date(year,mon,day,hh,mm);
+  // If no year given and the resulting date is far in the past (>60 days), assume next year
+  if(!m[3] && (now-d) > 60*86400000) d.setFullYear(year+1);
+  return d;
+}
+
+// ── ALERT TOGGLE / DELETE ────────────────────────────────────
+function markAlert(pid,i){
+  var p=S.ports.find(function(x){return x.id===pid;});if(!p||!p.alerts[i])return;
+  var a=p.alerts[i];
+  a.done=!a.done;
+  // Sync linked task done-state too
+  if(a.linkedTaskId && a.linkedDateKey){
+    var day=S.wplans[a.linkedDateKey];
+    if(day){
+      var t=day.tasks.find(function(x){return x.id===a.linkedTaskId;});
+      if(t) t.done=a.done;
+    }
+  }
+  autoSave();renderPortDetail(pid);
+}
+function delAlert(pid,i){
+  var p=S.ports.find(function(x){return x.id===pid;});if(!p)return;
+  var a=p.alerts[i];
+  // Remove linked task too
+  if(a && a.linkedTaskId && a.linkedDateKey){
+    var day=S.wplans[a.linkedDateKey];
+    if(day) day.tasks=day.tasks.filter(function(x){return x.id!==a.linkedTaskId;});
+  }
+  p.alerts.splice(i,1);autoSave();renderPortDetail(pid);
+}
+
+// ── RECALCULATE ALL RELATIVE ALERTS FOR A PORT ────────────────
+// Called whenever a port's ETA changes. Moves linked tasks to the new
+// calculated date, resets done-state, and removes them from old date.
+function recalcPortAlerts(pid){
+  var p=S.ports.find(function(x){return x.id===pid;}); if(!p) return;
+  var etaDate=etaParse(p.eta);
+  (p.alerts||[]).forEach(function(a){
+    if(a.relDays===undefined || a.relDays===null) return; // not a relative alert
+    // Remove old linked task from its old date (if any)
+    if(a.linkedTaskId && a.linkedDateKey && S.wplans[a.linkedDateKey]){
+      S.wplans[a.linkedDateKey].tasks = S.wplans[a.linkedDateKey].tasks.filter(function(x){return x.id!==a.linkedTaskId;});
+    }
+    if(!etaDate){
+      // No ETA - clear link, keep alert as unscheduled
+      a.linkedTaskId=null; a.linkedDateKey=null; a.when='No ETA set';
+      return;
+    }
+    var newDate=new Date(etaDate.getTime() - a.relDays*86400000);
+    var newKey=keyFromDate(newDate);
+    var newId=Date.now()+Math.floor(Math.random()*1000);
+    getDay(newKey).tasks.push({
+      id:newId, text:a.text, done:false, urgent:false, carriedFrom:null,
+      fromPortAlert:true, portId:pid
+    });
+    a.linkedTaskId=newId;
+    a.linkedDateKey=newKey;
+    a.done=false; // reset - timing changed
+    a.when=a.relDays+' day'+(a.relDays===1?'':'s')+' before ETA';
+  });
+}
 function alertAdd(pid){
+  var p=S.ports.find(function(x){return x.id===pid;});
+  var hasEta = p && p.eta && p.eta!=='-';
   openModal('Add Timeline Item',
-    '<div class="g2">'+
-      '<div class="fg"><label>When (label)</label><input class="fi" id="ata-w" placeholder="e.g. 3 Days, Arrival"></div>'+
-      '<div class="fg"><label>Date &amp; Time</label><input type="datetime-local" class="fi" id="ata-dt" value="'+nowDTL()+'"></div>'+
+    '<div class="fg">'+
+      '<label>Type</label>'+
+      '<div class="flex gap8">'+
+        '<button class="btn bsm bp" id="ata-tab-rel" onclick="ataSwitchTab(\'rel\')" type="button">Relative to ETA</button>'+
+        '<button class="btn bsm" id="ata-tab-fixed" onclick="ataSwitchTab(\'fixed\')" type="button">Fixed Date</button>'+
+      '</div>'+
+    '</div>'+
+    '<div id="ata-rel-block" style="display:'+(hasEta?'':'none')+'">'+
+      '<div class="fg"><label>Days Before ETA</label><input type="number" class="fi" id="ata-reldays" placeholder="e.g. 7" min="0" value="7"></div>'+
+      (hasEta ? '<div class="f11 c3" style="margin-top:-6px;margin-bottom:12px">ETA: '+p.eta+' &bull; Calculated date shown after save</div>' : '<div class="f11 cr" style="margin-top:-6px;margin-bottom:12px">No ETA set for this port yet - set ETA first or use Fixed Date</div>')+
+    '</div>'+
+    '<div id="ata-fixed-block" style="display:'+(hasEta?'none':'')+'">'+
+      '<div class="g2">'+
+        '<div class="fg"><label>When (label)</label><input class="fi" id="ata-w" placeholder="e.g. 3 Days, Arrival"></div>'+
+        '<div class="fg"><label>Date &amp; Time</label><input type="datetime-local" class="fi" id="ata-dt" value="'+nowDTL()+'"></div>'+
+      '</div>'+
     '</div>'+
     '<div class="fg"><label>Item</label><input class="fi" id="ata-t" placeholder="e.g. Contact agent"></div>',
     '<button class="btn bp bsm" onclick="alertSave(\''+pid+'\')">Add</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
+
+function ataSwitchTab(tab){
+  var relBtn=document.getElementById('ata-tab-rel'), fixBtn=document.getElementById('ata-tab-fixed');
+  var relBlk=document.getElementById('ata-rel-block'), fixBlk=document.getElementById('ata-fixed-block');
+  if(relBtn) relBtn.classList.toggle('bp', tab==='rel');
+  if(fixBtn) fixBtn.classList.toggle('bp', tab==='fixed');
+  if(relBlk) relBlk.style.display = tab==='rel' ? '' : 'none';
+  if(fixBlk) fixBlk.style.display = tab==='fixed' ? '' : 'none';
+}
 function alertSave(pid){
   var p=S.ports.find(function(x){return x.id===pid;}); if(!p)return;
   var t=(document.getElementById('ata-t')||{}).value; if(t)t=t.trim(); if(!t)return;
-  var _aw=(document.getElementById('ata-w')||{}).value.trim();
-  var _adt=(document.getElementById('ata-dt')||{}).value||'';
-  p.alerts.push({when:_aw||(_adt?dtToDisplay(_adt):'-'),text:t,done:false});
+
+  var relBlk=document.getElementById('ata-rel-block');
+  var isRelMode = relBlk && relBlk.style.display !== 'none';
+
+  if(isRelMode){
+    var relDaysEl=document.getElementById('ata-reldays');
+    var relDays=relDaysEl?parseInt(relDaysEl.value):NaN;
+    if(isNaN(relDays)||relDays<0){ alert('Please enter a valid number of days'); return; }
+    var etaDate=etaParse(p.eta);
+    if(!etaDate){ alert('This port has no ETA set yet. Set ETA first or use Fixed Date.'); return; }
+    var newDate=new Date(etaDate.getTime() - relDays*86400000);
+    var newKey=keyFromDate(newDate);
+    var newId=Date.now()+Math.floor(Math.random()*1000);
+    getDay(newKey).tasks.push({
+      id:newId, text:t, done:false, urgent:false, carriedFrom:null,
+      fromPortAlert:true, portId:pid
+    });
+    p.alerts.push({
+      when: relDays+' day'+(relDays===1?'':'s')+' before ETA',
+      text:t, done:false,
+      relDays:relDays, linkedTaskId:newId, linkedDateKey:newKey
+    });
+  } else {
+    var _aw=(document.getElementById('ata-w')||{}).value.trim();
+    var _adt=(document.getElementById('ata-dt')||{}).value||'';
+    p.alerts.push({when:_aw||(_adt?dtToDisplay(_adt):'-'),text:t,done:false,relDays:null,linkedTaskId:null,linkedDateKey:null});
+  }
   autoSave();closeModal();renderPortDetail(pid);
 }
+function alertEdit(pid,i){
+  var p=S.ports.find(function(x){return x.id===pid;}); if(!p) return;
+  var a=p.alerts[i]; if(!a) return;
+  var isRel = (a.relDays!==undefined && a.relDays!==null);
+  openModal('Edit Timeline Item',
+    '<div class="fg">'+
+      '<label>Type</label>'+
+      '<div class="flex gap8">'+
+        '<button class="btn bsm '+(isRel?'bp':'')+'" id="ate-tab-rel" onclick="ateSwitchTab(\'rel\')" type="button">Relative to ETA</button>'+
+        '<button class="btn bsm '+(isRel?'':'bp')+'" id="ate-tab-fixed" onclick="ateSwitchTab(\'fixed\')" type="button">Fixed Date</button>'+
+      '</div>'+
+    '</div>'+
+    '<div id="ate-rel-block" style="display:'+(isRel?'':'none')+'">'+
+      '<div class="fg"><label>Days Before ETA</label><input type="number" class="fi" id="ate-reldays" min="0" value="'+(isRel?a.relDays:7)+'"></div>'+
+      '<div class="f11 c3" style="margin-top:-6px;margin-bottom:12px">ETA: '+(p.eta||'-')+'</div>'+
+    '</div>'+
+    '<div id="ate-fixed-block" style="display:'+(isRel?'none':'')+'">'+
+      '<div class="fg"><label>When (label)</label><input class="fi" id="ate-w" value="'+(isRel?'':a.when)+'"></div>'+
+    '</div>'+
+    '<div class="fg"><label>Item</label><input class="fi" id="ate-t" value="'+a.text.replace(/"/g,'&quot;')+'"></div>',
+    '<button class="btn bp bsm" onclick="alertSaveEdit(\''+pid+'\','+i+')">Save</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
+}
+
+function ateSwitchTab(tab){
+  var relBtn=document.getElementById('ate-tab-rel'), fixBtn=document.getElementById('ate-tab-fixed');
+  var relBlk=document.getElementById('ate-rel-block'), fixBlk=document.getElementById('ate-fixed-block');
+  if(relBtn) relBtn.classList.toggle('bp', tab==='rel');
+  if(fixBtn) fixBtn.classList.toggle('bp', tab==='fixed');
+  if(relBlk) relBlk.style.display = tab==='rel' ? '' : 'none';
+  if(fixBlk) fixBlk.style.display = tab==='fixed' ? '' : 'none';
+}
+
+function alertSaveEdit(pid,i){
+  var p=S.ports.find(function(x){return x.id===pid;}); if(!p) return;
+  var a=p.alerts[i]; if(!a) return;
+  var t=(document.getElementById('ate-t')||{}).value; if(t)t=t.trim(); if(!t) return;
+
+  var relBlk=document.getElementById('ate-rel-block');
+  var isRelMode = relBlk && relBlk.style.display !== 'none';
+
+  // Remove old linked task if it exists, regardless of new mode
+  if(a.linkedTaskId && a.linkedDateKey && S.wplans[a.linkedDateKey]){
+    S.wplans[a.linkedDateKey].tasks = S.wplans[a.linkedDateKey].tasks.filter(function(x){return x.id!==a.linkedTaskId;});
+  }
+
+  if(isRelMode){
+    var relDaysEl=document.getElementById('ate-reldays');
+    var relDays=relDaysEl?parseInt(relDaysEl.value):NaN;
+    if(isNaN(relDays)||relDays<0){ alert('Please enter a valid number of days'); return; }
+    var etaDate=etaParse(p.eta);
+    if(!etaDate){ alert('This port has no ETA set yet.'); return; }
+    var newDate=new Date(etaDate.getTime() - relDays*86400000);
+    var newKey=keyFromDate(newDate);
+    var newId=Date.now()+Math.floor(Math.random()*1000);
+    getDay(newKey).tasks.push({id:newId, text:t, done:false, urgent:false, carriedFrom:null, fromPortAlert:true, portId:pid});
+    a.relDays=relDays;
+    a.linkedTaskId=newId;
+    a.linkedDateKey=newKey;
+    a.when=relDays+' day'+(relDays===1?'':'s')+' before ETA';
+    a.text=t;
+    a.done=false;
+  } else {
+    var _aw=(document.getElementById('ate-w')||{}).value.trim();
+    a.relDays=null;
+    a.linkedTaskId=null;
+    a.linkedDateKey=null;
+    a.when=_aw||a.when;
+    a.text=t;
+  }
+  autoSave(); closeModal(); renderPortDetail(pid);
+}
+
 function portJobAdd(pid){
   openModal('Add Port Job',
     '<div class="fg"><label>Job Name</label><input class="fi" id="pja-n"></div>'+
