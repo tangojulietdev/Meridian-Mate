@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian Mate">
 <meta name="theme-color" content="#0d1117" id="theme-meta">
-<title>Meridian Mate v4.6.1</title>
+<title>Meridian Mate v4.9.0</title>
 <meta name="version" content="2.0.1">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png?v=2">
@@ -88,43 +88,320 @@
   --shadow-lg:  0 8px 40px rgba(0,0,0,0.6);
   --shadow-ac:  0 0 24px rgba(0,212,255,0.15);
   --glow-ac:    0 0 12px rgba(0,212,255,0.4);
+
+  /* Glass surfaces for dark glassmorphism */
+  --surf:   rgba(22,28,46,0.55);
+  --elev:   rgba(28,35,56,0.45);
+  --hov:    rgba(38,46,70,0.65);
+  --ln:     rgba(255,255,255,0.07);
+  --ln2:    rgba(255,255,255,0.11);
+  --ln3:    rgba(255,255,255,0.18);
+}
+
+/* ── DARK THEME — iOS GLASSMORPHISM (PRO) ─────────────────── */
+[data-theme=""] body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(0,140,255,0.16) 0%, transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(168,85,247,0.14) 0%, transparent 40%),
+    radial-gradient(circle at 20% 92%, rgba(0,212,255,0.12) 0%, transparent 45%),
+    radial-gradient(circle at 92% 85%, rgba(236,72,153,0.10) 0%, transparent 42%),
+    linear-gradient(165deg, #07080F 0%, #0A0D17 45%, #05060B 100%);
+  background-attachment: fixed;
+}
+[data-theme=""] body #main { background: transparent; }
+[data-theme=""] body #topbar {
+  background: rgba(13,18,30,0.55);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 32px rgba(0,0,0,0.4);
+}
+[data-theme=""] body #sidebar {
+  background: rgba(13,18,30,0.42);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+[data-theme=""] body #mobnav {
+  background: rgba(13,18,30,0.62);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+[data-theme=""] body .card,
+[data-theme=""] body .stat,
+[data-theme=""] body .dc-card,
+[data-theme=""] body .pf-item,
+[data-theme=""] body .tile,
+[data-theme=""] body .kbc,
+[data-theme=""] body .rag-card,
+[data-theme=""] body .pchip,
+[data-theme=""] body .poc,
+[data-theme=""] body .c-hold,
+[data-theme=""] body .cnd-sum-card,
+[data-theme=""] body .cnd-hold,
+[data-theme=""] body .bpw,
+[data-theme=""] body .bsec {
+  background: rgba(24,30,48,0.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: var(--shadow-sm), 0 1px 0 rgba(255,255,255,0.05) inset;
+}
+[data-theme=""] body .card:hover {
+  background: rgba(30,38,58,0.6);
+  border-color: rgba(255,255,255,0.14);
+}
+[data-theme=""] body .kbcard,
+[data-theme=""] body .poc-chip,
+[data-theme=""] body .cnd-ballast {
+  background: rgba(30,38,58,0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.09);
+}
+[data-theme=""] body .modal {
+  background: rgba(16,21,35,0.72);
+  backdrop-filter: blur(40px) saturate(1.7);
+  -webkit-backdrop-filter: blur(40px) saturate(1.7);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: var(--shadow-lg), 0 0 80px rgba(0,212,255,0.06), 0 1px 0 rgba(255,255,255,0.06) inset;
+}
+[data-theme=""] body .mh {
+  background: rgba(13,18,30,0.4);
+  backdrop-filter: blur(24px);
+}
+[data-theme=""] body .fi,
+[data-theme=""] body .fs,
+[data-theme=""] body .ft {
+  background: rgba(20,26,42,0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.09);
+}
+[data-theme=""] body .fi:focus,
+[data-theme=""] body .fs:focus,
+[data-theme=""] body .ft:focus {
+  background: rgba(26,33,52,0.75);
+  border-color: var(--ac);
+}
+[data-theme=""] body .btn {
+  background: rgba(28,35,56,0.5);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.09);
+}
+[data-theme=""] body .btn:hover {
+  background: rgba(38,46,70,0.7);
+}
+[data-theme=""] body .bp {
+  background: var(--ac-g);
+  border: none;
+  box-shadow: 0 4px 20px rgba(0,212,255,0.35), 0 1px 0 rgba(255,255,255,0.2) inset;
+}
+[data-theme=""] body .save-btn {
+  background: rgba(0,212,255,0.10);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,212,255,0.22);
+}
+[data-theme=""] body .tbtn {
+  background: rgba(28,35,56,0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+[data-theme=""] body .tbtn:hover {
+  background: rgba(38,46,70,0.65);
+}
+[data-theme=""] body .ni:hover {
+  background: rgba(255,255,255,0.05);
+}
+[data-theme=""] body .ni.on {
+  background: rgba(0,212,255,0.10);
+}
+[data-theme=""] body #bvh {
+  background: rgba(13,18,30,0.55);
+  backdrop-filter: blur(28px) saturate(1.6);
+}
+[data-theme=""] body .wday {
+  background: rgba(28,35,56,0.45);
+  backdrop-filter: blur(12px);
+}
+[data-theme=""] body .draft-bw {
+  background: rgba(28,35,56,0.5);
+  backdrop-filter: blur(10px);
+}
+[data-theme=""] body .tile:hover {
+  background: rgba(34,42,64,0.6);
 }
 
 /* ── LIGHT THEME ──────────────────────────────────────────── */
 [data-theme="light"] {
-  --base:   #F0F4FF;
-  --surf:   #FFFFFF;
-  --elev:   #F8FAFF;
-  --hov:    #EEF2FF;
-  --glass:  rgba(255,255,255,0.85);
-  --ln:     rgba(0,0,0,0.06);
-  --ln2:    rgba(0,0,0,0.10);
-  --ln3:    rgba(0,0,0,0.16);
-  --ink1:   #0F172A;
-  --ink2:   #475569;
-  --ink3:   #94A3B8;
-  --ink4:   #CBD5E1;
-  --ac:     #0099CC;
-  --ac-d:   rgba(0,153,204,0.08);
-  --ac-b:   rgba(0,153,204,0.20);
-  --ac-g:   linear-gradient(135deg,#0099CC,#006699);
-  --red:    #E63950;
-  --red-d:  rgba(230,57,80,0.08);
-  --red-b:  rgba(230,57,80,0.20);
-  --amb:    #D97706;
-  --amb-d:  rgba(217,119,6,0.08);
-  --amb-b:  rgba(217,119,6,0.20);
-  --grn:    #059669;
-  --grn-d:  rgba(5,150,105,0.08);
-  --grn-b:  rgba(5,150,105,0.20);
-  --blu:    #2563EB;
-  --blu-d:  rgba(37,99,235,0.08);
-  --blu-b:  rgba(37,99,235,0.20);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.10);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
-  --shadow-ac: 0 0 20px rgba(0,153,204,0.12);
-  --glow-ac:   0 0 10px rgba(0,153,204,0.3);
+  --base:   #E8EDF7;
+  --surf:   rgba(255,255,255,0.62);
+  --elev:   rgba(255,255,255,0.46);
+  --hov:    rgba(255,255,255,0.78);
+  --glass:  rgba(255,255,255,0.55);
+  --ln:     rgba(255,255,255,0.50);
+  --ln2:    rgba(140,150,180,0.22);
+  --ln3:    rgba(120,130,165,0.32);
+  --ink1:   #1A2138;
+  --ink2:   #4B5670;
+  --ink3:   #8993AC;
+  --ink4:   #C5CCDE;
+  --ac:     #007AFF;
+  --ac-d:   rgba(0,122,255,0.10);
+  --ac-b:   rgba(0,122,255,0.26);
+  --ac-g:   linear-gradient(135deg,#0A84FF,#0066D6);
+  --red:    #FF3B30;
+  --red-d:  rgba(255,59,48,0.10);
+  --red-b:  rgba(255,59,48,0.24);
+  --amb:    #FF9500;
+  --amb-d:  rgba(255,149,0,0.10);
+  --amb-b:  rgba(255,149,0,0.24);
+  --grn:    #34C759;
+  --grn-d:  rgba(52,199,89,0.10);
+  --grn-b:  rgba(52,199,89,0.24);
+  --blu:    #5856D6;
+  --blu-d:  rgba(88,86,214,0.10);
+  --blu-b:  rgba(88,86,214,0.24);
+  --shadow-sm: 0 1px 3px rgba(30,41,80,0.06), 0 4px 16px rgba(30,41,80,0.06);
+  --shadow-md: 0 4px 16px rgba(30,41,80,0.08), 0 12px 32px rgba(30,41,80,0.08);
+  --shadow-lg: 0 8px 32px rgba(30,41,80,0.12), 0 24px 64px rgba(30,41,80,0.10);
+  --shadow-ac: 0 4px 20px rgba(0,122,255,0.18);
+  --glow-ac:   0 0 16px rgba(0,122,255,0.35);
+}
+
+/* ── LIGHT THEME — iOS GLASSMORPHISM ──────────────────────── */
+[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 15% 8%, rgba(120,170,255,0.35) 0%, transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(255,180,220,0.28) 0%, transparent 42%),
+    radial-gradient(circle at 25% 90%, rgba(150,220,255,0.30) 0%, transparent 48%),
+    radial-gradient(circle at 90% 80%, rgba(200,180,255,0.25) 0%, transparent 45%),
+    linear-gradient(160deg, #EEF2FB 0%, #E4EAF6 50%, #DCE4F2 100%);
+  background-attachment: fixed;
+}
+[data-theme="light"] #main {
+  background: transparent;
+}
+[data-theme="light"] #topbar {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  border-bottom: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 4px 24px rgba(30,41,80,0.06);
+}
+[data-theme="light"] #sidebar {
+  background: rgba(255,255,255,0.42);
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  border-right: 1px solid rgba(255,255,255,0.55);
+}
+[data-theme="light"] #mobnav {
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  border-top: 1px solid rgba(255,255,255,0.6);
+}
+[data-theme="light"] .card,
+[data-theme="light"] .stat,
+[data-theme="light"] .dc-card,
+[data-theme="light"] .pf-item,
+[data-theme="light"] .tile,
+[data-theme="light"] .kbc,
+[data-theme="light"] .rag-card,
+[data-theme="light"] .pchip,
+[data-theme="light"] .poc,
+[data-theme="light"] .c-hold,
+[data-theme="light"] .cnd-sum-card,
+[data-theme="light"] .cnd-hold,
+[data-theme="light"] .bpw,
+[data-theme="light"] .bsec {
+  background: rgba(255,255,255,0.58);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgba(255,255,255,0.65);
+  box-shadow: var(--shadow-sm), 0 1px 0 rgba(255,255,255,0.9) inset;
+}
+[data-theme="light"] .kbcard,
+[data-theme="light"] .poc-chip,
+[data-theme="light"] .cnd-ballast {
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.7);
+}
+[data-theme="light"] .modal {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(36px) saturate(1.8);
+  -webkit-backdrop-filter: blur(36px) saturate(1.8);
+  border: 1px solid rgba(255,255,255,0.7);
+  box-shadow: var(--shadow-lg), 0 1px 0 rgba(255,255,255,0.9) inset;
+}
+[data-theme="light"] .mh {
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(20px);
+}
+[data-theme="light"] .fi,
+[data-theme="light"] .fs,
+[data-theme="light"] .ft {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.7);
+}
+[data-theme="light"] .fi:focus,
+[data-theme="light"] .fs:focus,
+[data-theme="light"] .ft:focus {
+  background: rgba(255,255,255,0.85);
+}
+[data-theme="light"] .btn {
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+[data-theme="light"] .btn:hover {
+  background: rgba(255,255,255,0.7);
+}
+[data-theme="light"] .bp {
+  background: var(--ac-g);
+  border: none;
+  box-shadow: 0 4px 16px rgba(0,122,255,0.30), 0 1px 0 rgba(255,255,255,0.3) inset;
+}
+[data-theme="light"] .save-btn {
+  background: rgba(0,122,255,0.12);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,122,255,0.25);
+}
+[data-theme="light"] .tbtn {
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.55);
+}
+[data-theme="light"] .tbtn:hover {
+  background: rgba(255,255,255,0.7);
+}
+[data-theme="light"] .ni:hover {
+  background: rgba(255,255,255,0.55);
+}
+[data-theme="light"] .ni.on {
+  background: rgba(0,122,255,0.12);
+}
+[data-theme="light"] .bdg {
+  backdrop-filter: blur(8px);
+}
+[data-theme="light"] #bvh {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(28px) saturate(1.8);
+}
+[data-theme="light"] .wp-cb,
+[data-theme="light"] .cli-cb {
+  background: rgba(255,255,255,0.5);
+}
+[data-theme="light"] .wday {
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(10px);
+}
+[data-theme="light"] .draft-bw {
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(8px);
 }
 
 /* ── NAUTICAL THEME ───────────────────────────────────────── */
@@ -2184,29 +2461,34 @@ input[type="date"] { color-scheme: dark; }
 }
 
 
-.wp-reorder {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+.wp-drag-handle {
+  width: 18px;
+  height: 30px;
   flex-shrink: 0;
-}
-.wp-ro-btn {
-  width: 16px;
-  height: 13px;
-  border: none;
-  background: transparent;
-  color: var(--ink3);
-  font-size: 7px;
-  cursor: pointer;
-  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--ink4);
+  font-size: 13px;
+  letter-spacing: -3px;
+  cursor: grab;
+  border-radius: 4px;
   transition: all .12s;
-  padding: 0;
+  touch-action: none;
+  user-select: none;
 }
-.wp-ro-btn:hover:not(:disabled) { background: var(--elev); color: var(--ac); }
-.wp-ro-btn:disabled { opacity: .2; cursor: default; }
+.wp-drag-handle:hover { color: var(--ink2); background: var(--elev); }
+.wp-drag-handle:active { cursor: grabbing; }
+.wp-item {
+  transition: background .15s, opacity .15s, transform .15s;
+}
+.wp-item.dragging {
+  opacity: 0.4;
+}
+.wp-item.drag-over {
+  border-top: 2px solid var(--ac);
+  background: var(--ac-d);
+}
 .wp-item-linked {
   background: var(--ac-d);
   border-left: 2px solid var(--ac);
@@ -2477,7 +2759,7 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v4.6.1</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v4.9.0</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -4020,7 +4302,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '4.6.1';
+var APP_VERSION = '4.9.0';
 var BUILD_DATE  = '16 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
@@ -4614,16 +4896,91 @@ function mcalDelTask(key,id) {
 }
 
 
-function wpReorder(k,id,dir) {
+function wpMoveTask(k, fromId, toId) {
   var day = getDay(k);
-  var idx = day.tasks.findIndex(function(x){return x.id===id;});
-  if (idx<0) return;
-  var newIdx = idx+dir;
-  if (newIdx<0 || newIdx>=day.tasks.length) return;
-  var tmp = day.tasks[idx];
-  day.tasks[idx] = day.tasks[newIdx];
-  day.tasks[newIdx] = tmp;
+  var fromIdx = day.tasks.findIndex(function(x){return x.id===fromId;});
+  var toIdx   = day.tasks.findIndex(function(x){return x.id===toId;});
+  if (fromIdx<0 || toIdx<0 || fromIdx===toIdx) return;
+  var item = day.tasks.splice(fromIdx,1)[0];
+  day.tasks.splice(toIdx,0,item);
   autoSave(); renderWPDay();
+}
+
+// ── DRAG & DROP / TOUCH REORDER ──────────────────────────────
+var WP_DRAG_ID = null;
+var WP_TOUCH_Y = null;
+var WP_TOUCH_EL = null;
+
+function wpInitDragSort(container, dayKey) {
+  var items = container.querySelectorAll('.wp-item');
+
+  items.forEach(function(item) {
+    var id = parseInt(item.getAttribute('data-id'));
+
+    // ── Desktop: native HTML5 drag-and-drop ──
+    item.addEventListener('dragstart', function(e) {
+      WP_DRAG_ID = id;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', function() {
+      item.classList.remove('dragging');
+      WP_DRAG_ID = null;
+      container.querySelectorAll('.wp-item').forEach(function(x){x.classList.remove('drag-over');});
+    });
+    item.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (WP_DRAG_ID !== null && WP_DRAG_ID !== id) item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', function() {
+      item.classList.remove('drag-over');
+    });
+    item.addEventListener('drop', function(e) {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      if (WP_DRAG_ID !== null && WP_DRAG_ID !== id) {
+        wpMoveTask(dayKey, WP_DRAG_ID, id);
+      }
+    });
+
+    // ── Mobile: touch-based drag via the handle ──
+    var handle = item.querySelector('.wp-drag-handle');
+    if (!handle) return;
+
+    handle.addEventListener('touchstart', function(e) {
+      WP_DRAG_ID = id;
+      WP_TOUCH_EL = item;
+      item.classList.add('dragging');
+      e.preventDefault();
+    }, {passive:false});
+
+    handle.addEventListener('touchmove', function(e) {
+      if (WP_DRAG_ID === null) return;
+      e.preventDefault();
+      var touch = e.touches[0];
+      var elUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+      var itemUnder = elUnder ? elUnder.closest('.wp-item') : null;
+      container.querySelectorAll('.wp-item').forEach(function(x){x.classList.remove('drag-over');});
+      if (itemUnder && itemUnder !== WP_TOUCH_EL) {
+        itemUnder.classList.add('drag-over');
+      }
+    }, {passive:false});
+
+    handle.addEventListener('touchend', function(e) {
+      if (WP_DRAG_ID === null) return;
+      var touch = e.changedTouches[0];
+      var elUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+      var itemUnder = elUnder ? elUnder.closest('.wp-item') : null;
+      if (WP_TOUCH_EL) WP_TOUCH_EL.classList.remove('dragging');
+      container.querySelectorAll('.wp-item').forEach(function(x){x.classList.remove('drag-over');});
+      if (itemUnder) {
+        var targetId = parseInt(itemUnder.getAttribute('data-id'));
+        if (targetId !== WP_DRAG_ID) wpMoveTask(dayKey, WP_DRAG_ID, targetId);
+      }
+      WP_DRAG_ID = null;
+      WP_TOUCH_EL = null;
+    });
+  });
 }
 
 function renderWPDay() {
@@ -4659,7 +5016,12 @@ function renderWPDay() {
   } else {
     el.innerHTML = day.tasks.map(function(w,i) {
       var cf = w.carriedFrom ? '<span class="bdg da" style="font-size:9px;margin-right:5px">&#8617; Carried</span>' : '';
-      var portTag = w.fromPortAlert ? '<span class="bdg dt" style="font-size:9px;margin-right:5px" title="Auto-created from port timeline">&#8987; Port Alert</span>' : '';
+      var portTag = '';
+      if (w.fromPortAlert) {
+        var _ap = S.ports.find(function(x){return x.id===w.portId;});
+        var _apName = _ap ? _ap.name : 'Unknown Port';
+        portTag = '<span class="bdg dt" style="font-size:9px;margin-right:5px" title="Auto-created from port timeline">&#8987; '+_apName+'</span>';
+      }
       var priDot = w.urgent ? '<span class="bdg dr" style="font-size:9px;margin-right:5px">URGENT</span>' :
         w.priority==='high'?'<span class="bdg da" style="font-size:9px;margin-right:5px">HIGH</span>':
         w.priority==='low'?'<span class="dgr bdg" style="font-size:9px;margin-right:5px">LOW</span>':'';
@@ -4667,12 +5029,8 @@ function renderWPDay() {
       var nd=new Date(dateFromKey(k).getTime()+86400000);
       var nk=keyFromDate(nd);
       var ndL=isToday?'Tomorrow':nd.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-      var isFirst = i===0, isLast = i===day.tasks.length-1;
-      return '<div class="wp-item'+(w.fromPortAlert?' wp-item-linked':'')+'">'+
-        '<div class="wp-reorder">'+
-          '<button class="wp-ro-btn" onclick="wpReorder(\''+k+'\','+w.id+',-1)" '+(isFirst?'disabled':'')+' title="Move up">&#9650;</button>'+
-          '<button class="wp-ro-btn" onclick="wpReorder(\''+k+'\','+w.id+',1)" '+(isLast?'disabled':'')+' title="Move down">&#9660;</button>'+
-        '</div>'+
+      return '<div class="wp-item'+(w.fromPortAlert?' wp-item-linked':'')+'" draggable="true" data-id="'+w.id+'" data-key="'+k+'">'+
+        '<div class="wp-drag-handle" title="Drag to reorder">&#8942;&#8942;</div>'+
         '<div class="wp-cb '+(w.done?'on':'')+'" onclick="wpToggle(\''+k+'\','+w.id+')"></div>'+
         '<div class="wp-num">'+(i+1)+'.</div>'+
         '<div style="flex:1">'+cf+portTag+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+w.text+'</span></div>'+
@@ -4681,6 +5039,7 @@ function renderWPDay() {
         '<button class="btn bxs bgh cr" onclick="wpDel(\''+k+'\','+w.id+')" style="margin-left:3px">x</button>'+
       '</div>';
     }).join('');
+    wpInitDragSort(el, k);
   }
   var addRow = document.getElementById('wp-add-row'); if (addRow) addRow.style.display='';
   var st=document.getElementById('wp-stopic'),sn=document.getElementById('wp-snotes');
