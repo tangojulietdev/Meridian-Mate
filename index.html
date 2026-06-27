@@ -1018,6 +1018,13 @@ html, body {
 }
 .wday:hover { border-color: var(--ac-b); }
 .wday.on { background: var(--ac-d); border-color: var(--ac); box-shadow: 0 0 12px var(--ac-d); }
+.wday.drag-over-day {
+  border-color: var(--ac);
+  background: var(--ac-d);
+  box-shadow: 0 0 0 2px var(--ac), 0 0 16px var(--ac-b);
+  transform: scale(1.06);
+  transition: all .12s ease;
+}
 .wday-n  { font-size: 9px; font-weight: 700; letter-spacing: .07em; color: var(--ink3); }
 .wday.on .wday-n { color: var(--ac); }
 .wday-d  { font-size: 15px; line-height: 1.3; }
@@ -2868,7 +2875,7 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.4.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.5.0</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -4411,7 +4418,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.4.0';
+var APP_VERSION = '5.5.0';
 var BUILD_DATE  = '16 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
@@ -4826,7 +4833,7 @@ function renderWPStrip() {
     var prog = '';
     if (total>0) { var allD=done===total; prog='<div class="wday-p" style="color:'+(allD?'var(--grn)':isPast?'var(--amb)':'var(--ink3)')+'">'+done+'/'+total+'</div>'; }
     else if (isPast&&!isToday) prog='<div class="wday-p" style="color:var(--ink4)">-</div>';
-    return '<div class="wday '+(isActive?'on':'')+'" onclick="wpJump(\''+k+'\')" style="'+bg+'">'+
+    return '<div class="wday '+(isActive?'on':'')+'" data-key="'+k+'" onclick="wpJump(\''+k+'\')" style="'+bg+'">'+
       '<div class="wday-n" style="color:'+(isActive?'var(--ac)':'var(--ink3)')+'">'+dn+'</div>'+
       '<div class="wday-d" style="font-weight:'+(isToday?'700':'400')+'">'+d.getDate()+'</div>'+
       '<div class="wday-i">'+(day?sm.icon:'')+'</div>'+
@@ -4834,6 +4841,30 @@ function renderWPStrip() {
     '</div>';
   }).join('');
   setTimeout(function(){var a=el.querySelector('.wday.on');if(a)a.scrollIntoView({inline:'center',behavior:'smooth'});},50);
+  wpInitStripDropTargets(el);
+}
+
+// ── DESKTOP DRAG: drop a task onto a strip day cell ──────────
+function wpInitStripDropTargets(stripEl) {
+  var cells = stripEl.querySelectorAll('.wday');
+  cells.forEach(function(cell) {
+    var key = cell.getAttribute('data-key');
+    cell.addEventListener('dragover', function(e) {
+      if (WP_DRAG_ID === null) return;
+      e.preventDefault();
+      cell.classList.add('drag-over-day');
+    });
+    cell.addEventListener('dragleave', function() {
+      cell.classList.remove('drag-over-day');
+    });
+    cell.addEventListener('drop', function(e) {
+      e.preventDefault();
+      cell.classList.remove('drag-over-day');
+      if (WP_DRAG_ID !== null && WP_DRAG_FROM_KEY) {
+        wpMoveToDay(WP_DRAG_FROM_KEY, WP_DRAG_ID, key);
+      }
+    });
+  });
 }
 // ── MONTH VIEW ────────────────────────────────────────────────
 var WP_VIEW = 'day';
@@ -5015,8 +5046,24 @@ function wpMoveTask(k, fromId, toId) {
   autoSave(); renderWPDay();
 }
 
+// Move a task to a completely different day - NOT marked as carried,
+// keeps done state, urgency, priority exactly as-is.
+function wpMoveToDay(fromKey, taskId, toKey) {
+  if (fromKey === toKey) return;
+  var fromDay = getDay(fromKey);
+  var idx = fromDay.tasks.findIndex(function(x){return x.id===taskId;});
+  if (idx < 0) return;
+  var task = fromDay.tasks.splice(idx, 1)[0];
+  getDay(toKey).tasks.push(task); // same object - done/urgent/priority untouched, no carriedFrom
+  autoSave();
+  renderWPDay();
+  renderWPStrip();
+  showToast && showToast('Moved to ' + dateFromKey(toKey).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
+}
+
 // ── DRAG & DROP / TOUCH REORDER ──────────────────────────────
 var WP_DRAG_ID = null;
+var WP_DRAG_FROM_KEY = null;
 var WP_TOUCH_Y = null;
 var WP_TOUCH_EL = null;
 
@@ -5029,6 +5076,7 @@ function wpInitDragSort(container, dayKey) {
     // ── Desktop: native HTML5 drag-and-drop ──
     item.addEventListener('dragstart', function(e) {
       WP_DRAG_ID = id;
+      WP_DRAG_FROM_KEY = dayKey;
       item.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     });
@@ -5058,6 +5106,7 @@ function wpInitDragSort(container, dayKey) {
 
     handle.addEventListener('touchstart', function(e) {
       WP_DRAG_ID = id;
+      WP_DRAG_FROM_KEY = dayKey;
       WP_TOUCH_EL = item;
       item.classList.add('dragging');
       e.preventDefault();
@@ -5069,9 +5118,13 @@ function wpInitDragSort(container, dayKey) {
       var touch = e.touches[0];
       var elUnder = document.elementFromPoint(touch.clientX, touch.clientY);
       var itemUnder = elUnder ? elUnder.closest('.wp-item') : null;
+      var dayUnder = elUnder ? elUnder.closest('.wday') : null;
       container.querySelectorAll('.wp-item').forEach(function(x){x.classList.remove('drag-over');});
+      document.querySelectorAll('.wday').forEach(function(x){x.classList.remove('drag-over-day');});
       if (itemUnder && itemUnder !== WP_TOUCH_EL) {
         itemUnder.classList.add('drag-over');
+      } else if (dayUnder) {
+        dayUnder.classList.add('drag-over-day');
       }
     }, {passive:false});
 
@@ -5080,9 +5133,13 @@ function wpInitDragSort(container, dayKey) {
       var touch = e.changedTouches[0];
       var elUnder = document.elementFromPoint(touch.clientX, touch.clientY);
       var itemUnder = elUnder ? elUnder.closest('.wp-item') : null;
+      var dayUnder = elUnder ? elUnder.closest('.wday') : null;
       if (WP_TOUCH_EL) WP_TOUCH_EL.classList.remove('dragging');
       container.querySelectorAll('.wp-item').forEach(function(x){x.classList.remove('drag-over');});
-      if (itemUnder) {
+      document.querySelectorAll('.wday').forEach(function(x){x.classList.remove('drag-over-day');});
+      if (dayUnder && dayUnder.getAttribute('data-key')) {
+        wpMoveToDay(WP_DRAG_FROM_KEY, WP_DRAG_ID, dayUnder.getAttribute('data-key'));
+      } else if (itemUnder) {
         var targetId = parseInt(itemUnder.getAttribute('data-id'));
         if (targetId !== WP_DRAG_ID) wpMoveTask(dayKey, WP_DRAG_ID, targetId);
       }
