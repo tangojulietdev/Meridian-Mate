@@ -2654,7 +2654,10 @@ input[type="date"] { color-scheme: dark; }
     <div><div class="ph-t" id="today-h">Good morning, Chief</div><div class="ph-s" id="today-d">Loading...</div></div>
     <div class="bdg dt"><span class="bdot"></span>At Sea</div>
   </div>
-  <div class="slbl" style="margin-top:0">Days Counters</div>
+  <div class="flex" style="justify-content:space-between;align-items:center">
+    <div class="slbl" style="margin-top:0">Days Counters</div>
+    <button class="btn bxs bgh" onclick="dcAdd()" style="margin-top:-8px">+ Add</button>
+  </div>
   <div class="dc-strip" id="today-dc"></div>
   <div class="slbl">Right Now</div><div id="pf-now"></div>
   <div class="slbl">Later Today</div><div id="pf-later"></div>
@@ -2875,7 +2878,7 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.5.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.6.1</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -2883,28 +2886,25 @@ input[type="date"] { color-scheme: dark; }
     <div class="ch"><div class="ct">Vessel Information</div></div>
     <div class="cb">
       <div class="g2">
-        <div class="fg"><label>Vessel Name</label><input class="fi" id="s-ves"></div>
-        <div class="fg"><label>IMO Number</label><input class="fi" id="s-imo"></div>
-        <div class="fg"><label>Call Sign</label><input class="fi" id="s-cs"></div>
-        <div class="fg"><label>Flag State</label><input class="fi" id="s-flag"></div>
-        <div class="fg"><label>Your Name</label><input class="fi" id="s-name"></div>
-        <div class="fg"><label>Next Port / ETA</label><input class="fi" id="s-eta"></div>
+        <div class="fg"><label>Ship Name</label><input class="fi" id="s-ves"></div>
+        <div class="fg"><label>Your Name / Rank</label><input class="fi" id="s-name"></div>
       </div>
+      <input type="hidden" id="s-imo"><input type="hidden" id="s-cs"><input type="hidden" id="s-flag"><input type="hidden" id="s-eta">
       <button class="btn bp bsm mt8" onclick="vesselSave()">Save</button>
     </div>
   </div>
   <div class="card mb12">
     <div class="ch"><div class="ct">Theme</div><div class="cm">Choose your visual style</div></div>
     <div class="cb">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
         <div class="tc" id="tc-dark" onclick="setTheme('dark')">
           <div style="background:#0d1117;padding:13px 13px 9px">
             <div style="display:flex;gap:5px;margin-bottom:9px"><div style="width:6px;height:6px;border-radius:50%;background:#f43f5e"></div><div style="width:6px;height:6px;border-radius:50%;background:#f59e0b"></div><div style="width:6px;height:6px;border-radius:50%;background:#4ade80"></div></div>
             <div style="background:#161c27;border-radius:6px;padding:7px 9px;margin-bottom:5px"><div style="width:60%;height:5px;background:#2dd4bf;border-radius:3px;margin-bottom:4px"></div><div style="width:80%;height:4px;background:#2a3a52;border-radius:2px"></div></div>
             <div style="display:flex;gap:4px"><div style="flex:1;background:#1c2535;border-radius:4px;height:18px"></div><div style="flex:1;background:#1c2535;border-radius:4px;height:18px"></div><div style="flex:1;background:#1c2535;border-radius:4px;height:18px"></div></div>
           </div>
-          <div style="background:#161c27;padding:7px 13px;display:flex;align-items:center;justify-content:space-between">
-            <div style="font-size:12px;font-weight:700;color:#e6edf5">Dark</div>
+          <div style="background:#161c27;padding:7px 10px;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:11px;font-weight:700;color:#e6edf5">Dark</div>
             <div id="tc-ck-dark" style="width:15px;height:15px;border-radius:50%;background:#2dd4bf;display:none;align-items:center;justify-content:center;font-size:9px;color:#0d1117;font-weight:900">&#10003;</div>
           </div>
         </div>
@@ -2914,8 +2914,8 @@ input[type="date"] { color-scheme: dark; }
             <div style="background:#fff;border-radius:6px;padding:7px 9px;margin-bottom:5px;box-shadow:0 1px 4px rgba(0,0,0,.1)"><div style="width:60%;height:5px;background:#0d9488;border-radius:3px;margin-bottom:4px"></div><div style="width:80%;height:4px;background:#e2e8f0;border-radius:2px"></div></div>
             <div style="display:flex;gap:4px"><div style="flex:1;background:#fff;border-radius:4px;height:18px;box-shadow:0 1px 3px rgba(0,0,0,.08)"></div><div style="flex:1;background:#fff;border-radius:4px;height:18px;box-shadow:0 1px 3px rgba(0,0,0,.08)"></div><div style="flex:1;background:#fff;border-radius:4px;height:18px;box-shadow:0 1px 3px rgba(0,0,0,.08)"></div></div>
           </div>
-          <div style="background:#fff;padding:7px 13px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(0,0,0,.07)">
-            <div style="font-size:12px;font-weight:700;color:#0f172a">Light</div>
+          <div style="background:#fff;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(0,0,0,.07)">
+            <div style="font-size:11px;font-weight:700;color:#0f172a">Light</div>
             <div id="tc-ck-light" style="width:15px;height:15px;border-radius:50%;background:#0d9488;display:none;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:900">&#10003;</div>
           </div>
         </div>
@@ -2926,34 +2926,21 @@ input[type="date"] { color-scheme: dark; }
             <div style="background:#041525;border-radius:4px;padding:7px 9px;margin-bottom:5px;border:1px solid rgba(255,140,66,0.20)"><div style="width:60%;height:5px;background:#FF8C42;border-radius:2px;margin-bottom:4px;box-shadow:0 0 6px rgba(255,140,66,0.6)"></div><div style="width:80%;height:4px;background:#1A3A52;border-radius:2px"></div></div>
             <div style="display:flex;gap:4px"><div style="flex:1;background:#041525;border-radius:4px;height:18px;border:1px solid rgba(255,140,66,0.12)"></div><div style="flex:1;background:#041525;border-radius:4px;height:18px;border:1px solid rgba(57,255,20,0.15)"></div><div style="flex:1;background:#041525;border-radius:4px;height:18px;border:1px solid rgba(255,140,66,0.12)"></div></div>
           </div>
-          <div style="background:#041525;padding:7px 13px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,140,66,0.18)">
-            <div style="font-size:12px;font-weight:800;color:#FF8C42;text-shadow:0 0 8px rgba(255,140,66,0.5);letter-spacing:.08em">NAUTICAL</div>
+          <div style="background:#041525;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,140,66,0.18)">
+            <div style="font-size:11px;font-weight:800;color:#FF8C42;text-shadow:0 0 8px rgba(255,140,66,0.5);letter-spacing:.04em">NAUTICAL</div>
             <div id="tc-ck-nautical" style="width:15px;height:15px;border-radius:50%;background:#FF8C42;box-shadow:0 0 8px rgba(255,140,66,0.6);display:none;align-items:center;justify-content:center;font-size:9px;color:#020B18;font-weight:900">&#10003;</div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="card mb12">
-    <div class="ch"><div class="ct">Theme &mdash; Vintage Chart</div><div class="cm">Old nautical journal aesthetic</div></div>
-    <div class="cb">
-      <div class="tc" id="tc-vintage" onclick="setTheme('vintage')" style="width:100%">
-        <div style="background:#F4ECD8;padding:14px;display:flex;align-items:center;gap:16px;background-image:repeating-linear-gradient(0deg,transparent,transparent 9px,rgba(107,66,38,0.05) 9px,rgba(107,66,38,0.05) 10px)">
-          <div style="font-size:32px">&#128220;</div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#2C1810;letter-spacing:.06em;font-family:Georgia,serif">VINTAGE NAUTICAL CHART</div>
-            <div style="font-size:12px;color:#6B4226;font-style:italic;font-family:Georgia,serif;margin-top:2px">Parchment paper &bull; Serif typography &bull; Old journal aesthetic</div>
-            <div style="display:flex;gap:6px;margin-top:8px">
-              <div style="width:16px;height:16px;border-radius:50%;background:#8B2500"></div>
-              <div style="width:16px;height:16px;border-radius:50%;background:#D4A853"></div>
-              <div style="width:16px;height:16px;border-radius:50%;background:#1A3A5C"></div>
-              <div style="width:16px;height:16px;border-radius:50%;background:#F4ECD8;border:1px solid #8B2500"></div>
-            </div>
+        <div class="tc" id="tc-vintage" onclick="setTheme('vintage')">
+          <div style="background:#F4ECD8;padding:13px 13px 9px;background-image:repeating-linear-gradient(0deg,transparent,transparent 9px,rgba(107,66,38,0.05) 9px,rgba(107,66,38,0.05) 10px)">
+            <div style="display:flex;gap:5px;margin-bottom:9px"><div style="width:6px;height:6px;border-radius:50%;background:#8B2500"></div><div style="width:6px;height:6px;border-radius:50%;background:#9C6B1F"></div><div style="width:6px;height:6px;border-radius:50%;background:#3D5C3A"></div></div>
+            <div style="background:#FDF6E9;border-radius:3px;padding:7px 9px;margin-bottom:5px;border:1px solid rgba(107,66,38,0.15)"><div style="width:60%;height:5px;background:#8B2500;border-radius:2px;margin-bottom:4px"></div><div style="width:80%;height:4px;background:#D8C9A8;border-radius:2px"></div></div>
+            <div style="display:flex;gap:4px"><div style="flex:1;background:#FDF6E9;border-radius:3px;height:18px;border:1px solid rgba(107,66,38,0.12)"></div><div style="flex:1;background:#FDF6E9;border-radius:3px;height:18px;border:1px solid rgba(107,66,38,0.12)"></div><div style="flex:1;background:#FDF6E9;border-radius:3px;height:18px;border:1px solid rgba(107,66,38,0.12)"></div></div>
           </div>
-          <div id="tc-ck-vintage" style="margin-left:auto;width:22px;height:22px;border-radius:50%;background:#D4A853;display:none;align-items:center;justify-content:center;font-size:12px;color:#2C1810;font-weight:900;flex-shrink:0">&#10003;</div>
-        </div>
-        <div style="background:#2C1810;padding:8px 14px;border-top:2px solid #8B2500">
-          <div style="font-size:10px;font-weight:700;color:#D4A853;letter-spacing:.15em;font-family:Georgia,serif">Click to apply Vintage Chart theme</div>
+          <div style="background:#2C1810;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;border-top:2px solid #8B2500">
+            <div style="font-size:11px;font-weight:700;color:#D4A853;letter-spacing:.04em">Vintage</div>
+            <div id="tc-ck-vintage" style="width:15px;height:15px;border-radius:50%;background:#D4A853;display:none;align-items:center;justify-content:center;font-size:9px;color:#2C1810;font-weight:900">&#10003;</div>
+          </div>
         </div>
       </div>
     </div>
@@ -2976,13 +2963,8 @@ input[type="date"] { color-scheme: dark; }
     <div id="hidden-ops-list"></div>
   </div>
   <div class="card mb12">
-    <div class="ch"><div class="ct">Days Counters</div><div class="cm">Manage your counters</div></div>
-    <div id="dc-list"></div>
-    <div style="padding:11px 17px"><button class="btn bp bsm" onclick="dcAdd()">+ Add Counter</button></div>
-  </div>
-  <div class="card mb12">
     <div class="ch">
-      <div><div class="ct">About Meridian Mate</div><div class="cm">Maritime tools for Chief Mates</div></div>
+      <div><div class="ct">About Meridian Mate</div><div class="cm">Maritime tools for ship officers</div></div>
       <div class="bdg dt">v<span id="about-ver">3.2.0</span></div>
     </div>
     <div class="cb">
@@ -2996,9 +2978,12 @@ input[type="date"] { color-scheme: dark; }
 </svg></div>
         <div>
           <div style="font-size:18px;font-weight:800;letter-spacing:-0.01em">Meridian <span style="color:var(--ac)">Mate</span></div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px;font-style:italic">Maritime tools for Chief Mates</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px;font-style:italic">Maritime tools for ship officers</div>
           <div style="font-size:11px;color:var(--ink3);margin-top:4px">v<span id="about-ver2"></span> &bull; <span id="about-date"></span></div>
         </div>
+      </div>
+      <div style="font-size:12.5px;color:var(--ink2);line-height:1.6;margin-bottom:16px">
+        A free, open toolkit for ship officers &mdash; daily work planning, drills, jobs, safety tracking, and voyage management, all in one place. No login, no subscription, no ads. Your data stays on your device.
       </div>
       <div class="dvd"></div>
       <!-- Developer info -->
@@ -4040,7 +4025,7 @@ cndRender = function() {
 </html>
 <script>
 // ============================================================
-// MERIDIAN C/O v4.0 - IndexedDB + Save Backup + Clear Example Data
+// MERIDIAN MATE - IndexedDB + Save Backup + Clear Example Data
 // ============================================================
 
 // ── BUNDLE DEFINITIONS ──────────────────────────────────────
@@ -4418,7 +4403,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.5.0';
+var APP_VERSION = '5.6.1';
 var BUILD_DATE  = '16 Jun 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';

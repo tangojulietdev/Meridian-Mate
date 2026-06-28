@@ -1,7 +1,7 @@
 {
   "name": "Meridian Mate",
   "short_name": "Meridian",
-  "description": "Maritime tools for Chief Mates — by Tango Juliet Dev",
+  "description": "Maritime tools for ship officers — by tangojulietdev",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
