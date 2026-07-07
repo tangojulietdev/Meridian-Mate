@@ -2624,10 +2624,8 @@ input[type="date"] { color-scheme: dark; }
   <div class="logo">Meridian <em>Mate</em></div>
   <div class="vsep"></div>
   <div class="vlbl" id="vlbl">MV Vessel</div>
-  <div class="off-pill" id="offpill"><div style="width:5px;height:5px;border-radius:50%;background:var(--red)"></div>Offline</div>
   <div class="spacer"></div>
   <div class="utc" id="utc">00:00 UTC</div>
-  <div class="sync-dot offline" id="sync-dot" title="Sync status" onclick="showPage('settings')" style="cursor:pointer"></div>
   <button class="save-btn" onclick="saveBackup()" title="Save backup file">&#128190; Save</button>
   <button class="tbtn" onclick="cycleTheme()" id="theme-btn" title="Switch theme">&#9728;</button>
   <button class="tbtn" onclick="showPage('settings')" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -2658,7 +2656,7 @@ input[type="date"] { color-scheme: dark; }
 <div class="page on" id="pg-today">
   <div class="ph">
     <div><div class="ph-t" id="today-h">Good morning, Chief</div><div class="ph-s" id="today-d">Loading...</div></div>
-    <div class="bdg dt"><span class="bdot"></span>At Sea</div>
+    <div class="bdg dt" id="today-status"><span class="bdot"></span>At Sea</div>
   </div>
   <div class="flex" style="justify-content:space-between;align-items:center">
     <div class="slbl" style="margin-top:0">Days Counters</div>
@@ -2682,6 +2680,7 @@ input[type="date"] { color-scheme: dark; }
     <div class="flex gap8">
       <button class="btn bsm" id="wp-view-day" onclick="wpSetView('day')">Day</button>
       <button class="btn bsm bp" id="wp-view-month" onclick="wpSetView('month')">Month</button>
+      <button class="btn bsm" id="wp-view-crew" onclick="wpSetView('crew')">By Crew</button>
       <button class="btn bsm" onclick="wpCopy()">Copy Plan</button>
       <button class="btn bp bsm" onclick="wpAddModal()">+ Add Task</button>
     </div>
@@ -2696,12 +2695,11 @@ input[type="date"] { color-scheme: dark; }
   </div>
   <div class="card mb12">
     <div class="ch">
-      <div><div class="ct" id="wp-day-lbl">Work Plan</div><div class="cm" id="wp-team-lbl">Deck Team</div></div>
+      <div><div class="ct" id="wp-day-lbl">Work Plan</div></div>
       <div class="flex gap8">
         <select class="fs" id="wp-status" style="height:28px;font-size:12px;width:auto;padding:0 10px" onchange="wpSetStatus(this.value)">
-          <option value="sea">🌊 At Sea</option><option value="port">🏗️ In Port</option><option value="anchor">⚓ At Anchor</option><option value="rest">😴 Rest Day</option><option value="weather">⛈️ Bad Weather</option><option value="working">📋 Working Day</option>
+          <option value="sea">🌊 At Sea</option><option value="port">🏗️ In Port</option><option value="anchor">⚓ At Anchor</option><option value="rest">😴 Rest Day</option><option value="weather">⛈️ Bad Weather</option>
         </select>
-        <button class="btn bxs bgh" onclick="wpTeamModal()">Team</button>
         <button class="btn bxs" onclick="wpAllDone()">All Done</button>
       </div>
     </div>
@@ -2739,6 +2737,17 @@ input[type="date"] { color-scheme: dark; }
     <div class="card">
       <div id="wp-month-grid" style="padding:12px"></div>
     </div>
+  </div>
+
+  <!-- BY CREW / ASSIGNMENT VIEW -->
+  <div id="wp-crew-view" style="display:none">
+    <div class="card mb12">
+      <div style="padding:11px 13px">
+        <div class="f11 c3 fw7" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px">Filter by crew</div>
+        <div id="wp-crew-chips" class="flex gap6" style="flex-wrap:wrap"></div>
+      </div>
+    </div>
+    <div id="wp-crew-list"></div>
   </div>
 </div>
 
@@ -2884,7 +2893,7 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.7.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.8.1</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -4112,7 +4121,34 @@ var BUNDLES = [
    ]},
 ];
 
-var EMOJIS = ['⚓','⛵','⚙','⚠','✅','✔','⛽','✏','❤','☀','⚡','⏰','⌛','⚑','⛩','⚒','⛏','⛺','⛳','☎','✉','✂','⚪','⭐','♻','⚫','❗','❓','⚔','⛲','⚜','⛰'];
+var EMOJIS = [
+  // Vessels & craft
+  '⚓','⛵','🚢','🛳️','⛴️','🚤','🛥️','🛶','🚧',
+  // Navigation & bridge
+  '🧭','🗺️','📡','📻','🔭','📍','🎯','🚦','🛰️','🆘',
+  // Cargo & lifting
+  '📦','🏗️','⚖️','⛓️','🪝','🏋️','📊','📈','🏷️',
+  // Deck, tools & mooring
+  '⚙','⚒','⛏','🔧','🔨','🛠️','🔩','🪛','🧰','🪜','🪢','🧵','🔗',
+  // Flags & signals
+  '⚑','🚩','🏴','🏳️','🎌','⛩',
+  // Safety / LSA / FFA
+  '🛟','🦺','⛑️','🧯','🚨','🔥','🥽','🧤','🥾','⚠',
+  // Medical
+  '💊','🩹','⚕️','🏥','🩺','🌡️',
+  // Fuel & environment
+  '⛽','🛢️','💧','🔋','♻',
+  // Weather & sea
+  '🌊','🌪️','⛈️','🌧️','❄️','⚡','🌫️','☀','🌙','⭐','🧊',
+  // Inspection & documents
+  '🔍','🔎','📋','📝','📄','📑','🗂️','📁','✅','✔','❌','❗','❓','📌','🖊️','✏',
+  // Comms & time
+  '📞','☎','📱','✉','📧','📢','📣','🔔','⏰','⌛','⏳','📅','📆','🕐',
+  // Crew & people
+  '👷','👥','🫡','🤝','🧑‍✈️','👨‍🔧',
+  // Misc ops
+  '💡','🔑','🗝️','🏆','🎖️','✨','🎉','🌐','⚜','⚔','⛲','⛰','❤','⚪','⚫','⛺','✂','⛳'
+];
 var COLORS = ['#3b82f6','#8b5cf6','#ef4444','#f97316','#eab308','#14b8a6','#a855f7','#64748b','#06b6d4','#10b981','#f59e0b','#6366f1','#ec4899','#0ea5e9','#84cc16','#f43f5e'];
 
 // ── DEFAULT DATA ─────────────────────────────────────────────
@@ -4195,7 +4231,7 @@ var S = {
   custom_bundles: [],
   deleted_bundles: [],
   todos: [],
-  updated: 0  // Zero means fresh install - cloud always wins
+  updated: 0  // Last-modified timestamp (set on every save)
 };
 
 // ── INDEXEDDB ────────────────────────────────────────────────
@@ -4236,26 +4272,15 @@ function dbLoad(cb) {
 function dbSave() {
   if (!DB) return;
   S.updated = Date.now();
-  setSyncDot('saving');
   var tx = DB.transaction(STORE_NAME, 'readwrite');
   var store = tx.objectStore(STORE_NAME);
   store.put(S, RECORD_KEY);
-  tx.oncomplete = function() { setSyncDot('saved'); };
-  tx.onerror = function() { setSyncDot('saved'); };
 }
 
 // Debounced auto-save - every change triggers save after 400ms
 function autoSave() {
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(dbSave, 400);
-}
-
-function setSyncDot(state) {
-  var dot = document.getElementById('sync-dot');
-  if (!dot) return;
-  dot.className = 'sync-dot';
-  if (state === 'saving') { dot.classList.add('saving'); dot.title = 'Saving...'; }
-  else { dot.style.background = 'var(--grn)'; dot.title = 'Saved to device'; }
 }
 
 // ── TOAST NOTIFICATION ───────────────────────────────────────
@@ -4394,7 +4419,7 @@ function displayToDTL(str) {
 function keyFromDate(d) { return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
 function dateFromKey(k) { var p=k.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
 function getDay(k) {
-  if (!S.wplans[k]) S.wplans[k] = {team:'Deck Team',status:'working',tasks:[],safetyTopic:'',safetyNotes:''};
+  if (!S.wplans[k]) S.wplans[k] = {team:'Deck Team',status:'sea',tasks:[],safetyTopic:'',safetyNotes:''};
   return S.wplans[k];
 }
 function allBundles() { return BUNDLES.concat(S.custom_bundles || []); }
@@ -4409,8 +4434,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.7.0';
-var BUILD_DATE  = '16 Jun 2026';
+var APP_VERSION = '5.8.1';
+var BUILD_DATE  = '08 Jul 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
 var ACTIVE_BUNDLE = null;
@@ -4446,9 +4471,6 @@ function boot2() {
   applyTheme(S.theme);
   updateVessel();
   tick(); clearInterval(window._tickI); window._tickI = setInterval(tick, 1000);
-  window.addEventListener('online', function() { setSyncDot('saved'); });
-  window.addEventListener('offline', function() { setSyncDot('offline'); });
-  if (!navigator.onLine) setSyncDot('offline');
   renderToday(); renderWP(); renderTiles(); todoInit();
   renderPortStrip(); if (ACTIVE_PORT) renderPortDetail(ACTIVE_PORT);
   renderJobs(); renderRAG(); renderDrills();
@@ -4547,6 +4569,13 @@ function renderToday() {
     return port.name + (eta ? ' • ' + eta : '');
   })();
   if (td) td.textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) + ' • Next port: ' + nextPortStr;
+  // Live status badge (reflects today's work-plan status)
+  var tsb = document.getElementById('today-status');
+  if (tsb) {
+    var _td = S.wplans[todayKey()];
+    var _sm = WP_STATUS[_td && _td.status] || WP_STATUS.sea;
+    tsb.innerHTML = '<span class="bdot"></span>' + _sm.label;
+  }
   renderDCStrip();
 
   // ── BUILD LIVE PRIORITY FEED FROM REAL DATA ──────────────────
@@ -4654,7 +4683,7 @@ function genBrief() {
   var todayTasks = (function(){
     var day = getDay(todayKey());
     var t = day.tasks.filter(function(w){return !w.done;});
-    return t.map(function(w,i){return '  '+(i+1)+'. '+w.text+(w.carriedFrom?' [Carried]':'');}).join('\n') || '  No tasks assigned';
+    return t.map(function(w,i){var rl=WP_ROLES[w.assignee];return '  '+(i+1)+'. '+w.text+(rl?' ['+rl.ab+']':'')+(w.carriedFrom?' [Carried]':'');}).join('\n') || '  No tasks assigned';
   })();
   var lines = [
     'DAILY BRIEF - '+d,'='.repeat(48),
@@ -4796,7 +4825,6 @@ var WP_STATUS = {
   anchor: {label:'At Anchor',   icon:'⚓'},
   rest:   {label:'Rest Day',    icon:'😴'},
   weather:{label:'Bad Weather', icon:'⛈️'},
-  working:{label:'Working Day', icon:'📋'},
 };
 
 function renderWP() {
@@ -4818,7 +4846,7 @@ function renderWPStrip() {
     var tasks = day ? day.tasks : [];
     var done = tasks.filter(function(t){return t.done;}).length;
     var total = tasks.length;
-    var sm = WP_STATUS[day&&day.status] || WP_STATUS.working;
+    var sm = WP_STATUS[day&&day.status] || WP_STATUS.sea;
     var dn = d.toLocaleDateString('en-GB',{weekday:'short'}).toUpperCase();
     var bg = isActive ? 'background:var(--ac-d);border-color:var(--ac)' : 'background:var(--elev);border-color:var(--ln2)';
     var prog = '';
@@ -4863,27 +4891,119 @@ var WP_MONTH_DATE = new Date();
 
 function wpSetView(view) {
   WP_VIEW = view;
-  var dayEls  = ['wk-strip','wp-nav-lbl'];
   var dayBtn  = document.getElementById('wp-view-day');
   var monBtn  = document.getElementById('wp-view-month');
-  if (dayBtn) dayBtn.classList.toggle('bp', view==='day');
-  if (monBtn) monBtn.classList.toggle('bp', view==='month');
+  var crewBtn = document.getElementById('wp-view-crew');
+  if (dayBtn)  dayBtn.classList.toggle('bp', view==='day');
+  if (monBtn)  monBtn.classList.toggle('bp', view==='month');
+  if (crewBtn) crewBtn.classList.toggle('bp', view==='crew');
 
   var monthView = document.getElementById('wp-month-view');
-  // Day view elements - find all the day-mode cards by walking siblings
+  var crewView  = document.getElementById('wp-crew-view');
   var dayCards = document.querySelectorAll('#pg-workplan > .card, #pg-workplan > .flex, #pg-workplan > #wp-carry');
+  var skip = function(el){ return el.id==='wp-month-view' || el.id==='wp-crew-view'; };
+
+  // Hide all special views first
+  if (monthView) monthView.style.display = 'none';
+  if (crewView)  crewView.style.display  = 'none';
 
   if (view === 'month') {
+    dayCards.forEach(function(el){ if(!skip(el)) el.style.display='none'; });
     if (monthView) monthView.style.display = '';
-    dayCards.forEach(function(el){ if(el.id!=='wp-month-view') el.style.display='none'; });
     WP_MONTH_DATE = dateFromKey(WP_DATE) || new Date();
     renderWPMonth();
+  } else if (view === 'crew') {
+    dayCards.forEach(function(el){ if(!skip(el)) el.style.display='none'; });
+    if (crewView) crewView.style.display = '';
+    renderWPCrew();
   } else {
-    if (monthView) monthView.style.display = 'none';
-    dayCards.forEach(function(el){ el.style.display=''; });
+    dayCards.forEach(function(el){ if(!skip(el)) el.style.display=''; });
     renderWPStrip();
     renderWPDay();
   }
+}
+
+// ── BY-CREW ASSIGNMENT VIEW ──────────────────────────────────
+var WP_CREW_FILTER = 'all';
+function wpCrewSetFilter(role){ WP_CREW_FILTER = role; renderWPCrew(); }
+function wpCrewGoto(dk){ WP_DATE = dk; wpSetView('day'); }
+function wpCrewToggle(dk,id){
+  var day = S.wplans[dk]; if(!day) return;
+  var t = day.tasks.find(function(x){return x.id===id;}); if(!t) return;
+  t.done = !t.done;
+  autoSave(); renderWPCrew(); renderWPStrip();
+}
+function renderWPCrew(){
+  // Gather every assigned task across all dates, grouped by role
+  var byRole = {}; Object.keys(WP_ROLES).forEach(function(r){ byRole[r]=[]; });
+  Object.keys(S.wplans||{}).forEach(function(dk){
+    var day = S.wplans[dk]; if(!day || !day.tasks) return;
+    day.tasks.forEach(function(t){
+      if(t.assignee && WP_ROLES[t.assignee]) byRole[t.assignee].push({t:t, dk:dk});
+    });
+  });
+
+  // Filter chips with counts
+  var chipsEl = document.getElementById('wp-crew-chips');
+  var totalAll = 0; Object.keys(byRole).forEach(function(r){ totalAll += byRole[r].length; });
+  if(chipsEl){
+    var chips = '<button class="btn bxs'+(WP_CREW_FILTER==='all'?' bp':'')+'" onclick="wpCrewSetFilter(\'all\')">All ('+totalAll+')</button>';
+    chips += Object.keys(WP_ROLES).map(function(r){
+      var rr = WP_ROLES[r]; var n = byRole[r].length; var on = WP_CREW_FILTER===r;
+      return '<button class="btn bxs" onclick="wpCrewSetFilter(\''+r+'\')" style="'+
+        (on?'background:'+rr.c+';color:#fff;border-color:'+rr.c:'border-color:'+rr.c+'55;color:'+rr.c)+
+        ';opacity:'+(n?'1':'.4')+'">'+rr.ab+' ('+n+')</button>';
+    }).join('');
+    chipsEl.innerHTML = chips;
+  }
+
+  var showRoles = WP_CREW_FILTER==='all' ? Object.keys(WP_ROLES) : [WP_CREW_FILTER];
+  var listEl = document.getElementById('wp-crew-list'); if(!listEl) return;
+  var today = todayKey();
+  var sortByDate = function(a,b){ return a.dk<b.dk?-1:a.dk>b.dk?1:0; };
+  var renderItem = function(x){
+    var t = x.t, d = dateFromKey(x.dk);
+    var dstr = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    var isToday = x.dk===today, isOverdue = (x.dk<today && !t.done);
+    var pri = t.urgent?'<span class="bdg dr" style="font-size:9px;margin-left:6px">URGENT</span>':
+      t.priority==='high'?'<span class="bdg da" style="font-size:9px;margin-left:6px">HIGH</span>':'';
+    var when = isToday?'<span style="color:var(--ac);font-weight:600">Today</span>':
+      isOverdue?'<span style="color:var(--amb);font-weight:600">Overdue &middot; '+dstr+'</span>':dstr;
+    return '<div style="display:flex;align-items:center;gap:9px;padding:9px 15px;border-top:1px solid var(--ln)">'+
+      '<div class="wp-cb '+(t.done?'on':'')+'" style="flex-shrink:0" onclick="wpCrewToggle(\''+x.dk+'\','+t.id+')"></div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="f13 fw6" style="'+(t.done?'text-decoration:line-through;color:var(--ink3)':'')+';word-break:break-word">'+wpEsc(t.text)+pri+'</div>'+
+        '<div class="f11 c3" style="margin-top:2px">'+when+'</div>'+
+      '</div>'+
+      '<button class="btn bxs bgh" onclick="wpCrewGoto(\''+x.dk+'\')" title="Open that day">Open</button>'+
+    '</div>';
+  };
+
+  var html = '', anyShown = false;
+  showRoles.forEach(function(r){
+    var items = byRole[r]; if(!items.length) return;
+    anyShown = true;
+    var rr = WP_ROLES[r];
+    var pending = items.filter(function(x){return !x.t.done;}).sort(sortByDate);
+    var done    = items.filter(function(x){return  x.t.done;}).sort(sortByDate);
+    html += '<div class="card mb12">'+
+      '<div class="ch" style="border-left:4px solid '+rr.c+'">'+
+        '<div><div class="ct" style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:'+rr.c+';display:inline-block"></span>'+rr.label+'</div>'+
+        '<div class="cm">'+pending.length+' pending'+(done.length?' &middot; '+done.length+' done':'')+'</div></div>'+
+      '</div>'+
+      '<div style="padding-bottom:4px">'+
+        pending.map(renderItem).join('')+
+        done.map(renderItem).join('')+
+      '</div></div>';
+  });
+  if(!anyShown){
+    html = '<div class="card"><div style="text-align:center;padding:42px 20px;color:var(--ink3)">'+
+      '<div style="font-size:32px;margin-bottom:10px">&#128100;</div>'+
+      '<div class="f14 fw6 mb8">No tasks assigned'+(WP_CREW_FILTER!=='all'?' to '+WP_ROLES[WP_CREW_FILTER].label:' yet')+'</div>'+
+      '<div class="f12">Open the Day view and tap the &#128100; button on a task to assign it.</div>'+
+    '</div></div>';
+  }
+  listEl.innerHTML = html;
 }
 
 function wpMonthNav(dir) {
@@ -5140,6 +5260,42 @@ function wpInitDragSort(container, dayKey) {
   });
 }
 
+// ── TASK ASSIGNMENT (crew / roles) ───────────────────────────
+var WP_ROLES = {
+  master:{label:'Master',        ab:'MASTER', c:'#eab308'},
+  co:    {label:'Chief Officer',  ab:'C/O',    c:'#3b82f6'},
+  o2:    {label:'2nd Officer',    ab:'2/O',    c:'#8b5cf6'},
+  o3:    {label:'3rd Officer',    ab:'3/O',    c:'#06b6d4'},
+  ce:    {label:'Chief Engineer', ab:'C/E',    c:'#ef4444'},
+  bosun: {label:'Bosun',          ab:'BOSUN',  c:'#f59e0b'},
+  deck:  {label:'Deck Crew',      ab:'DECK',   c:'#10b981'},
+  engine:{label:'Engine Crew',    ab:'E/R',    c:'#f97316'},
+  galley:{label:'Galley',         ab:'GALLEY', c:'#ec4899'}
+};
+function wpEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function wpRoleBadge(role){
+  var r = WP_ROLES[role]; if(!r) return '';
+  return '<span class="bdg" style="font-size:9px;margin-right:5px;background:'+r.c+'22;color:'+r.c+';border:1px solid '+r.c+'55" title="Assigned to '+r.label+'">&#128100; '+r.ab+'</span>';
+}
+function wpAssign(k,id){
+  var day=getDay(k); var t=day.tasks.find(function(x){return x.id===id;}); if(!t)return;
+  var grid = Object.keys(WP_ROLES).map(function(key){
+    var r=WP_ROLES[key]; var on=(t.assignee===key);
+    return '<button type="button" class="btn bsm" onclick="wpSetRole(&quot;'+k+'&quot;,'+id+',&quot;'+key+'&quot;)" '+
+      'style="'+(on?'background:'+r.c+';color:#fff;border-color:'+r.c:'border-color:'+r.c+';color:'+r.c)+'">'+r.label+'</button>';
+  }).join('');
+  openModal('Assign Task',
+    '<div class="f12 c3" style="margin-bottom:10px;padding:8px 10px;background:var(--surf);border-radius:var(--rl);border:1px solid var(--ln)">&#128203; '+wpEsc(t.text)+'</div>'+
+    '<div class="fg"><label>Assign to</label><div class="flex gap6" style="flex-wrap:wrap">'+grid+'</div></div>',
+    (t.assignee?'<button class="btn bdn bxs" onclick="wpSetRole(&quot;'+k+'&quot;,'+id+',&quot;none&quot;)">Unassign</button>':'')+
+    '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
+}
+function wpSetRole(k,id,role){
+  var day=getDay(k); var t=day.tasks.find(function(x){return x.id===id;}); if(!t)return;
+  t.assignee = (role==='none') ? null : role;
+  autoSave(); closeModal(); renderWPDay(); renderWPStrip();
+}
+
 function renderWPDay() {
   var k = WP_DATE, today = todayKey();
   var isToday = k===today, isPast = k<today, isFuture = k>today;
@@ -5150,8 +5306,7 @@ function renderWPDay() {
   if (navEl) navEl.textContent = (isToday?'TODAY - ':isFuture?'PLANNED - ':'HISTORY - ')+lbl;
   var dlbl = document.getElementById('wp-day-lbl');
   if (dlbl) dlbl.textContent = isToday ? 'Work Plan - Today' : isFuture ? 'Pre-Plan - '+d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}) : 'History - '+d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-  var clbl = document.getElementById('wp-team-lbl'); if (clbl) clbl.textContent = day.team||'Deck Team';
-  var sel = document.getElementById('wp-status'); if (sel) { sel.value=day.status||'working'; sel.disabled=false; }
+  var sel = document.getElementById('wp-status'); if (sel) { sel.value=day.status||'sea'; sel.disabled=false; }
   // Carry banner
   var carry = document.getElementById('wp-carry');
   if (carry) {
@@ -5190,8 +5345,9 @@ function renderWPDay() {
         '<div class="wp-drag-handle" title="Drag to reorder">&#8942;&#8942;</div>'+
         '<div class="wp-cb '+(w.done?'on':'')+'" onclick="wpToggle(\''+k+'\','+w.id+')"></div>'+
         '<div class="wp-num">'+(i+1)+'.</div>'+
-        '<div style="flex:1">'+cf+portTag+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+w.text+'</span></div>'+
+        '<div style="flex:1">'+cf+portTag+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+wpRoleBadge(w.assignee)+w.text+'</span></div>'+
         (!w.done?'<button class="btn bxs bgh" onclick="wpShift(\''+k+'\','+w.id+',\''+nk+'\',\''+ndL+'\')" style="font-size:11px;opacity:.55" title="Move to '+ndL+'">→'+ndL+'</button>':'')+
+        '<button class="btn bxs bgh" onclick="wpAssign(&quot;'+k+'&quot;,'+w.id+')" title="Assign to crew" style="'+(w.assignee?'opacity:1':'opacity:.55')+'">&#128100;</button>'+
         '<button class="btn bxs bgh" onclick="wpEditTask(&quot;'+k+'&quot;,'+w.id+')">✎</button>'+
         '<button class="btn bxs bgh cr" onclick="wpDel(\''+k+'\','+w.id+')" style="margin-left:3px">x</button>'+
       '</div>';
@@ -5209,7 +5365,7 @@ function wpNav(dir) {
   renderWP();
 }
 function wpJump(k) { WP_DATE=k; renderWP(); }
-function wpSetStatus(v) { getDay(WP_DATE).status=v; autoSave(); renderWPStrip(); }
+function wpSetStatus(v) { getDay(WP_DATE).status=v; autoSave(); renderWPStrip(); if(WP_DATE===todayKey()) renderToday(); }
 function wpAdd() {
   var inp=document.getElementById('wp-inp'); var text=inp&&inp.value.trim(); if(!text)return;
   getDay(WP_DATE).tasks.push({id:Date.now(),text:text,done:false,urgent:false,carriedFrom:null});
@@ -5224,6 +5380,18 @@ function wpDel(k,id) {
   autoSave(); renderWPDay(); renderWPStrip();
 }
 var _wpePri = 'normal';
+var _wpeRole = null;
+function wpeRoleClick(role) {
+  _wpeRole = (role==='none') ? null : role;
+  Object.keys(WP_ROLES).forEach(function(key) {
+    var b=document.getElementById('wpr-'+key); if(!b) return;
+    var r=WP_ROLES[key]; var on=(_wpeRole===key);
+    b.style.background = on ? r.c : '';
+    b.style.color = on ? '#fff' : r.c;
+    b.style.borderColor = r.c;
+  });
+  var nb=document.getElementById('wpr-none'); if(nb) nb.classList.toggle('bp', _wpeRole===null);
+}
 function wpePriClick(pri) {
   _wpePri = pri;
   var clrs = {urgent:'var(--red)',high:'var(--amb)',normal:'var(--ac)',low:'var(--ink3)'};
@@ -5238,15 +5406,23 @@ function wpEditTask(k,id) {
   var day=getDay(k);
   var task=day.tasks.find(function(x){return x.id===id;}); if(!task)return;
   _wpePri = task.urgent?'urgent':(task.priority||'normal');
+  _wpeRole = task.assignee || null;
   var clrs = {urgent:'var(--red)',high:'var(--amb)',normal:'var(--ac)',low:'var(--ink3)'};
   var labels = {urgent:'Urgent',high:'High',normal:'Normal',low:'Low'};
   var priBtns = ['urgent','high','normal','low'].map(function(p){
     var on = p===_wpePri;
     return '<button type="button" class="btn bsm'+(on?' bp':'')+'" id="wpe-'+p+'" onclick="wpePriClick(&quot;'+p+'&quot;)" style="'+(on?'':'border-color:'+clrs[p]+';color:'+clrs[p]+'')+'">' + labels[p] + '</button>';
   }).join('');
+  var roleBtns = Object.keys(WP_ROLES).map(function(key){
+    var r=WP_ROLES[key]; var on=(_wpeRole===key);
+    return '<button type="button" class="btn bsm" id="wpr-'+key+'" onclick="wpeRoleClick(&quot;'+key+'&quot;)" '+
+      'style="'+(on?'background:'+r.c+';color:#fff;border-color:'+r.c:'border-color:'+r.c+';color:'+r.c)+'">'+r.ab+'</button>';
+  }).join('');
   openModal('Edit Task',
     '<div class="fg"><label>Task</label><input class="fi" id="wpe-text" value="'+task.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+'"></div>'+
-    '<div class="fg"><label>Priority</label><div class="flex gap6" style="flex-wrap:wrap">'+priBtns+'</div></div>',
+    '<div class="fg"><label>Priority</label><div class="flex gap6" style="flex-wrap:wrap">'+priBtns+'</div></div>'+
+    '<div class="fg"><label>Assign to (optional)</label><div class="flex gap6" style="flex-wrap:wrap">'+roleBtns+
+      '<button type="button" class="btn bsm bgh'+(_wpeRole===null?' bp':'')+'" id="wpr-none" onclick="wpeRoleClick(&quot;none&quot;)">None</button></div></div>',
     '<button class="btn bp bsm" onclick="wpSaveEditTask(&quot;'+k+'&quot;,'+id+')">Save</button>'+
     '<button class="btn bdn bxs" onclick="wpDel(&quot;'+k+'&quot;,'+id+');closeModal()">Delete</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -5258,6 +5434,7 @@ function wpSaveEditTask(k,id) {
   task.text=el.value.trim();
   task.urgent=(_wpePri==='urgent');
   task.priority=(_wpePri==='urgent'?'normal':_wpePri);
+  task.assignee=_wpeRole||null;
   autoSave(); closeModal(); renderWPDay(); renderWPStrip();
 }
 function wpAllDone() {
@@ -5288,12 +5465,6 @@ function wpSaveSafety() {
   day.safetyNotes=document.getElementById('wp-snotes').value||'';
   autoSave();
 }
-function wpTeamModal() {
-  var day=getDay(WP_DATE);
-  openModal('Team Settings','<div class="fg"><label>Team / Crew</label><input class="fi" id="wpt" value="'+(day.team||'Deck Team')+'"></div>',
-    '<button class="btn bp bsm" onclick="var t=document.getElementById(\'wpt\').value;if(t){getDay(\''+WP_DATE+'\').team=t;autoSave();document.getElementById(\'wp-team-lbl\').textContent=t;}closeModal()">Save</button>'+
-    '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
-}
 function wpAddModal() {
   var opts=[0,1,2,3,4,5,6,7].map(function(i){
     var d=new Date(); d.setDate(d.getDate()+i); var k=keyFromDate(d);
@@ -5314,7 +5485,7 @@ function wpAddModal() {
 function wpCopy() {
   var k=WP_DATE,day=getDay(k),d=dateFromKey(k);
   var lbl=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
-  var sm=WP_STATUS[day.status]||WP_STATUS.working;
+  var sm=WP_STATUS[day.status]||WP_STATUS.sea;
   var t='DAY WORK PLAN - '+lbl+'\n'+'='.repeat(42)+'\n'+S.vessel.name+' - '+S.vessel.coname+'\nStatus: '+sm.label+'\nTeam: '+(day.team||'Deck Team')+'\n\n';
   if(day.safetyTopic) t+='SAFETY TOPIC: '+day.safetyTopic+'\n'+(day.safetyNotes?day.safetyNotes+'\n':'')+'\n';
   t+='TASKS:\n';
