@@ -1,7 +1,7 @@
-// Meridian C/O Service Worker v9
+// Meridian C/O Service Worker v11
 // Strategy: Cache everything for offline, but always try network first for HTML
 
-const CACHE = 'meridian-co-v9';
+const CACHE = 'meridian-co-v11';
 const BASE = self.location.pathname.replace('/sw.js', '');
 
 self.addEventListener('install', function(e) {

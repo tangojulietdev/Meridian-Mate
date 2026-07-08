@@ -2893,7 +2893,7 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.8.1</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.8.3</div>
       <div class="f10 c3">04 Jun 2026</div>
     </div>
   </div>
@@ -3046,11 +3046,11 @@ input[type="date"] { color-scheme: dark; }
   <div class="card mb12">
     <div class="ch"><div class="ct">Backup &amp; Restore</div><div class="cm">Save to file &bull; restore from file</div></div>
     <div class="cb">
-      <div class="f12 c2 mb12">The <strong style="color:var(--ac)">Save</strong> button in the top bar downloads a complete backup JSON. Import it here to restore on any device.</div>
+      <div class="f12 c2 mb12">The <strong style="color:var(--ac)">Save</strong> button in the top bar downloads a complete backup <strong style="color:var(--ac)">.mate</strong> file. Import it here to restore on any device.</div>
       <div class="flex gap8 mb12" style="flex-wrap:wrap">
         <button class="btn bp" onclick="saveBackup()">&#128190; Save Backup Now</button>
         <button class="btn" onclick="document.getElementById('impf').click()">&#128228; Import Backup</button>
-        <input type="file" id="impf" accept=".json" style="display:none" onchange="importBackup(event)">
+        <input type="file" id="impf" accept=".mate,.json" style="display:none" onchange="importBackup(event)">
       </div>
       <div class="dvd"></div>
       <div class="flexb"><div><div class="f13 cr fw7">Wipe Everything</div><div class="f11 c3">Deletes all data including your own entries. Irreversible.</div></div><button class="btn bdn bxs" onclick="wipeAll()">Wipe All</button></div>
@@ -4319,8 +4319,8 @@ async function saveBackup() {
     }
     try {
       _fileHandle = await window.showSaveFilePicker({
-        suggestedName:'meridian-mate-backup.json',
-        types:[{description:'JSON backup',accept:{'application/json':['.json']}}]
+        suggestedName:'meridian-mate-backup.mate',
+        types:[{description:'Meridian Mate backup',accept:{'application/json':['.mate']}}]
       });
       var w = await _fileHandle.createWritable();
       await w.write(blob); await w.close();
@@ -4332,7 +4332,7 @@ async function saveBackup() {
   var date = new Date().toISOString().split('T')[0];
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
-  a.href = url; a.download = 'meridian-mate-backup-'+date+'.json'; a.click();
+  a.href = url; a.download = 'meridian-mate-backup-'+date+'.mate'; a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -4434,7 +4434,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.8.1';
+var APP_VERSION = '5.8.3';
 var BUILD_DATE  = '08 Jul 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
