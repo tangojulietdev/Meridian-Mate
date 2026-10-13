@@ -1,11 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meridian Mate">
@@ -2616,6 +2613,120 @@ input[type="date"] { color-scheme: dark; }
   border-left: 2px solid var(--ac);
 }
 
+
+/* ============================================================
+   REFINEMENT LAYER v5.9
+   Flat instrument-panel finish. Removes glow, glass and gradient
+   effects, fixes contrast, touch targets, focus and motion.
+   ============================================================ */
+
+/* Contrast: muted text now meets 4.5:1 on every surface */
+:root                      { --ink3:#8D919C; }
+[data-theme="nautical"]    { --ink3:#60849C; }
+[data-theme="light"]       { --ink2:#536D6A; --ink3:#566C6A; }
+[data-theme="vintage"]     { --ink3:#836348; }
+
+html { -webkit-text-size-adjust:100%; }
+html[data-theme] body { -webkit-tap-highlight-color:transparent; }
+html[data-theme] body button, html[data-theme] body [onclick] { touch-action:manipulation; }
+
+/* Flat surfaces: hairline borders, no blur, no glow */
+html[data-theme] body .card,
+html[data-theme] body .stat,
+html[data-theme] body .dc-card,
+html[data-theme] body .pf-item,
+html[data-theme] body .tile,
+html[data-theme] body .kbc,
+html[data-theme] body .rag-card,
+html[data-theme] body .pchip,
+html[data-theme] body .poc,
+html[data-theme] body .c-hold,
+html[data-theme] body .cnd-sum-card,
+html[data-theme] body .cnd-hold,
+html[data-theme] body .bpw,
+html[data-theme] body .bsec {
+  background: var(--surf);
+  border-top-color: var(--ln2);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-theme] body .card:hover { background: var(--surf); border-color: var(--ln2); }
+html[data-theme] body .modal { background: var(--surf); box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+html[data-theme] body .rr, html[data-theme] body .ra, html[data-theme] body .rg,
+html[data-theme] body .pf-item.pfi-red, html[data-theme] body .pf-item.pfi-amb { box-shadow: none; }
+html[data-theme] body .ch::after, html[data-theme] body .stat::before, html[data-theme] body .bp::before { display: none; }
+
+/* Chrome: solid bars, one hairline, no gradient (Vintage keeps its own dark brown chrome) */
+html[data-theme]:not([data-theme="vintage"]) body #topbar  { background: var(--surf); box-shadow: none; border-bottom: 1px solid var(--ln2); }
+html[data-theme]:not([data-theme="vintage"]) body #sidebar { background: var(--base); box-shadow: none; border-right: 1px solid var(--ln); }
+html[data-theme]:not([data-theme="vintage"]) body #mobnav  { background: var(--surf); box-shadow: none; border-top: 1px solid var(--ln2); }
+html[data-theme] body #mobnav { padding-bottom: env(safe-area-inset-bottom,0); }
+html[data-theme]:not([data-theme="vintage"]) body .logo em { background: none; -webkit-text-fill-color: currentColor; color: var(--ac); }
+html[data-theme] body .mobit.on::after { box-shadow: none; }
+html[data-theme] body .ni:hover, html[data-theme] body .ni.on { padding-left: 12px; }
+
+/* Vintage top bar buttons: gold on dark brown (was dark red on dark brown, unreadable) */
+html[data-theme="vintage"] body #topbar .save-btn,
+html[data-theme="vintage"] body #topbar .tbtn { color: #D4A853; background: transparent; border-color: rgba(212,168,83,.4); }
+
+/* Buttons: solid accent, no glow, no ripple */
+html[data-theme] body .btn::after { display: none; }
+html[data-theme] body .btn { transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .1s ease; }
+html[data-theme] body .btn:active { transform: scale(.98); }
+html[data-theme] body .bp { background: var(--ac); border: 1px solid var(--ac); box-shadow: none; font-weight: 600; }
+html[data-theme] body .bp:hover { box-shadow: none; opacity: 1; filter: brightness(1.08); }
+html[data-theme="light"] body .bp { background: #0B7A82; border-color: #0B7A82; color: #fff; }
+html[data-theme="light"] body .bp:hover { background: #096A71; border-color: #096A71; filter: none; }
+html[data-theme] body .save-btn { display: inline-flex; align-items: center; gap: 6px; box-shadow: none; }
+
+/* Counter tiles: left-aligned readout, label above value */
+html[data-theme] body .dc-card {
+  display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+  padding: 12px 14px; border-left: 3px solid var(--ln3);
+  transition: border-color .15s ease, background-color .15s ease;
+}
+html[data-theme] body .dc-card:hover { transform: none; box-shadow: none; border-color: var(--ln3); }
+html[data-theme] body .dc-card.dc-warn { border-left-color: var(--red); }
+html[data-theme] body .dc-card.dc-due  { border-left-color: var(--amb); }
+html[data-theme] body .dc-card.dc-ok   { border-left-color: var(--grn); }
+html[data-theme] body .dc-lbl { order: 1; font-size: 11px; line-height: 1.3; margin-bottom: 6px; }
+html[data-theme] body .dc-num { order: 2; font-family: var(--mono); font-size: 30px; font-weight: 500; letter-spacing: -.02em; line-height: 1.05; font-variant-numeric: tabular-nums; text-shadow: none; }
+html[data-theme] body .dc-dir { order: 3; font-size: 12px; margin-top: 4px; }
+html[data-theme] body .dc-warn .dc-num, html[data-theme] body .dc-ok .dc-num, html[data-theme] body .dc-due .dc-num { text-shadow: none; }
+
+/* Type details */
+html[data-theme] body .ph-t { letter-spacing: -.015em; }
+html[data-theme] body .utc, html[data-theme] body .npill, html[data-theme] body .wday-d { font-variant-numeric: tabular-nums; }
+.ph .flex, .ph > div:last-child { flex-wrap: wrap; }
+.bdg svg { flex: none; }
+
+/* Keyboard focus */
+html[data-theme] body :focus-visible { outline: 2px solid var(--ac); outline-offset: 2px; border-radius: 6px; }
+html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible, html[data-theme] body .ft:focus-visible { outline: none; }
+
+/* Touch: 44px targets, 16px inputs so iOS never zooms on focus */
+@media (pointer: coarse) {
+  html[data-theme] body .btn { min-height: 44px; }
+  html[data-theme] body .btn.bsm { min-height: 40px; }
+  html[data-theme] body .btn.bxs { min-height: 36px; min-width: 36px; }
+  html[data-theme] body .tbtn { min-width: 40px; min-height: 40px; }
+  html[data-theme] body .ni, html[data-theme] body .mobit { min-height: 44px; }
+  html[data-theme] body .pt-tab { min-height: 40px !important; }
+  html[data-theme] body select.fs { min-height: 40px !important; height: auto !important; }
+  html[data-theme] body .add-inp { min-height: 36px !important; }
+  html[data-theme] body .wp-cb { position: relative; }
+  html[data-theme] body .wp-cb::after { content: ''; position: absolute; inset: -12px; }
+}
+@media (max-width: 768px) {
+  html[data-theme] body .fi, html[data-theme] body .fs, html[data-theme] body .ft { font-size: 16px; }
+  .page { padding: 16px 14px; }
+}
+
+/* Motion: respect the system setting */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
 </style>
 
 </head><body>
@@ -2626,7 +2737,7 @@ input[type="date"] { color-scheme: dark; }
   <div class="vlbl" id="vlbl">MV Vessel</div>
   <div class="spacer"></div>
   <div class="utc" id="utc">00:00 UTC</div>
-  <button class="save-btn" onclick="saveBackup()" title="Save backup file">&#128190; Save</button>
+  <button class="save-btn" onclick="saveBackup()" title="Save backup file" aria-label="Save backup file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg><span>Save</span></button>
   <button class="tbtn" onclick="cycleTheme()" id="theme-btn" title="Switch theme">&#9728;</button>
   <button class="tbtn" onclick="showPage('settings')" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 </header>
@@ -2640,6 +2751,8 @@ input[type="date"] { color-scheme: dark; }
   <div class="ng"><div class="ngl">Operations</div>
     <div class="ni" onclick="showPage('bundles')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>Operations</div>
     <div class="ni" onclick="showPage('voyage')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg></span>Voyage</div>
+    <div class="ni" onclick="showPage('cargo')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></svg></span>Cargo &amp; Stability</div>
+    <div class="ni" onclick="showPage('reports')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Reports</div>
   </div>
   <div class="ng"><div class="ngl">Jobs &amp; Safety</div>
     <div class="ni" onclick="showPage('pms')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>PMS &amp; Jobs<span class="npill nred" id="np-pms">0</span></div>
@@ -2678,8 +2791,8 @@ input[type="date"] { color-scheme: dark; }
   <div class="ph">
     <div><div class="ph-t">Day Work Plan</div><div class="ph-s">Plan ahead &bull; track today &bull; review history</div></div>
     <div class="flex gap8">
-      <button class="btn bsm" id="wp-view-day" onclick="wpSetView('day')">Day</button>
-      <button class="btn bsm bp" id="wp-view-month" onclick="wpSetView('month')">Month</button>
+      <button class="btn bsm bp" id="wp-view-day" onclick="wpSetView('day')">Day</button>
+      <button class="btn bsm" id="wp-view-month" onclick="wpSetView('month')">Month</button>
       <button class="btn bsm" id="wp-view-crew" onclick="wpSetView('crew')">By Crew</button>
       <button class="btn bsm" onclick="wpCopy()">Copy Plan</button>
       <button class="btn bp bsm" onclick="wpAddModal()">+ Add Task</button>
@@ -2893,8 +3006,8 @@ input[type="date"] { color-scheme: dark; }
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.8.3</div>
-      <div class="f10 c3">04 Jun 2026</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.9.0</div>
+      <div class="f10 c3" id="about-date-hdr"></div>
     </div>
   </div>
   <div class="card mb12">
@@ -3085,6 +3198,8 @@ input[type="date"] { color-scheme: dark; }
     <div class="mobit" onclick="showPage('todo')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>Todo</div>
     <div class="mobit" onclick="showPage('bundles')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>Ops</div>
     <div class="mobit" onclick="showPage('voyage')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg></div>Voyage</div>
+    <div class="mobit" onclick="showPage('cargo')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></svg></div>Cargo</div>
+    <div class="mobit" onclick="showPage('reports')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></div>Reports</div>
     <div class="mobit" onclick="showPage('pms')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>Jobs</div>
     <div class="mobit" onclick="showPage('safety')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Safety</div>
     <div class="mobit" onclick="showPage('drills')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>Drills</div>
@@ -3120,6 +3235,8 @@ input[type="date"] { color-scheme: dark; }
 
 
 <script>
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
 // ── CND FILE READER ───────────────────────────────────────────
 var CND = null; // parsed condition data
 var CND_TAB = 'summary';
@@ -3302,7 +3419,7 @@ function cndRenderSummary() {
         var vol = parseFloat(t.Obsvol||0);
         var fillClr = fill>80?'var(--red)':fill>60?'var(--amb)':fill>0?'var(--grn)':'var(--ink4)';
         return '<tr style="border-bottom:1px solid var(--ln);'+(i%2===0?'':'background:var(--elev)')+'">'+
-          '<td style="padding:8px 15px;font-weight:600;color:var(--ink1)">'+t.TankName+'</td>'+
+          '<td style="padding:8px 15px;font-weight:600;color:var(--ink1)">'+esc(t.TankName)+'</td>'+
           '<td style="padding:8px 10px;color:var(--ink3)">'+cat+'</td>'+
           '<td style="padding:8px 10px;text-align:right">'+vol.toFixed(1)+'</td>'+
           '<td style="padding:8px 10px;text-align:right;font-weight:600;color:var(--ac)">'+wt.toLocaleString(undefined,{maximumFractionDigits:0})+'</td>'+
@@ -3349,7 +3466,7 @@ function cndRenderHolds() {
         '<div class="cnd-hold-bar" style="background:'+(isEmpty?'var(--ink4)':fillClr)+'"></div>'+
         '<div class="cnd-hold-main">'+
           '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'+
-            '<div class="cnd-hold-name">'+t.TankName+'</div>'+
+            '<div class="cnd-hold-name">'+esc(t.TankName)+'</div>'+
             '<div style="display:flex;align-items:center;gap:8px">'+
               (isEmpty
                 ? '<span class="bdg dgr">Empty</span>'
@@ -3404,7 +3521,7 @@ function cndRenderBallast() {
     return '<div class="cnd-ballast">'+
       '<div style="width:4px;align-self:stretch;border-radius:2px;background:'+fillClr+';flex-shrink:0"></div>'+
       '<div style="flex:1">'+
-        '<div class="f13 fw6">'+t.TankName+'</div>'+
+        '<div class="f13 fw6">'+esc(t.TankName)+'</div>'+
         '<div class="f11 c3">LCG '+lcg.toFixed(2)+'m'+(Math.abs(tcg)>0 ? ' / TCG '+(tcg>0?'+':'')+tcg.toFixed(3)+'m' : '')+'</div>'+
       '</div>'+
       (isEmpty
@@ -3439,7 +3556,7 @@ function cndRenderFuel() {
         var isEmpty = vol===0;
         return '<div class="cnd-ballast">'+
           '<div style="width:4px;align-self:stretch;border-radius:2px;background:'+(isEmpty?'var(--ink3)':clr)+';flex-shrink:0"></div>'+
-          '<div style="flex:1"><div class="f13 fw6">'+t.TankName+'</div>'+
+          '<div style="flex:1"><div class="f13 fw6">'+esc(t.TankName)+'</div>'+
           '<div class="f11 c3">SpGr '+spgr.toFixed(3)+(parseFloat(t.Lcg||0)>0?' / LCG '+parseFloat(t.Lcg).toFixed(2)+'m':'')+'</div></div>'+
           (isEmpty
             ? '<span class="bdg dgr">Empty</span>'
@@ -3487,9 +3604,9 @@ function cndRenderDraft() {
   var dvals = document.getElementById('cnd-draft-vals');
   if (dvals) {
     dvals.innerHTML =
-      '<div class="fg"><label>Forward Draft (m)</label><input class="fi" value="'+dF.toFixed(2)+'" readonly></div>'+
-      '<div class="fg"><label>Mid Draft (m)</label><input class="fi" value="'+dM.toFixed(2)+'" readonly></div>'+
-      '<div class="fg"><label>Aft Draft (m)</label><input class="fi" value="'+dA.toFixed(2)+'" readonly></div>';
+      '<div class="fg"><label>Forward Draft (m)</label><input class="fi" value="'+esc(dF.toFixed(2))+'" readonly></div>'+
+      '<div class="fg"><label>Mid Draft (m)</label><input class="fi" value="'+esc(dM.toFixed(2))+'" readonly></div>'+
+      '<div class="fg"><label>Aft Draft (m)</label><input class="fi" value="'+esc(dA.toFixed(2))+'" readonly></div>';
   }
 
   var info = document.getElementById('cnd-stab-info');
@@ -3723,10 +3840,10 @@ function cndRenderStability() {
       var html = '';
       groups.forEach(function(g) {
         if (!g.items.length) return;
-        html += '<tr><td colspan="7" style="padding:8px 15px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:'+g.clr+';border-top:1px solid var(--ln);background:var(--elev)">'+g.label+'</td></tr>';
+        html += '<tr><td colspan="7" style="padding:8px 15px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:'+g.clr+';border-top:1px solid var(--ln);background:var(--elev)">'+esc(g.label)+'</td></tr>';
         g.items.forEach(function(t,i) {
           html += '<tr style="border-bottom:1px solid var(--ln)'+(i%2===0?'':';background:var(--elev)')+'">'+
-            '<td style="padding:7px 15px;color:var(--ink1)">'+t.name+'</td>'+
+            '<td style="padding:7px 15px;color:var(--ink1)">'+esc(t.name)+'</td>'+
             '<td style="text-align:right;padding:7px 10px;font-weight:600;color:'+g.clr+'">'+t.wt.toLocaleString(undefined,{maximumFractionDigits:0})+'</td>'+
             '<td style="text-align:right;padding:7px 10px">'+t.lcg.toFixed(3)+'</td>'+
             '<td style="text-align:right;padding:7px 10px;color:var(--ink2)">'+t.lmom.toLocaleString(undefined,{maximumFractionDigits:0})+'</td>'+
@@ -4344,12 +4461,12 @@ function importBackup(e) {
     try {
       var d = JSON.parse(ev.target.result);
       // Merge into S - keep keys that exist
-      var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles'];
+      var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos'];
       keys.forEach(function(k) { if (d[k] !== undefined) S[k] = d[k]; });
       dbSave();
       applyTheme(S.theme);
       boot2();
-      alert('Backup imported successfully.');
+      showToast('Backup imported successfully.');
     } catch(err) { alert('Invalid backup file.'); }
   };
   r.readAsText(f);
@@ -4371,7 +4488,7 @@ function clearExampleData() {
   ACTIVE_PORT = 'new_port';
   autoSave();
   boot2();
-  alert('Done! App is now clean and ready for your data.');
+  showToast('Done. App is clean and ready for your data.', 4000);
 }
 
 // ── WIPE ALL ──────────────────────────────────────────────────
@@ -4429,13 +4546,23 @@ function dl(text, name) {
   a.download = name; a.click(); URL.revokeObjectURL(a.href);
 }
 function cp(text, msg) {
-  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function(){ alert(msg||'Copied.'); }); }
-  else { var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert(msg||'Copied.'); }
+  function legacy() {
+    try {
+      var ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,ta.value.length);
+      var ok=document.execCommand('copy'); document.body.removeChild(ta);
+      showToast(ok ? (msg||'Copied.') : 'Copy blocked by browser. Select the text and copy manually.');
+    } catch(e) { showToast('Copy not available on this browser.'); }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ showToast(msg||'Copied.'); }, legacy);
+  } else { legacy(); }
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.8.3';
-var BUILD_DATE  = '08 Jul 2026';
+var APP_VERSION = '5.9.0';
+var BUILD_DATE  = '13 Oct 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
 var ACTIVE_BUNDLE = null;
@@ -4451,7 +4578,7 @@ function boot() {
   initDB(function() {
     dbLoad(function(saved) {
       if (saved) {
-        var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles'];
+        var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos'];
         keys.forEach(function(k) { if (saved[k] !== undefined) S[k] = saved[k]; });
       }
       if (S.ports && S.ports.length) ACTIVE_PORT = S.ports[0].id;
@@ -4468,6 +4595,7 @@ function boot2() {
   if (av1) av1.textContent = APP_VERSION || '3.2.0';
   if (av2) av2.textContent = APP_VERSION || '3.2.0';
   if (avd) avd.textContent = BUILD_DATE  || '';
+  var avh = document.getElementById('about-date-hdr'); if (avh) avh.textContent = BUILD_DATE || '';
   applyTheme(S.theme);
   updateVessel();
   tick(); clearInterval(window._tickI); window._tickI = setInterval(tick, 1000);
@@ -4506,7 +4634,7 @@ function vesselSave() {
     coname:document.getElementById('s-name').value||S.vessel.coname,
     eta:  document.getElementById('s-eta').value || S.vessel.eta
   };
-  autoSave(); updateVessel(); renderToday(); alert('Saved.');
+  autoSave(); updateVessel(); renderToday(); showToast('Saved.');
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────
@@ -4519,6 +4647,8 @@ function showPage(name) {
     if (oc.indexOf("'"+name+"'") >= 0) n.classList.add('on');
   });
 
+  if (name==='workplan') { var _wa=document.querySelector('#wk-strip .wday.on'); if(_wa&&_wa.scrollIntoView){try{_wa.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});}catch(e){}} }
+  var _am=document.querySelector('.mobit.on'); if(_am&&_am.scrollIntoView){try{_am.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});}catch(e){}}
   if (name==='settings') { updateVessel(); renderDCList(); renderHiddenOps(); }
   document.getElementById('main').scrollTop = 0;
 }
@@ -4667,7 +4797,7 @@ function renderToday() {
       var clr = i.pri==='red'?'var(--red)':i.pri==='amb'?'var(--amb)':i.pri==='blu'?'var(--blu)':'var(--ink4)';
       return '<div class="pf-item pfi-'+i.pri+'" onclick="'+i.fn+'">'+
         '<div class="pf-dot" style="background:'+clr+'"></div>'+
-        '<div class="pf-b"><div class="pf-t">'+i.title+'</div><div class="pf-s">'+i.sub+'</div></div>'+
+        '<div class="pf-b"><div class="pf-t">'+esc(i.title)+'</div><div class="pf-s">'+esc(i.sub)+'</div></div>'+
         '<button class="btn bxs bgh" onclick="event.stopPropagation();'+i.fn+'">Go</button>'+
       '</div>';
     }).join('');
@@ -4703,7 +4833,7 @@ function genBrief() {
     'SAFETY     : '+S.rag.filter(function(r){return r.status==='r';}).length+' RED / '+S.rag.filter(function(r){return r.status==='a';}).length+' AMBER / '+S.rag.filter(function(r){return r.status==='g';}).length+' GREEN',
     'ORDERS     : '+((S.orders.draft||[]).length)+' draft / '+((S.orders.submitted||[]).length)+' submitted','',
     'DECK WORK TODAY',todayTasks,'',
-    'DAYS COUNTERS',S.dcounters.map(function(c){return '  '+c.label+': '+dcDir(c);}).join('\n'),'',
+    'DAYS COUNTERS',S.dcounters.map(function(c){return '  '+(c.label)+': '+dcDir(c);}).join('\n'),'',
     '='.repeat(48),'Generated '+new Date().toUTCString(),'Meridian Mate - '+S.vessel.name
   ];
   var txt = lines.join('\n');
@@ -4738,7 +4868,7 @@ function dcClass(c) {
 }
 function dcNum(c) {
   if (!c.date) return '?';
-  return c.dir==='since' ? daysAgo(c.date) : Math.max(0,daysUntil(c.date));
+  return c.dir==='since' ? daysAgo(c.date) : daysUntil(c.date);
 }
 function dcDir(c) {
   if (!c.date) return 'tap to set date';
@@ -4756,7 +4886,7 @@ function renderDCStrip() {
   el.innerHTML = S.dcounters.map(function(c) {
     return '<div class="dc-card '+dcClass(c)+'" onclick="dcEdit('+c.id+')">'+
       '<div class="dc-num">'+dcNum(c)+'</div>'+
-      '<div class="dc-lbl">'+c.label+'</div>'+
+      '<div class="dc-lbl">'+esc(c.label)+'</div>'+
       '<div class="dc-dir">'+dcDir(c)+'</div>'+
     '</div>';
   }).join('');
@@ -4766,7 +4896,7 @@ function renderDCList() {
   if (!S.dcounters.length) { el.innerHTML='<div class="f12 c3" style="padding:11px 17px">No counters yet.</div>'; return; }
   el.innerHTML = S.dcounters.map(function(c) {
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px 17px;border-bottom:1px solid var(--ln)">'+
-      '<div style="flex:1"><div class="f13 fw6">'+c.label+'</div>'+
+      '<div style="flex:1"><div class="f13 fw6">'+esc(c.label)+'</div>'+
       '<div class="f11 c3">'+(c.dir==='since'?'Days since':'Days until')+' - '+(c.date?dcDir(c):'No date set')+(c.warnDays?' - Warn at '+c.warnDays+'d':'')+'</div></div>'+
       '<button class="btn bxs bgh" onclick="dcEdit('+c.id+')">Edit</button>'+
       '<button class="btn bxs bgh cr" onclick="dcDel('+c.id+')">x</button>'+
@@ -4777,7 +4907,7 @@ function dcAdd() {
   openModal('Add Days Counter',
     '<div class="fg"><label>Label</label><input class="fi" id="dc-lbl" placeholder="e.g. Last Bunkering"></div>'+
     '<div class="fg"><label>Direction</label><select class="fs" id="dc-dir"><option value="since">Days Since (counts up)</option><option value="until">Days Until (counts down)</option></select></div>'+
-    '<div class="fg"><label>Date</label><input type="date" class="fi" id="dc-date" value="'+todayKey()+'"></div>'+
+    '<div class="fg"><label>Date</label><input type="date" class="fi" id="dc-date" value="'+esc(todayKey())+'"></div>'+
     '<div class="fg"><label>Warn at (days) - optional</label><input type="number" class="fi" id="dc-warn" placeholder="e.g. 30"></div>',
     '<button class="btn bp bsm" onclick="dcSaveNew()">Add</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
@@ -4790,7 +4920,7 @@ function dcSaveNew() {
 function dcEdit(id) {
   var c = S.dcounters.find(function(x){return x.id===id;}); if (!c) return;
   openModal(c.label,
-    '<div class="fg"><label>Label</label><input class="fi" id="dce-lbl" value="'+c.label+'"></div>'+
+    '<div class="fg"><label>Label</label><input class="fi" id="dce-lbl" value="'+esc(c.label)+'"></div>'+
     '<div class="fg"><label>Direction</label><select class="fs" id="dce-dir"><option value="since"'+(c.dir==='since'?' selected':'')+'>Days Since</option><option value="until"'+(c.dir==='until'?' selected':'')+'>Days Until</option></select></div>'+
     '<div class="fg"><label>Date</label><input type="date" class="fi" id="dce-date" value="'+(c.date||'')+'"></div>'+
     '<div class="fg"><label>Warn at (days)</label><input type="number" class="fi" id="dce-warn" value="'+(c.warnDays||'')+'"></div>',
@@ -4859,7 +4989,7 @@ function renderWPStrip() {
       prog+(isToday?'<div class="wday-dot"></div>':'')+
     '</div>';
   }).join('');
-  setTimeout(function(){var a=el.querySelector('.wday.on');if(a)a.scrollIntoView({inline:'center',behavior:'smooth'});},50);
+  setTimeout(function(){var a=el.querySelector('.wday.on');if(a)a.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});},50);
   wpInitStripDropTargets(el);
 }
 
@@ -4988,7 +5118,7 @@ function renderWPCrew(){
     var done    = items.filter(function(x){return  x.t.done;}).sort(sortByDate);
     html += '<div class="card mb12">'+
       '<div class="ch" style="border-left:4px solid '+rr.c+'">'+
-        '<div><div class="ct" style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:'+rr.c+';display:inline-block"></span>'+rr.label+'</div>'+
+        '<div><div class="ct" style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:'+rr.c+';display:inline-block"></span>'+esc(rr.label)+'</div>'+
         '<div class="cm">'+pending.length+' pending'+(done.length?' &middot; '+done.length+' done':'')+'</div></div>'+
       '</div>'+
       '<div style="padding-bottom:4px">'+
@@ -4998,9 +5128,9 @@ function renderWPCrew(){
   });
   if(!anyShown){
     html = '<div class="card"><div style="text-align:center;padding:42px 20px;color:var(--ink3)">'+
-      '<div style="font-size:32px;margin-bottom:10px">&#128100;</div>'+
+      '<div style="margin-bottom:10px;color:var(--ink3)">'+ICON_USER(32)+'</div>'+
       '<div class="f14 fw6 mb8">No tasks assigned'+(WP_CREW_FILTER!=='all'?' to '+WP_ROLES[WP_CREW_FILTER].label:' yet')+'</div>'+
-      '<div class="f12">Open the Day view and tap the &#128100; button on a task to assign it.</div>'+
+      '<div class="f12">Open the Day view and tap the person icon on a task to assign it.</div>'+
     '</div></div>';
   }
   listEl.innerHTML = html;
@@ -5075,7 +5205,7 @@ function renderWPMonth() {
             tasks.slice(0,3).map(function(t){
               return '<div class="mcal-mini-task'+(t.done?' done':'')+'">'+
                 '<span class="mcal-mini-dot"></span>'+
-                '<span class="mcal-mini-txt">'+t.text+'</span>'+
+                '<span class="mcal-mini-txt">'+esc(t.text)+'</span>'+
               '</div>';
             }).join('')+
             (tasks.length>3 ? '<div class="mcal-mini-more">+'+(tasks.length-3)+' more</div>' : '')+
@@ -5090,7 +5220,7 @@ function renderWPMonth() {
         (tasks.length ? tasks.map(function(t){
           return '<div class="mcal-task'+(t.done?' done':'')+'">'+
             '<div class="mcal-task-cb'+(t.done?' on':'')+'" onclick="event.stopPropagation();mcalToggleTask(\''+key+'\','+t.id+')"></div>'+
-            '<span class="mcal-task-txt">'+t.text+'</span>'+
+            '<span class="mcal-task-txt">'+esc(t.text)+'</span>'+
             '<span class="mcal-task-del" onclick="event.stopPropagation();mcalDelTask(\''+key+'\','+t.id+')">&times;</span>'+
           '</div>';
         }).join('') : '<div class="f10 c3" style="padding:4px 0">No tasks yet</div>')+
@@ -5272,20 +5402,21 @@ var WP_ROLES = {
   engine:{label:'Engine Crew',    ab:'E/R',    c:'#f97316'},
   galley:{label:'Galley',         ab:'GALLEY', c:'#ec4899'}
 };
+var ICON_USER=function(s){return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';};
 function wpEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function wpRoleBadge(role){
   var r = WP_ROLES[role]; if(!r) return '';
-  return '<span class="bdg" style="font-size:9px;margin-right:5px;background:'+r.c+'22;color:'+r.c+';border:1px solid '+r.c+'55" title="Assigned to '+r.label+'">&#128100; '+r.ab+'</span>';
+  return '<span class="bdg" style="font-size:9px;margin-right:5px;background:'+r.c+'22;color:'+r.c+';border:1px solid '+r.c+'55" title="Assigned to '+esc(r.label)+'">'+ICON_USER(10)+' '+r.ab+'</span>';
 }
 function wpAssign(k,id){
   var day=getDay(k); var t=day.tasks.find(function(x){return x.id===id;}); if(!t)return;
   var grid = Object.keys(WP_ROLES).map(function(key){
     var r=WP_ROLES[key]; var on=(t.assignee===key);
     return '<button type="button" class="btn bsm" onclick="wpSetRole(&quot;'+k+'&quot;,'+id+',&quot;'+key+'&quot;)" '+
-      'style="'+(on?'background:'+r.c+';color:#fff;border-color:'+r.c:'border-color:'+r.c+';color:'+r.c)+'">'+r.label+'</button>';
+      'style="'+(on?'background:'+r.c+';color:#fff;border-color:'+r.c:'border-color:'+r.c+';color:'+r.c)+'">'+esc(r.label)+'</button>';
   }).join('');
   openModal('Assign Task',
-    '<div class="f12 c3" style="margin-bottom:10px;padding:8px 10px;background:var(--surf);border-radius:var(--rl);border:1px solid var(--ln)">&#128203; '+wpEsc(t.text)+'</div>'+
+    '<div class="f12 c3" style="margin-bottom:10px;padding:8px 10px;background:var(--surf);border-radius:var(--rl);border:1px solid var(--ln)">'+wpEsc(t.text)+'</div>'+
     '<div class="fg"><label>Assign to</label><div class="flex gap6" style="flex-wrap:wrap">'+grid+'</div></div>',
     (t.assignee?'<button class="btn bdn bxs" onclick="wpSetRole(&quot;'+k+'&quot;,'+id+',&quot;none&quot;)">Unassign</button>':'')+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -5347,7 +5478,7 @@ function renderWPDay() {
         '<div class="wp-num">'+(i+1)+'.</div>'+
         '<div style="flex:1">'+cf+portTag+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+wpRoleBadge(w.assignee)+w.text+'</span></div>'+
         (!w.done?'<button class="btn bxs bgh" onclick="wpShift(\''+k+'\','+w.id+',\''+nk+'\',\''+ndL+'\')" style="font-size:11px;opacity:.55" title="Move to '+ndL+'">→'+ndL+'</button>':'')+
-        '<button class="btn bxs bgh" onclick="wpAssign(&quot;'+k+'&quot;,'+w.id+')" title="Assign to crew" style="'+(w.assignee?'opacity:1':'opacity:.55')+'">&#128100;</button>'+
+        '<button class="btn bxs bgh" onclick="wpAssign(&quot;'+k+'&quot;,'+w.id+')" title="Assign to crew" aria-label="Assign to crew" style="'+(w.assignee?'opacity:1;color:var(--ac)':'opacity:.7')+'">'+ICON_USER(14)+'</button>'+
         '<button class="btn bxs bgh" onclick="wpEditTask(&quot;'+k+'&quot;,'+w.id+')">✎</button>'+
         '<button class="btn bxs bgh cr" onclick="wpDel(\''+k+'\','+w.id+')" style="margin-left:3px">x</button>'+
       '</div>';
@@ -5469,7 +5600,7 @@ function wpAddModal() {
   var opts=[0,1,2,3,4,5,6,7].map(function(i){
     var d=new Date(); d.setDate(d.getDate()+i); var k=keyFromDate(d);
     var lbl=i===0?'Today':i===1?'Tomorrow':d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    return '<option value="'+k+'"'+(k===WP_DATE?' selected':'')+'>'+lbl+'</option>';
+    return '<option value="'+esc(k)+'"'+(k===WP_DATE?' selected':'')+'>'+lbl+'</option>';
   }).join('');
   openModal('Add Task',
     '<div class="fg"><label>Task</label><input class="fi" id="wat" placeholder="e.g. Paint fwd deck port side"></div>'+
@@ -5486,8 +5617,8 @@ function wpCopy() {
   var k=WP_DATE,day=getDay(k),d=dateFromKey(k);
   var lbl=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
   var sm=WP_STATUS[day.status]||WP_STATUS.sea;
-  var t='DAY WORK PLAN - '+lbl+'\n'+'='.repeat(42)+'\n'+S.vessel.name+' - '+S.vessel.coname+'\nStatus: '+sm.label+'\nTeam: '+(day.team||'Deck Team')+'\n\n';
-  if(day.safetyTopic) t+='SAFETY TOPIC: '+day.safetyTopic+'\n'+(day.safetyNotes?day.safetyNotes+'\n':'')+'\n';
+  var t='DAY WORK PLAN - '+lbl+'\n'+'='.repeat(42)+'\n'+(S.vessel.name)+' - '+(S.vessel.coname)+'\nStatus: '+(sm.label)+'\nTeam: '+(day.team||'Deck Team')+'\n\n';
+  if(day.safetyTopic) t+='SAFETY TOPIC: '+(day.safetyTopic)+'\n'+(day.safetyNotes?day.safetyNotes+'\n':'')+'\n';
   t+='TASKS:\n';
   day.tasks.forEach(function(w,i){t+='  '+(i+1)+'. ['+(w.done?'v':' ')+'] '+w.text+(w.carriedFrom?' [Carried]':'')+(w.urgent?' [URGENT]':'')+'\n';});
   t+='\n'+'='.repeat(42)+'\n'+new Date().toUTCString();
@@ -5511,8 +5642,8 @@ function renderTiles() {
     return '<div class="tile" onclick="bvOpen(\''+b.id+'\')">'+
       (isCustom?'<div class="tile-mine">MINE</div>':'')+
       '<div class="tile-ico">'+b.icon+'</div>'+
-      '<div class="tile-name">'+b.name+'</div>'+
-      '<div class="tile-desc">'+b.desc+'</div>'+
+      '<div class="tile-name">'+esc(b.name)+'</div>'+
+      '<div class="tile-desc">'+esc(b.desc)+'</div>'+
       '<div class="tile-foot">'+
         '<div class="tile-stat" style="color:var(--ac)">'+stat+'</div>'+
         (total>0?'<div style="display:flex;align-items:center;gap:5px"><div class="tpb"><div class="tpf" style="width:'+pct+'%;background:var(--ac)"></div></div><div class="tpp">'+pct+'%</div></div>':'')+
@@ -5542,7 +5673,7 @@ function renderHiddenOps() {
     var b=BUNDLES.find(function(x){return x.id===id;}); if(!b)return'';
     return '<div style="display:flex;align-items:center;gap:12px;padding:11px 17px;border-bottom:1px solid var(--ln)">'+
       '<div style="font-size:20px">'+b.icon+'</div>'+
-      '<div style="flex:1"><div class="f13 fw6">'+b.name+'</div><div class="f11 c3">'+b.desc+'</div></div>'+
+      '<div style="flex:1"><div class="f13 fw6">'+esc(b.name)+'</div><div class="f11 c3">'+esc(b.desc)+'</div></div>'+
       '<button class="btn bsm bp" onclick="bundleRestore(\''+id+'\')">Restore</button>'+
     '</div>';
   }).join('');
@@ -5565,8 +5696,8 @@ function mkBundleForm(b) {
   var eg=EMOJIS.map(function(e){return '<button type="button" class="egb'+(e===_selEmoji?' sel':'')+'" onclick="selEm(\''+e+'\')">'+e+'</button>';}).join('');
   var cg=COLORS.map(function(c){return '<div class="cgb'+(c===_selColor?' sel':'')+'" style="background:'+c+'" onclick="selCo(\''+c+'\')"></div>';}).join('');
   var ph=b.phases.map(function(p,pi){return mkPhaseInput(p,pi);}).join('');
-  return '<div class="fg"><label>Name</label><input class="fi" id="cb-n" value="'+b.name+'" placeholder="Operation name"></div>'+
-    '<div class="fg"><label>Description</label><input class="fi" id="cb-d" value="'+b.desc+'" placeholder="Short description"></div>'+
+  return '<div class="fg"><label>Name</label><input class="fi" id="cb-n" value="'+esc(b.name)+'" placeholder="Operation name"></div>'+
+    '<div class="fg"><label>Description</label><input class="fi" id="cb-d" value="'+esc(b.desc)+'" placeholder="Short description"></div>'+
     '<div class="fg"><label>Icon</label><div class="eg" id="cb-eg">'+eg+'</div></div>'+
     '<div class="fg"><label>Color</label><div class="cg" id="cb-cg">'+cg+'</div></div>'+
     '<div class="fg"><label>Phases &amp; Items</label><div id="cb-phases">'+ph+'</div>'+
@@ -5574,7 +5705,7 @@ function mkBundleForm(b) {
 }
 function mkPhaseInput(ph,pi){
   return '<div class="ph-input-block" id="pi-'+pi+'" style="background:var(--elev);border:1px solid var(--ln2);border-radius:var(--r);padding:10px;margin-bottom:8px">'+
-    '<div class="flex gap8 mb8"><input class="fi" style="flex:1" placeholder="Phase name" value="'+ph.name+'" id="pn-'+pi+'">'+
+    '<div class="flex gap8 mb8"><input class="fi" style="flex:1" placeholder="Phase name" value="'+esc(ph.name)+'" id="pn-'+pi+'">'+
     '<button type="button" class="btn bxs bgh cr" onclick="rmPhInput('+pi+')">x</button></div>'+
     '<textarea class="ft w100" style="min-height:58px;font-size:11px" id="pi-items-'+pi+'" placeholder="One item per line">'+ph.items.join('\n')+'</textarea></div>';
 }
@@ -5629,7 +5760,7 @@ function bvReset(){
 }
 function bvExport(){
   var b=allBundles().find(function(x){return x.id===ACTIVE_BUNDLE;}); if(!b)return;
-  var key='cl_'+b.id; var t=b.name.toUpperCase()+' - CHECKLIST\n'+S.vessel.name+' - '+new Date().toUTCString()+'\n'+'='.repeat(50)+'\n\n';
+  var key='cl_'+b.id; var t=b.name.toUpperCase()+' - CHECKLIST\n'+(S.vessel.name)+' - '+new Date().toUTCString()+'\n'+'='.repeat(50)+'\n\n';
   b.phases.forEach(function(ph,pi){
     t+='PHASE '+(pi+1)+' - '+ph.name.toUpperCase()+'\n';
     var items=(S.cldata[key]&&S.cldata[key][ph.name])||ph.items.map(function(){return false;});
@@ -5637,7 +5768,7 @@ function bvExport(){
     t+='\n';
   });
   var bCounters=S.dcounters.filter(function(c){return c.bundleId===b.id;});
-  if(bCounters.length){t+='DAYS COUNTERS\n';bCounters.forEach(function(c){t+='  '+c.label+': '+dcDir(c)+'\n';});t+='\n';}
+  if(bCounters.length){t+='DAYS COUNTERS\n';bCounters.forEach(function(c){t+='  '+(c.label)+': '+dcDir(c)+'\n';});t+='\n';}
   var note=localStorage.getItem('note_'+b.id);if(note)t+='NOTES\n'+note+'\n';
   dl(t,b.name.replace(/\s+/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.txt');
 }
@@ -5654,7 +5785,7 @@ function bvRender(b){
   var html=
     '<div class="bpw">'+
       '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'+
-        '<div><div style="font-size:17px;font-weight:800;margin-bottom:3px">'+b.name+'</div><div class="f11 c3">'+doneC+' of '+total+' items complete</div></div>'+
+        '<div><div style="font-size:17px;font-weight:800;margin-bottom:3px">'+esc(b.name)+'</div><div class="f11 c3">'+doneC+' of '+total+' items complete</div></div>'+
         '<div style="display:flex;gap:8px"><button class="btn bsm" onclick="bvExport()">Export TXT</button><button class="btn bxs bgh" onclick="bvReset()">Reset</button></div>'+
       '</div>'+
       '<div class="bpb"><div class="bpf" style="width:'+pct+'%;background:'+b.color+'"></div></div>'+
@@ -5704,7 +5835,7 @@ function bvRender(b){
           bCounters.map(function(c){
             return '<div class="dc-card '+dcClass(c)+'" style="position:relative">'+
               '<div class="dc-num">'+dcNum(c)+'</div>'+
-              '<div class="dc-lbl">'+c.label+'</div>'+
+              '<div class="dc-lbl">'+esc(c.label)+'</div>'+
               '<div class="dc-dir">'+dcDir(c)+'</div>'+
               '<div style="display:flex;gap:5px;justify-content:center;margin-top:9px">'+
                 '<button class="btn bxs bgh" onclick="dcSetToday('+c.id+')">Set Today</button>'+
@@ -5726,7 +5857,7 @@ function bvRender(b){
           var clr=j.pri==='critical'?'var(--red)':j.pri==='safety'?'var(--amb)':j.pri==='psc'?'var(--pur)':'var(--blu)';
           return '<div style="display:flex;align-items:center;gap:10px;padding:9px 15px;border-top:1px solid var(--ln)">'+
             '<div style="width:3px;align-self:stretch;border-radius:2px;background:'+clr+';flex-shrink:0"></div>'+
-            '<div style="flex:1"><div class="f13 fw6">'+j.name+'</div><div class="f11 c3">'+j.port+'</div></div>'+
+            '<div style="flex:1"><div class="f13 fw6">'+esc(j.name)+'</div><div class="f11 c3">'+esc(j.port)+'</div></div>'+
             '<span class="bdg '+(j.pri==='critical'?'dr':j.pri==='safety'?'da':j.pri==='psc'?'dp':'db')+'">'+j.pri+'</span>'+
           '</div>';
         }).join('')+
@@ -5739,7 +5870,7 @@ function bvRender(b){
       '</div>'+
       '<div class="bsb'+(BV_SECS[b.id+'notes']!==false?' open':'')+'">'+
         '<div style="padding:11px 15px">'+
-          '<textarea class="ft w100" style="min-height:130px;font-size:13px;line-height:1.7" placeholder="Your notes for this operation..." oninput="localStorage.setItem(\'note_'+b.id+'\',this.value)">'+note+'</textarea>'+
+          '<textarea class="ft w100" style="min-height:130px;font-size:13px;line-height:1.7" placeholder="Your notes for this operation..." oninput="localStorage.setItem(\'note_'+b.id+'\',this.value)">'+esc(note)+'</textarea>'+
         '</div></div></div>'+
     // MESSAGES section
     (msgs.length?
@@ -5752,10 +5883,10 @@ function bvRender(b){
           msgs.map(function(m,i){
             return '<div style="padding:11px 15px;border-top:1px solid var(--ln)">'+
               '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">'+
-                '<div><div class="f13 fw6">'+m.to+'</div><div class="f11 c3">'+m.sub+'</div></div>'+
+                '<div><div class="f13 fw6">'+m.to+'</div><div class="f11 c3">'+esc(m.sub)+'</div></div>'+
                 '<button class="btn bsm" onclick="bvCopyMsg('+i+')">Copy</button>'+
               '</div>'+
-              '<textarea class="ft w100" id="bvm-'+i+'" style="min-height:100px;font-size:11px;font-family:var(--mono)">'+m.body+'</textarea>'+
+              '<textarea class="ft w100" id="bvm-'+i+'" style="min-height:100px;font-size:11px;font-family:var(--mono)">'+esc(m.body)+'</textarea>'+
             '</div>';
           }).join('')+
         '</div></div>'
@@ -5802,7 +5933,7 @@ function bvAddCLI(bid,pname,pi){
   autoSave();if(bid.indexOf('cb_')===0){}bvRender(b);
 }
 function bvEditCLI(bid,pname,ii,oldText){
-  openModal('Edit Item','<div class="fg"><label>Item</label><input class="fi" id="ecli" value="'+oldText+'"></div>',
+  openModal('Edit Item','<div class="fg"><label>Item</label><input class="fi" id="ecli" value="'+esc(oldText)+'"></div>',
     '<button class="btn bp bsm" onclick="bvSaveEditCLI(\''+bid+'\',\''+pname+'\','+ii+')">Save</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
 function bvSaveEditCLI(bid,pname,ii){
@@ -5821,7 +5952,7 @@ function dcAddForBundle(bid){
   openModal('Add Days Counter',
     '<div class="fg"><label>Label</label><input class="fi" id="bdc-l" placeholder="e.g. Last conducted"></div>'+
     '<div class="fg"><label>Direction</label><select class="fs" id="bdc-d"><option value="since">Days Since</option><option value="until">Days Until</option></select></div>'+
-    '<div class="fg"><label>Date</label><input type="date" class="fi" id="bdc-dt" value="'+todayKey()+'"></div>'+
+    '<div class="fg"><label>Date</label><input type="date" class="fi" id="bdc-dt" value="'+esc(todayKey())+'"></div>'+
     '<div class="fg"><label>Warn at (days)</label><input type="number" class="fi" id="bdc-w" placeholder="e.g. 30"></div>',
     '<button class="btn bp bsm" onclick="dcSaveForBundle(\''+bid+'\')">Add</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
@@ -5834,7 +5965,7 @@ function bvCopyMsg(i){var ta=document.getElementById('bvm-'+i);if(ta)cp(ta.value
 function bvMsgs(id){
   var v=S.vessel.name,co=S.vessel.coname;
   var m={
-    prearr:[{to:'Agent / Port Authority',sub:'Pre-Arrival Notification',body:'TO: AGENT\nFM: '+co+' / '+v+'\nSUBJ: PRE-ARRIVAL NOTIFICATION\n\nVessel: '+v+'\nETA: '+S.vessel.eta+'\nDraft F: 11.2m / A: 11.6m\nPOB: 22\n\nRequirements:\n- Pilot: YES\n- Tugs: 2\n- Mooring: Port Side\n\nPlease confirm berth and boarding arrangements.'}],
+    prearr:[{to:'Agent / Port Authority',sub:'Pre-Arrival Notification',body:'TO: AGENT\nFM: '+co+' / '+v+'\nSUBJ: PRE-ARRIVAL NOTIFICATION\n\nVessel: '+v+'\nETA: '+(S.vessel.eta)+'\nDraft F: 11.2m / A: 11.6m\nPOB: 22\n\nRequirements:\n- Pilot: YES\n- Tugs: 2\n- Mooring: Port Side\n\nPlease confirm berth and boarding arrangements.'}],
     dep:[{to:'Operations',sub:'Departure Report',body:'TO: OPERATIONS\nFM: '+co+' / '+v+'\nSUBJ: DEPARTURE REPORT\n\nDeparted: [PORT] [DATE TIME] UTC\nBound for: [NEXT PORT]\nETA: [DATE TIME] UTC\nDraft: [F/A]\n\nAll departure checks complete.'}],
     as:[{to:'Operations',sub:'Abandon Ship Drill Report',body:'TO: OPERATIONS\nFM: '+co+' / '+v+'\nSUBJ: ABANDON SHIP DRILL\n\nDate/Time: [DATE TIME] UTC\nAll hands: MUSTERED\nDuration: [min]\nDeficiencies: none\n\nConducted per SOLAS Reg III/19.'}],
   };
@@ -5868,11 +5999,11 @@ function renderJobs() {
         cards.map(function(j){
           var pclr=j.pri==='critical'?'kbc-red':j.pri==='psc'?'kbc-pur':j.pri==='safety'?'kbc-amb':'kbc-blu';
           return '<div class="kbcard '+pclr+'" onclick="jobView('+j.id+')">'+
-            '<div class="kbn">'+j.name+'</div>'+
-            '<div class="kbl">'+j.port+'</div>'+
+            '<div class="kbn">'+esc(j.name)+'</div>'+
+            '<div class="kbl">'+esc(j.port)+'</div>'+
             '<div class="kbtg">'+
               '<span class="bdg '+(j.pri==='critical'?'dr':j.pri==='psc'?'dp':j.pri==='safety'?'da':'db')+'">'+j.pri+'</span>'+
-              '<span class="bdg dgr">'+j.cat+'</span>'+
+              '<span class="bdg dgr">'+esc(j.cat)+'</span>'+
             '</div>'+
             (col!=='done'?'<div class="kbadd"><button class="btn bxs bgh" onclick="event.stopPropagation();jobMove('+j.id+',\''+col+'\')">'+
               (col==='todo'?'Start':'Complete')+'</button></div>':'')+
@@ -5885,14 +6016,14 @@ function renderJobs() {
 function jobView(id){
   var j=S.jobs.find(function(x){return x.id===id;}); if(!j)return;
   openModal(j.name,
-    '<div class="fg"><label>Category</label><input class="fi" id="jv-cat" value="'+j.cat+'"></div>'+
+    '<div class="fg"><label>Category</label><input class="fi" id="jv-cat" value="'+esc(j.cat)+'"></div>'+
     '<div class="g2">'+
       '<div class="fg"><label>Priority</label><select class="fs" id="jv-pri">'+
-        ['critical','safety','psc','routine'].map(function(p){return '<option value="'+p+'"'+(j.pri===p?' selected':'')+'>'+p+'</option>';}).join('')+
+        ['critical','safety','psc','routine'].map(function(p){return '<option value="'+esc(p)+'"'+(j.pri===p?' selected':'')+'>'+p+'</option>';}).join('')+
       '</select></div>'+
-      '<div class="fg"><label>Port</label><input class="fi" id="jv-port" value="'+j.port+'"></div>'+
+      '<div class="fg"><label>Port</label><input class="fi" id="jv-port" value="'+esc(j.port)+'"></div>'+
     '</div>'+
-    '<div class="fg"><label>Note</label><textarea class="ft w100" id="jv-note">'+j.note+'</textarea></div>',
+    '<div class="fg"><label>Note</label><textarea class="ft w100" id="jv-note">'+esc(j.note)+'</textarea></div>',
     '<button class="btn bp bsm" onclick="jobSave('+j.id+')">Save</button>'+
     '<button class="btn bdn bxs" onclick="jobDel('+j.id+')">Delete</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -5945,9 +6076,9 @@ function renderRAG(){
     return '<div class="rag-card r'+item.status+'" onclick="ragOpen('+item.id+')">'+
       '<div class="flex gap8 mb8">'+
         '<div class="rd rd-'+item.status+'"></div>'+
-        '<div style="flex:1"><div class="f14 fw7">'+item.name+'</div><div class="f11 c3">'+item.sub+'</div></div>'+
+        '<div style="flex:1"><div class="f14 fw7">'+esc(item.name)+'</div><div class="f11 c3">'+esc(item.sub)+'</div></div>'+
       '</div>'+
-      (item.note?'<div class="f12 c2" style="margin-bottom:8px">'+item.note+'</div>':'')+
+      (item.note?'<div class="f12 c2" style="margin-bottom:8px">'+esc(item.note)+'</div>':'')+
       (item.tasks&&item.tasks.length?'<div class="f11 c3">'+item.tasks.filter(function(t){return t.done;}).length+'/'+item.tasks.length+' actions done</div>':'')+
     '</div>';
   }).join('');
@@ -5957,7 +6088,7 @@ function ragOpen(id){
   var taskHtml=item.tasks.map(function(t,i){
     return '<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--ln)">'+
       '<div class="wp-cb'+(t.done?' on':'')+'" onclick="ragToggleTask('+id+','+t.id+')"></div>'+
-      '<div style="flex:1;font-size:13px;'+(t.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+t.text+'</div>'+
+      '<div style="flex:1;font-size:13px;'+(t.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+esc(t.text)+'</div>'+
       '<button class="btn bxs bgh cr" onclick="ragDelTask('+id+','+t.id+')">x</button>'+
     '</div>';
   }).join('');
@@ -5970,8 +6101,8 @@ function ragOpen(id){
           return '<button class="btn'+(item.status===s?' bp':'')+'" style="border-color:'+clr+';'+(item.status===s?'background:'+clr+';color:#0d1117;':'color:'+clr)+'" onclick="ragSetStatus('+id+',\''+s+'\')">'+lbl+'</button>';
         }).join('')+
       '</div></div>'+
-    '<div class="fg"><label>Quick Note (shown on card)</label><input class="fi" id="rn-'+id+'" value="'+item.note+'" oninput="ragUpdateNote('+id+')"></div>'+
-    '<div class="fg"><label>Detailed Notes</label><textarea class="ft w100" id="rln-'+id+'" style="min-height:90px" oninput="ragUpdateLongNote('+id+')">'+item.longNote+'</textarea></div>'+
+    '<div class="fg"><label>Quick Note (shown on card)</label><input class="fi" id="rn-'+id+'" value="'+esc(item.note)+'" oninput="ragUpdateNote('+id+')"></div>'+
+    '<div class="fg"><label>Detailed Notes</label><textarea class="ft w100" id="rln-'+id+'" style="min-height:90px" oninput="ragUpdateLongNote('+id+')">'+esc(item.longNote)+'</textarea></div>'+
     '<div class="fg"><label>Action Items</label>'+taskHtml+
       '<div style="display:flex;gap:8px;margin-top:8px">'+
         '<input class="fi" id="rat-'+id+'" placeholder="Add action item..." style="flex:1" onkeydown="if(event.key===\'Enter\')ragAddTask('+id+')">'+
@@ -6048,9 +6179,9 @@ function renderDrills(){
         cards.map(function(d){
           var next=DRILL_COLS[DRILL_COLS.indexOf(col)+1];
           return '<div class="kbcard '+DRILL_CLRS[col]+'" onclick="drillView('+d.id+')">'+
-            '<div class="kbn">'+d.name+'</div>'+
+            '<div class="kbn">'+esc(d.name)+'</div>'+
             '<div class="kbl">'+d.freq+(d.nextDue?' · Due: '+d.nextDue:'')+'</div>'+
-            (d.notes?'<div class="f11 c3 mb8">'+d.notes+'</div>':'')+
+            (d.notes?'<div class="f11 c3 mb8">'+esc(d.notes)+'</div>':'')+
             (next?'<div class="kbadd"><button class="btn bxs bgh" onclick="event.stopPropagation();drillMove('+d.id+',\''+next+'\')">→ '+DRILL_LABELS[next]+'</button></div>':'')+
           '</div>';
         }).join('')+
@@ -6066,14 +6197,14 @@ function drillView(id){
   var d=S.drills.find(function(x){return x.id===id;}); if(!d)return;
   openModal(d.name,
     '<div class="g2">'+
-      '<div class="fg"><label>Frequency</label><input class="fi" id="dv-freq" value="'+d.freq+'"></div>'+
+      '<div class="fg"><label>Frequency</label><input class="fi" id="dv-freq" value="'+esc(d.freq)+'"></div>'+
       '<div class="fg"><label>Status</label><select class="fs" id="dv-st">'+
-        DRILL_COLS.map(function(c){return '<option value="'+c+'"'+(d.status===c?' selected':'')+'>'+DRILL_LABELS[c]+'</option>';}).join('')+
+        DRILL_COLS.map(function(c){return '<option value="'+esc(c)+'"'+(d.status===c?' selected':'')+'>'+DRILL_LABELS[c]+'</option>';}).join('')+
       '</select></div>'+
       '<div class="fg"><label>Last Done</label><input type="date" class="fi" id="dv-ld" value="'+(d.lastDone||'')+'"></div>'+
       '<div class="fg"><label>Next Due</label><input type="date" class="fi" id="dv-nd" value="'+(d.nextDue||'')+'"></div>'+
     '</div>'+
-    '<div class="fg"><label>Notes</label><textarea class="ft w100" id="dv-notes">'+d.notes+'</textarea></div>',
+    '<div class="fg"><label>Notes</label><textarea class="ft w100" id="dv-notes">'+esc(d.notes)+'</textarea></div>',
     '<button class="btn bp bsm" onclick="drillSave('+id+')">Save</button>'+
     '<button class="btn bdn bxs" onclick="drillDel('+id+')">Delete</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -6134,21 +6265,21 @@ function renderHolds(){
     var sclr=h.status==='loaded'?'cg':h.status==='empty'?'c3':'ca';
     return '<div class="c-hold" onclick="holdEdit('+h.id+')">'+
       '<div style="width:3px;align-self:stretch;border-radius:2px;background:'+(h.status==='loaded'?'var(--grn)':h.status==='empty'?'var(--ink3)':'var(--amb)')+';flex-shrink:0"></div>'+
-      '<div style="flex:1"><div class="f14 fw7">'+h.num+'</div><div class="f12 c3">'+h.cargo+'</div></div>'+
-      '<div style="text-align:right"><div class="f13 fw6 '+sclr+'">'+h.qty+'</div><div class="f11 c3">'+h.status+'</div></div>'+
-      (h.note?'<div class="f11 c3">'+h.note+'</div>':'')+
+      '<div style="flex:1"><div class="f14 fw7">'+esc(h.num)+'</div><div class="f12 c3">'+esc(h.cargo)+'</div></div>'+
+      '<div style="text-align:right"><div class="f13 fw6 '+sclr+'">'+esc(h.qty)+'</div><div class="f11 c3">'+h.status+'</div></div>'+
+      (h.note?'<div class="f11 c3">'+esc(h.note)+'</div>':'')+
     '</div>';
   }).join('');
 }
 function holdEdit(id){
   var h=S.holds.find(function(x){return x.id===id;}); if(!h)return;
   openModal(h.num,
-    '<div class="fg"><label>Cargo</label><input class="fi" id="he-cargo" value="'+h.cargo+'"></div>'+
+    '<div class="fg"><label>Cargo</label><input class="fi" id="he-cargo" value="'+esc(h.cargo)+'"></div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>Quantity</label><input class="fi" id="he-qty" value="'+h.qty+'"></div>'+
+      '<div class="fg"><label>Quantity</label><input class="fi" id="he-qty" value="'+esc(h.qty)+'"></div>'+
       '<div class="fg"><label>Status</label><select class="fs" id="he-st"><option value="loaded"'+(h.status==='loaded'?' selected':'')+'>Loaded</option><option value="empty"'+(h.status==='empty'?' selected':'')+'>Empty</option><option value="partial"'+(h.status==='partial'?' selected':'')+'>Partial</option></select></div>'+
     '</div>'+
-    '<div class="fg"><label>Note</label><input class="fi" id="he-note" value="'+h.note+'"></div>',
+    '<div class="fg"><label>Note</label><input class="fi" id="he-note" value="'+esc(h.note)+'"></div>',
     '<button class="btn bp bsm" onclick="holdSave('+id+')">Save</button>'+
     '<button class="btn bdn bxs" onclick="holdDel('+id+')">Delete</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -6205,9 +6336,9 @@ function renderOrders(){
       '<div class="kbcards">'+
         cards.map(function(o){
           return '<div class="kbcard '+(o.pri==='critical'?'kbc-red':'kbc-blu')+'" onclick="orderView('+o.id+',\''+col+'\')">'+
-            '<div class="kbn">'+o.desc+'</div>'+
-            '<div class="kbl">'+o.code+' &bull; '+o.qty+' '+o.unit+'</div>'+
-            '<div class="kbtg"><span class="bdg dgr">'+o.cat+'</span></div>'+
+            '<div class="kbn">'+esc(o.desc)+'</div>'+
+            '<div class="kbl">'+esc(o.code)+' &bull; '+esc(o.qty)+' '+esc(o.unit)+'</div>'+
+            '<div class="kbtg"><span class="bdg dgr">'+esc(o.cat)+'</span></div>'+
             (next?'<div class="kbadd"><button class="btn bxs bgh" onclick="event.stopPropagation();orderMove('+o.id+',\''+col+'\',\''+next+'\')">→ '+ORD_LABELS[next]+'</button></div>':'')+
           '</div>';
         }).join('')+
@@ -6218,14 +6349,14 @@ function renderOrders(){
 function orderView(id,col){
   var o=(S.orders[col]||[]).find(function(x){return x.id===id;}); if(!o)return;
   openModal('Order Item',
-    '<div class="fg"><label>IMPA / Code</label><input class="fi" id="ov-code" value="'+o.code+'"></div>'+
-    '<div class="fg"><label>Description</label><input class="fi" id="ov-desc" value="'+o.desc+'"></div>'+
+    '<div class="fg"><label>IMPA / Code</label><input class="fi" id="ov-code" value="'+esc(o.code)+'"></div>'+
+    '<div class="fg"><label>Description</label><input class="fi" id="ov-desc" value="'+esc(o.desc)+'"></div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>Quantity</label><input class="fi" id="ov-qty" value="'+o.qty+'"></div>'+
-      '<div class="fg"><label>Unit</label><input class="fi" id="ov-unit" value="'+o.unit+'"></div>'+
+      '<div class="fg"><label>Quantity</label><input class="fi" id="ov-qty" value="'+esc(o.qty)+'"></div>'+
+      '<div class="fg"><label>Unit</label><input class="fi" id="ov-unit" value="'+esc(o.unit)+'"></div>'+
     '</div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>Category</label><input class="fi" id="ov-cat" value="'+o.cat+'"></div>'+
+      '<div class="fg"><label>Category</label><input class="fi" id="ov-cat" value="'+esc(o.cat)+'"></div>'+
       '<div class="fg"><label>Priority</label><select class="fs" id="ov-pri"><option value="normal"'+(o.pri==='normal'?' selected':'')+'>Normal</option><option value="critical"'+(o.pri==='critical'?' selected':'')+'>Critical</option></select></div>'+
     '</div>',
     '<button class="btn bp bsm" onclick="orderSave('+id+',\''+col+'\')">Save</button>'+
@@ -6290,7 +6421,7 @@ function orderSaveNew(col){
 }
 function ordersExport(){
   var rows=['Status,Code,Description,Qty,Unit,Category,Priority'];
-  ORD_COLS.forEach(function(col){(S.orders[col]||[]).forEach(function(o){rows.push([ORD_LABELS[col],o.code,'"'+o.desc+'"',o.qty,o.unit,o.cat,o.pri].join(','));});});
+  ORD_COLS.forEach(function(col){(S.orders[col]||[]).forEach(function(o){rows.push([ORD_LABELS[col],o.code,'"'+(o.desc)+'"',o.qty,o.unit,o.cat,o.pri].join(','));});});
   dl(rows.join('\n'),'orders-'+todayKey()+'.csv');
 }
 
@@ -6303,10 +6434,10 @@ function renderPortStrip(){
     var alertCnt=p.alerts&&p.alerts.filter(function(a){return !a.done;}).length;
     return '<div class="pchip'+(p.id===ACTIVE_PORT?' on':'')+'" style="position:relative">'+
       '<div onclick="selectPort(\''+p.id+'\')" style="cursor:pointer">'+
-        '<div class="pcn">'+p.name+'</div>'+
-        '<div class="pce">'+p.eta+'</div>'+
+        '<div class="pcn">'+esc(p.name)+'</div>'+
+        '<div class="pce">'+esc(p.eta)+'</div>'+
         '<div class="pct">'+
-          '<span class="bdg dgr">'+p.cc+'</span>'+
+          '<span class="bdg dgr">'+esc(p.cc)+'</span>'+
           (pscFlag?'<span class="bdg dr">PSC</span>':'')+
           (jobCnt?'<span class="bdg da">'+jobCnt+'j</span>':'')+
           (alertCnt?'<span class="bdg dr">'+alertCnt+'!</span>':'')+
@@ -6332,17 +6463,17 @@ function portDel(id){
 function portEdit(id){
   var p=S.ports.find(function(x){return x.id===id;}); if(!p)return;
   openModal('Edit Port — '+p.name,
-    '<div class="fg"><label>Port Name</label><input class="fi" id="pe-n" value="'+p.name+'"></div>'+
+    '<div class="fg"><label>Port Name</label><input class="fi" id="pe-n" value="'+esc(p.name)+'"></div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>Country Code</label><input class="fi" id="pe-cc" value="'+p.cc+'" maxlength="3"></div>'+
-      '<div class="fg"><label>Draft Limit</label><input class="fi" id="pe-dr" value="'+p.draft+'"></div>'+
+      '<div class="fg"><label>Country Code</label><input class="fi" id="pe-cc" value="'+esc(p.cc)+'" maxlength="3"></div>'+
+      '<div class="fg"><label>Draft Limit</label><input class="fi" id="pe-dr" value="'+esc(p.draft)+'"></div>'+
     '</div>'+
     '<div class="g2">'+
-      '<div class="fg"><label>ETA</label><input type="datetime-local" class="fi" id="pe-eta" value="'+displayToDTL(p.eta)+'"></div>'+
-      '<div class="fg"><label>ETD</label><input type="datetime-local" class="fi" id="pe-etd" value="'+displayToDTL(p.etd)+'"></div>'+
+      '<div class="fg"><label>ETA</label><input type="datetime-local" class="fi" id="pe-eta" value="'+esc(displayToDTL(p.eta))+'"></div>'+
+      '<div class="fg"><label>ETD</label><input type="datetime-local" class="fi" id="pe-etd" value="'+esc(displayToDTL(p.etd))+'"></div>'+
     '</div>'+
-    '<div class="fg"><label>Berth</label><input class="fi" id="pe-b" value="'+p.berth+'"></div>'+
-    '<div class="fg"><label>Agent</label><input class="fi" id="pe-a" value="'+(p.agent||'')+'"></div>',
+    '<div class="fg"><label>Berth</label><input class="fi" id="pe-b" value="'+esc(p.berth)+'"></div>'+
+    '<div class="fg"><label>Agent</label><input class="fi" id="pe-a" value="'+esc(p.agent||'')+'"></div>',
     '<button class="btn bp bsm" onclick="portSaveEdit(\''+id+'\')">Save</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
@@ -6397,7 +6528,7 @@ function renderPortDetail(id){
       var relBadge = (a.relDays!==undefined && a.relDays!==null) ?
         '<span class="bdg dt" style="font-size:9px;margin-left:6px">'+(a.linkedDateKey?dateFromKey(a.linkedDateKey).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'unscheduled')+'</span>' : '';
       return '<div class="tl-row">'+
-        '<div class="tl-w">'+a.when+'</div>'+
+        '<div class="tl-w">'+esc(a.when)+'</div>'+
         '<div class="tl-d" style="background:'+(a.done?'var(--grn)':'var(--red)')+'"></div>'+
         '<div class="tl-t" style="'+(a.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+a.text+relBadge+'</div>'+
         '<button class="btn bxs bgh" onclick="markAlert(\''+id+'\','+i+')">'+(a.done?'Undo':'Done')+'</button>'+
@@ -6410,7 +6541,7 @@ function renderPortDetail(id){
     content=p.jobs.map(function(j){
       return '<div class="tl-row">'+
         '<div class="tl-d" style="background:'+(j.pri==='critical'?'var(--red)':j.pri==='safety'?'var(--amb)':'var(--blu)')+'"></div>'+
-        '<div class="tl-t" style="flex:1">'+j.name+'</div>'+
+        '<div class="tl-t" style="flex:1">'+esc(j.name)+'</div>'+
         '<span class="bdg '+(j.pri==='critical'?'dr':j.pri==='safety'?'da':'db')+'">'+j.pri+'</span>'+
       '</div>';
     }).join('')+
@@ -6421,8 +6552,8 @@ function renderPortDetail(id){
       return '<div class="tl-row">'+
         '<div class="tl-d" style="background:'+(o.dir==='LOAD'?'var(--grn)':'var(--amb)')+'"></div>'+
         '<span class="bdg '+(o.dir==='LOAD'?'dg':'da')+'">'+o.dir+'</span>'+
-        '<div class="tl-t" style="flex:1">'+o.item+' — '+o.qty+'</div>'+
-        '<div class="f11 c3">'+o.note+'</div>'+
+        '<div class="tl-t" style="flex:1">'+esc(o.item)+' — '+esc(o.qty)+'</div>'+
+        '<div class="f11 c3">'+esc(o.note)+'</div>'+
       '</div>';
     }).join('')+
     (p.orders.length===0?'<div class="f12 c3" style="padding:12px 15px">No load/land for this port.</div>':'')+
@@ -6431,7 +6562,7 @@ function renderPortDetail(id){
     content=p.crew.map(function(c){
       return '<div class="tl-row">'+
         '<span class="bdg '+(c.dir==='ON'?'dg':'da')+'">'+c.dir+'</span>'+
-        '<div style="flex:1"><div class="f13 fw6">'+c.name+'</div><div class="f11 c3">'+c.rank+' · '+c.info+'</div>'+(c.note?'<div class="f11 c3">'+c.note+'</div>':'')+
+        '<div style="flex:1"><div class="f13 fw6">'+esc(c.name)+'</div><div class="f11 c3">'+c.rank+' · '+esc(c.info)+'</div>'+(c.note?'<div class="f11 c3">'+esc(c.note)+'</div>':'')+
       '</div></div>';
     }).join('')+
     (p.crew.length===0?'<div class="f12 c3" style="padding:12px 15px">No crew changes for this port.</div>':'')+
@@ -6440,58 +6571,58 @@ function renderPortDetail(id){
     content=p.inspections.map(function(ins){
       return '<div class="tl-row">'+
         '<div class="tl-d" style="background:'+(ins.lvl==='r'?'var(--red)':ins.lvl==='a'?'var(--amb)':ins.lvl==='b'?'var(--blu)':'var(--grn)')+'"></div>'+
-        '<div style="flex:1"><div class="f13 fw6">'+ins.name+'</div><div class="f11 c3">'+ins.sub+'</div></div>'+
+        '<div style="flex:1"><div class="f13 fw6">'+esc(ins.name)+'</div><div class="f11 c3">'+esc(ins.sub)+'</div></div>'+
       '</div>';
     }).join('')+
     (p.inspections.length===0?'<div class="f12 c3" style="padding:12px 15px">No inspections for this port.</div>':'')+
     '<div style="padding:12px 15px"><button class="btn bp bsm" onclick="inspAdd(\''+id+'\')">+ Add Inspection</button></div>';
   } else if(sec==='notes'){
-    content='<div style="padding:14px"><textarea class="ft w100" style="min-height:160px" id="port-notes-'+id+'" oninput="portSaveNotes(\''+id+'\')">'+p.notes+'</textarea></div>';
+    content='<div style="padding:14px"><textarea class="ft w100" style="min-height:160px" id="port-notes-'+id+'" oninput="portSaveNotes(\''+id+'\')">'+esc(p.notes)+'</textarea></div>';
   }
   if(sec==='overview'){
     var ovHtml='';
     ovHtml+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:14px 15px;border-bottom:1px solid var(--ln)">';
-    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">ETA</div><div class="f13 fw7 mono">'+p.eta+'</div></div>';
-    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">ETD</div><div class="f13 fw7 mono">'+p.etd+'</div></div>';
-    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Berth</div><div class="f13">'+p.berth+'</div></div>';
-    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Draft Limit</div><div class="f13 fw6 ct">'+p.draft+'</div></div>';
-    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Agent</div><div class="f13">'+(p.agent||'-')+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">ETA</div><div class="f13 fw7 mono">'+esc(p.eta)+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">ETD</div><div class="f13 fw7 mono">'+esc(p.etd)+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Berth</div><div class="f13">'+esc(p.berth)+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Draft Limit</div><div class="f13 fw6 ct">'+esc(p.draft)+'</div></div>';
+    ovHtml+='<div><div class="f10 c3 fw7" style="letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">Agent</div><div class="f13">'+esc(p.agent||'-')+'</div></div>';
     ovHtml+='</div>';
     var pending=p.alerts.filter(function(a){return !a.done;});
     if(p.alerts.length){
       ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
       ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Timeline ('+pending.length+' pending)</div>';
-      ovHtml+=p.alerts.map(function(a){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+(a.done?'var(--grn)':'var(--red)')+'"></div><span class="f11 c3" style="min-width:55px">'+a.when+'</span><span class="f12" style="'+(a.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+a.text+'</span></div>';}).join('');
+      ovHtml+=p.alerts.map(function(a){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+(a.done?'var(--grn)':'var(--red)')+'"></div><span class="f11 c3" style="min-width:55px">'+esc(a.when)+'</span><span class="f12" style="'+(a.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+esc(a.text)+'</span></div>';}).join('');
       ovHtml+='</div>';
     }
     if(p.jobs.length){
       ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
       ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Jobs ('+p.jobs.length+')</div>';
-      ovHtml+=p.jobs.map(function(j){var clr=j.pri==='critical'?'var(--red)':j.pri==='safety'?'var(--amb)':'var(--blu)';return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+clr+'"></div><span class="f12">'+j.name+'</span><span class="bdg '+(j.pri==='critical'?'dr':j.pri==='safety'?'da':'db')+'" style="margin-left:auto">'+j.pri+'</span></div>';}).join('');
+      ovHtml+=p.jobs.map(function(j){var clr=j.pri==='critical'?'var(--red)':j.pri==='safety'?'var(--amb)':'var(--blu)';return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+clr+'"></div><span class="f12">'+esc(j.name)+'</span><span class="bdg '+(j.pri==='critical'?'dr':j.pri==='safety'?'da':'db')+'" style="margin-left:auto">'+j.pri+'</span></div>';}).join('');
       ovHtml+='</div>';
     }
     if(p.orders.length){
       ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
       ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Load / Land ('+p.orders.length+')</div>';
-      ovHtml+=p.orders.map(function(o){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="bdg '+(o.dir==='LOAD'?'dg':'da')+'">'+o.dir+'</span><span class="f12">'+o.item+'</span><span class="f11 c3" style="margin-left:auto">'+o.qty+'</span></div>';}).join('');
+      ovHtml+=p.orders.map(function(o){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="bdg '+(o.dir==='LOAD'?'dg':'da')+'">'+o.dir+'</span><span class="f12">'+esc(o.item)+'</span><span class="f11 c3" style="margin-left:auto">'+esc(o.qty)+'</span></div>';}).join('');
       ovHtml+='</div>';
     }
     if(p.crew.length){
       ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
       ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Crew Changes ('+p.crew.length+')</div>';
-      ovHtml+=p.crew.map(function(c){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="bdg '+(c.dir==='ON'?'dg':'da')+'">'+c.dir+'</span><span class="f12 fw6">'+c.name+'</span><span class="f11 c3">'+c.rank+'</span></div>';}).join('');
+      ovHtml+=p.crew.map(function(c){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="bdg '+(c.dir==='ON'?'dg':'da')+'">'+c.dir+'</span><span class="f12 fw6">'+esc(c.name)+'</span><span class="f11 c3">'+c.rank+'</span></div>';}).join('');
       ovHtml+='</div>';
     }
     if(p.inspections.length){
       ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
       ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Inspections ('+p.inspections.length+')</div>';
-      ovHtml+=p.inspections.map(function(ins){var clr=ins.lvl==='r'?'var(--red)':ins.lvl==='a'?'var(--amb)':ins.lvl==='b'?'var(--blu)':'var(--grn)';return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+clr+'"></div><div><div class="f12 fw6">'+ins.name+'</div><div class="f11 c3">'+ins.sub+'</div></div></div>';}).join('');
+      ovHtml+=p.inspections.map(function(ins){var clr=ins.lvl==='r'?'var(--red)':ins.lvl==='a'?'var(--amb)':ins.lvl==='b'?'var(--blu)':'var(--grn)';return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+clr+'"></div><div><div class="f12 fw6">'+esc(ins.name)+'</div><div class="f11 c3">'+esc(ins.sub)+'</div></div></div>';}).join('');
       ovHtml+='</div>';
     }
     if(p.notes){
       ovHtml+='<div style="padding:11px 15px">';
       ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Notes</div>';
-      ovHtml+='<div class="f12 c2" style="line-height:1.7">'+p.notes+'</div>';
+      ovHtml+='<div class="f12 c2" style="line-height:1.7">'+esc(p.notes)+'</div>';
       ovHtml+='</div>';
     }
     if(!p.alerts.length&&!p.jobs.length&&!p.orders.length&&!p.crew.length&&!p.inspections.length&&!p.notes){
@@ -6502,9 +6633,9 @@ function renderPortDetail(id){
   el.innerHTML=
     '<div class="card">'+
       '<div class="ch">'+
-        '<div><div class="f15 fw8">'+p.name+'</div>'+
-        '<div class="f12 c3 mono">ETA: '+p.eta+' / ETD: '+p.etd+' / Berth: '+p.berth+'</div>'+
-        '<div class="f11 c3">Draft limit: '+p.draft+' / Agent: '+(p.agent||'-')+'</div></div>'+
+        '<div><div class="f15 fw8">'+esc(p.name)+'</div>'+
+        '<div class="f12 c3 mono">ETA: '+esc(p.eta)+' / ETD: '+esc(p.etd)+' / Berth: '+esc(p.berth)+'</div>'+
+        '<div class="f11 c3">Draft limit: '+esc(p.draft)+' / Agent: '+esc(p.agent||'-')+'</div></div>'+
       '</div>'+
       '<div style="padding:12px 15px;border-bottom:1px solid var(--ln)"><div class="pt-tabs">'+tabHtml+'</div></div>'+
       '<div>'+content+'</div>'+
@@ -6598,12 +6729,12 @@ function alertAdd(pid){
     '</div>'+
     '<div id="ata-rel-block" style="display:'+(hasEta?'':'none')+'">'+
       '<div class="fg"><label>Days Before ETA</label><input type="number" class="fi" id="ata-reldays" placeholder="e.g. 7" min="0" value="7"></div>'+
-      (hasEta ? '<div class="f11 c3" style="margin-top:-6px;margin-bottom:12px">ETA: '+p.eta+' &bull; Calculated date shown after save</div>' : '<div class="f11 cr" style="margin-top:-6px;margin-bottom:12px">No ETA set for this port yet - set ETA first or use Fixed Date</div>')+
+      (hasEta ? '<div class="f11 c3" style="margin-top:-6px;margin-bottom:12px">ETA: '+esc(p.eta)+' &bull; Calculated date shown after save</div>' : '<div class="f11 cr" style="margin-top:-6px;margin-bottom:12px">No ETA set for this port yet - set ETA first or use Fixed Date</div>')+
     '</div>'+
     '<div id="ata-fixed-block" style="display:'+(hasEta?'none':'')+'">'+
       '<div class="g2">'+
         '<div class="fg"><label>When (label)</label><input class="fi" id="ata-w" placeholder="e.g. 3 Days, Arrival"></div>'+
-        '<div class="fg"><label>Date &amp; Time</label><input type="datetime-local" class="fi" id="ata-dt" value="'+nowDTL()+'"></div>'+
+        '<div class="fg"><label>Date &amp; Time</label><input type="datetime-local" class="fi" id="ata-dt" value="'+esc(nowDTL())+'"></div>'+
       '</div>'+
     '</div>'+
     '<div class="fg"><label>Item</label><input class="fi" id="ata-t" placeholder="e.g. Contact agent"></div>',
@@ -6663,8 +6794,8 @@ function alertEdit(pid,i){
       '</div>'+
     '</div>'+
     '<div id="ate-rel-block" style="display:'+(isRel?'':'none')+'">'+
-      '<div class="fg"><label>Days Before ETA</label><input type="number" class="fi" id="ate-reldays" min="0" value="'+(isRel?a.relDays:7)+'"></div>'+
-      '<div class="f11 c3" style="margin-top:-6px;margin-bottom:12px">ETA: '+(p.eta||'-')+'</div>'+
+      '<div class="fg"><label>Days Before ETA</label><input type="number" class="fi" id="ate-reldays" min="0" value="'+esc((isRel?a.relDays:7))+'"></div>'+
+      '<div class="f11 c3" style="margin-top:-6px;margin-bottom:12px">ETA: '+esc(p.eta||'-')+'</div>'+
     '</div>'+
     '<div id="ate-fixed-block" style="display:'+(isRel?'none':'')+'">'+
       '<div class="fg"><label>When (label)</label><input class="fi" id="ate-w" value="'+(isRel?'':a.when)+'"></div>'+
@@ -6797,7 +6928,7 @@ function repShow(type){
       '<button class="btn bp bsm" onclick="cp(genReport(\''+type+'\'),\'Report copied.\')">Copy</button>'+
       '<button class="btn bsm" onclick="dl(genReport(\''+type+'\'),\''+type+'-report-'+todayKey()+'.txt\')">Download</button>'+
     '</div>'+
-    '<pre class="rep-pre">'+text+'</pre>';
+    '<pre class="rep-pre">'+esc(text)+'</pre>';
 }
 function genReport(type){
   var v=S.vessel,now=new Date(),utc=now.toUTCString();
@@ -6806,41 +6937,41 @@ function genReport(type){
   var date=now.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
   if(type==='noon'){
     r=sep+'NOON REPORT - '+date+'\n'+sep+
-      'VESSEL  : '+v.name+'\nFLAG    : '+v.flag+'\nCALL SGN: '+v.cs+'\nFROM    : [LAST PORT]\nTO      : [NEXT PORT]\n\n'+
+      'VESSEL  : '+(v.name)+'\nFLAG    : '+(v.flag)+'\nCALL SGN: '+v.cs+'\nFROM    : [LAST PORT]\nTO      : [NEXT PORT]\n\n'+
       'POSITION  : [LAT] [LON]\nCOURSE    : [DEG] T\nSPEED     : [KTS]\nROB HFO   : [MT]\nROB MDO   : [MT]\n\nDRAFT F: 11.20m  A: 11.60m  TRIM: 0.40m BY STERN\n\n'+
-      'DISTANCE RUN : [NM]\nSLIP         : [%]\nETA NEXT     : '+v.eta+'\n\n'+
+      'DISTANCE RUN : [NM]\nSLIP         : [%]\nETA NEXT     : '+(v.eta)+'\n\n'+
       'WEATHER: SEA STATE [BFT] WIND [DIR] [BFT] VIS [NM]\n\nREMARKS:\nAll well on board. Ship and crew in good order.\n\n'+
-      sep+'MASTER: '+v.name+'\nC/O: '+v.coname+'\n'+sep+'Generated: '+utc;
+      sep+'MASTER: '+(v.name)+'\nC/O: '+(v.coname)+'\n'+sep+'Generated: '+utc;
   } else if(type==='weekly'){
     r=sep+'WEEK-END REPORT - '+date+'\n'+sep+
-      'VESSEL  : '+v.name+'\nREPORTING WEEK ENDING: '+date+'\n\n'+
+      'VESSEL  : '+(v.name)+'\nREPORTING WEEK ENDING: '+date+'\n\n'+
       'DISTANCE THIS WEEK : [NM]\nAVG SPEED          : [KTS]\nROB HFO (END)      : [MT]\nROB MDO (END)      : [MT]\n\n'+
-      'DRILLS CONDUCTED:\n'+S.drills.filter(function(d){return d.status==='recorded';}).map(function(d){return '  - '+d.name+' ('+d.lastDone+')';}).join('\n')+'\n\n'+
+      'DRILLS CONDUCTED:\n'+S.drills.filter(function(d){return d.status==='recorded';}).map(function(d){return '  - '+(d.name)+' ('+(d.lastDone)+')';}).join('\n')+'\n\n'+
       'OPEN DEFECTS: '+S.jobs.filter(function(j){return !j.done;}).length+'\n'+
       'SAFETY RED  : '+S.rag.filter(function(r){return r.status==='r';}).length+'\n\n'+
       'REMARKS:\n[Weekly summary here]\n\n'+
-      sep+'C/O: '+v.coname+'\n'+sep+'Generated: '+utc;
+      sep+'C/O: '+(v.coname)+'\n'+sep+'Generated: '+utc;
   } else if(type==='monthly'){
     r=sep+'MONTH-END REPORT - '+date+'\n'+sep+
-      'VESSEL  : '+v.name+'\n\nDRILL COMPLIANCE:\n'+S.drills.map(function(d){return '  '+d.name+': '+d.status;}).join('\n')+'\n\n'+
+      'VESSEL  : '+(v.name)+'\n\nDRILL COMPLIANCE:\n'+S.drills.map(function(d){return '  '+(d.name)+': '+d.status;}).join('\n')+'\n\n'+
       'CERTIFICATES REVIEWED: ALL CURRENT\n\n'+
-      'OUTSTANDING DEFECTS:\n'+S.jobs.filter(function(j){return !j.done;}).map(function(j){return '  - '+j.name+' ('+j.pri+') - '+j.port;}).join('\n')+'\n\n'+
-      sep+'C/O: '+v.coname+'\n'+sep+'Generated: '+utc;
+      'OUTSTANDING DEFECTS:\n'+S.jobs.filter(function(j){return !j.done;}).map(function(j){return '  - '+(j.name)+' ('+j.pri+') - '+j.port;}).join('\n')+'\n\n'+
+      sep+'C/O: '+(v.coname)+'\n'+sep+'Generated: '+utc;
   } else if(type==='arrival'){
     r=sep+'PRE-ARRIVAL REPORT\n'+sep+
-      'VESSEL  : '+v.name+'\nFLAG    : '+v.flag+'\nIMO NO  : '+v.imo+'\nCALL SGN: '+v.cs+'\n\n'+
-      'PORT    : [PORT NAME]\nBERTH   : [BERTH]\nETA     : '+v.eta+'\n\n'+
+      'VESSEL  : '+(v.name)+'\nFLAG    : '+(v.flag)+'\nIMO NO  : '+(v.imo)+'\nCALL SGN: '+v.cs+'\n\n'+
+      'PORT    : [PORT NAME]\nBERTH   : [BERTH]\nETA     : '+(v.eta)+'\n\n'+
       'DRAFT ON ARRIVAL:\n  FORWARD: 11.20m\n  AFT    : 11.60m\n  TRIM   : 0.40m BY STERN\n\n'+
       'REQUIREMENTS:\n  PILOT         : YES\n  TUGS          : AS REQUIRED\n  MOORING BOATS : AS REQUIRED\n\n'+
       'POB: 22\nHAZARDOUS CARGO: NIL\nILLNESS ON BOARD: NIL\n\n'+
-      sep+'MASTER: [MASTER NAME]\nC/O: '+v.coname+'\n'+sep+'Generated: '+utc;
+      sep+'MASTER: [MASTER NAME]\nC/O: '+(v.coname)+'\n'+sep+'Generated: '+utc;
   } else if(type==='departure'){
     r=sep+'DEPARTURE REPORT\n'+sep+
-      'VESSEL  : '+v.name+'\nFLAG    : '+v.flag+'\n\nDEPARTED: [PORT] [DATE TIME] UTC\nBOUND FOR: [NEXT PORT]\nETA     : '+v.eta+'\n\n'+
+      'VESSEL  : '+(v.name)+'\nFLAG    : '+(v.flag)+'\n\nDEPARTED: [PORT] [DATE TIME] UTC\nBOUND FOR: [NEXT PORT]\nETA     : '+(v.eta)+'\n\n'+
       'DEPARTURE DRAFT:\n  FORWARD: 11.20m\n  AFT    : 11.60m\n  TRIM   : 0.40m BY STERN\n\n'+
       'ROB ON DEPARTURE:\n  HFO: [MT]\n  MDO: [MT]\n  FW : [MT]\n\n'+
       'ALL CARGO SECURED: YES\nALL LASHINGS CHECKED: YES\nHATCHES SECURED: YES\n\n'+
-      sep+'MASTER: [MASTER NAME]\nC/O: '+v.coname+'\n'+sep+'Generated: '+utc;
+      sep+'MASTER: [MASTER NAME]\nC/O: '+(v.coname)+'\n'+sep+'Generated: '+utc;
   }
   return r;
 }
@@ -6913,7 +7044,7 @@ function todoAddModal() {
     '<div class="fg"><label>Task / Note</label><input class="fi" id="ta-text" placeholder="What do you need to do?"></div>'+
     '<div class="g2">'+
       '<div class="fg"><label>Category</label><select class="fs" id="ta-cat">'+
-        Object.keys(TODO_CATS).map(function(k){return '<option value="'+k+'">'+TODO_CATS[k].label+'</option>';}).join('')+
+        Object.keys(TODO_CATS).map(function(k){return '<option value="'+esc(k)+'">'+TODO_CATS[k].label+'</option>';}).join('')+
       '</select></div>'+
       '<div class="fg"><label>Priority</label><select class="fs" id="ta-pri">'+
         '<option value="normal">Normal</option>'+
@@ -6955,13 +7086,13 @@ function todoEdit(id) {
     '<div class="fg"><label>Task</label><input class="fi" id="te-text" value="'+t.text.replace(/"/g,'&quot;')+'"></div>'+
     '<div class="g2">'+
       '<div class="fg"><label>Category</label><select class="fs" id="te-cat">'+
-        Object.keys(TODO_CATS).map(function(k){return '<option value="'+k+'"'+(t.cat===k?' selected':'')+'>'+TODO_CATS[k].label+'</option>';}).join('')+
+        Object.keys(TODO_CATS).map(function(k){return '<option value="'+esc(k)+'"'+(t.cat===k?' selected':'')+'>'+TODO_CATS[k].label+'</option>';}).join('')+
       '</select></div>'+
       '<div class="fg"><label>Priority</label><select class="fs" id="te-pri">'+
-        ['normal','high','urgent'].map(function(p){return '<option value="'+p+'"'+(t.priority===p?' selected':'')+'>'+p.charAt(0).toUpperCase()+p.slice(1)+'</option>';}).join('')+
+        ['normal','high','urgent'].map(function(p){return '<option value="'+esc(p)+'"'+(t.priority===p?' selected':'')+'>'+p.charAt(0).toUpperCase()+p.slice(1)+'</option>';}).join('')+
       '</select></div>'+
     '</div>'+
-    '<div class="fg"><label>Note</label><textarea class="ft w100" id="te-note" style="min-height:60px">'+t.note+'</textarea></div>',
+    '<div class="fg"><label>Note</label><textarea class="ft w100" id="te-note" style="min-height:60px">'+esc(t.note)+'</textarea></div>',
     '<button class="btn bp bsm" onclick="todoSaveEdit('+id+')">Save</button>'+
     '<button class="btn bdn bxs" onclick="todoDel('+id+')">Delete</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
@@ -7041,12 +7172,12 @@ function renderTodo() {
       '<div style="flex:1;min-width:0">'+
         '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px">'+
           '<span style="font-size:13.5px;font-weight:600;'+(t.done?'text-decoration:line-through;color:var(--ink3)':'')+
-            ';word-break:break-word">'+t.text+'</span>'+
+            ';word-break:break-word">'+esc(t.text)+'</span>'+
           priBadge+
         '</div>'+
         '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
-          '<span class="bdg dgr" style="font-size:9.5px">'+cat.label+'</span>'+
-          (t.note?'<span class="f11 c3" style="font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">'+t.note+'</span>':'')+
+          '<span class="bdg dgr" style="font-size:9.5px">'+esc(cat.label)+'</span>'+
+          (t.note?'<span class="f11 c3" style="font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">'+esc(t.note)+'</span>':'')+
           '<span class="f10 c3">'+( t.done && t.doneAt ? '&#10003; '+t.doneAt : t.created||'')+'</span>'+
         '</div>'+
       '</div>'+
@@ -7128,7 +7259,7 @@ function vesselSave(){
     coname:(document.getElementById('s-name')||{}).value||S.vessel.coname,
     eta: (document.getElementById('s-eta')||{}).value ||S.vessel.eta
   };
-  autoSave();updateVessel();renderToday();alert('Vessel info saved.');
+  autoSave();updateVessel();renderToday();showToast('Vessel info saved.');
 }
 // updateVessel needs to write to s-ves, s-imo, s-cs, s-flag, s-name, s-eta
 function updateVessel(){
@@ -7144,4 +7275,29 @@ if (document.readyState === "loading") {
 } else {
   boot();
 }
+
+// ── ACCESSIBILITY RUNTIME ─────────────────────────────────────
+(function(){
+  var SEL='[onclick]:not(button):not(a):not(input):not(select):not(textarea):not(label):not(#mwrap):not(.modal)';
+  var LBL={'\u270E':'Edit','\u2715':'Close','\u00D7':'Close','+':'Add','\u2192':'Move'};
+  function mark(){
+    document.querySelectorAll(SEL).forEach(function(el){
+      if(!el.hasAttribute('tabindex')){ el.setAttribute('tabindex','0'); if(!el.getAttribute('role')) el.setAttribute('role','button'); }
+    });
+    document.querySelectorAll('button:not([aria-label])').forEach(function(b){
+      var t=(b.textContent||'').trim();
+      if(b.title){ if(t.length<=3) b.setAttribute('aria-label',b.title); }
+      else if(t.length===1 && LBL[t]) b.setAttribute('aria-label',LBL[t]);
+    });
+  }
+  var pend=false;
+  function sched(){ if(pend) return; pend=true; requestAnimationFrame(function(){ pend=false; mark(); }); }
+  function start(){ mark(); try{ new MutationObserver(sched).observe(document.body,{childList:true,subtree:true}); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+  document.addEventListener('keydown',function(e){
+    if((e.key==='Enter'||e.key===' ') && e.target && e.target.matches && e.target.matches(SEL) && e.target.getAttribute('role')==='button'){
+      e.preventDefault(); e.target.click();
+    }
+  });
+})();
 </script>
