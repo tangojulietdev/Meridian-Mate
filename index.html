@@ -2727,6 +2727,20 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* ── WORK DONE ─────────────────────────────────────────────── */
+.wd-item { display:flex; align-items:flex-start; gap:10px; padding:11px 16px; border-top:1px solid var(--ln); cursor:pointer; transition:background-color .12s ease; }
+.wd-item:hover { background:var(--elev); }
+.wd-num { min-width:22px; color:var(--ink3); font-family:var(--mono); font-size:12px; padding-top:2px; font-variant-numeric:tabular-nums; }
+.wd-t { flex:1; min-width:0; font-size:13.5px; line-height:1.45; white-space:pre-wrap; word-break:break-word; }
+.wd-ed { color:var(--ink3); flex-shrink:0; padding-top:2px; }
+.wd-dayh { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 16px; background:var(--elev); border-top:1px solid var(--ln); }
+.wd-dayl { background:none; border:0; padding:4px 0; font:inherit; font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--ink2); cursor:pointer; text-align:left; }
+.wd-dayh.today .wd-dayl { color:var(--ac); }
+.wd-cnt { font-family:var(--mono); font-size:12px; color:var(--ink3); }
+.wd-empty { padding:9px 16px 11px 48px; font-size:12px; color:var(--ink3); }
+.wd-card .ch { flex-wrap:wrap; gap:8px; }
+@media (pointer: coarse) { .wd-dayl { min-height:36px; } }
 </style>
 
 </head><body>
@@ -2746,6 +2760,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
   <div class="ng"><div class="ngl">Daily</div>
     <div class="ni on" onclick="showPage('today')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>Today<span class="npill nred" id="np-today">0</span></div>
     <div class="ni" onclick="showPage('workplan')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span>Day Work Plan</div>
+    <div class="ni" onclick="showPage('workdone')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span>Work Done</div>
     <div class="ni" onclick="showPage('todo')"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>Todo List<span class="npill nteal" id="np-todo">0</span></div>
   </div>
   <div class="ng"><div class="ngl">Operations</div>
@@ -2862,6 +2877,25 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
     </div>
     <div id="wp-crew-list"></div>
   </div>
+</div>
+
+<div class="page" id="pg-workdone">
+  <div class="ph">
+    <div><div class="ph-t">Work Done</div><div class="ph-s">Deck crew and repair team daily record</div></div>
+    <div class="flex gap8">
+      <button class="btn bsm bp" id="wd-view-day" onclick="wdSetView('day')">Day</button>
+      <button class="btn bsm" id="wd-view-week" onclick="wdSetView('week')">Week</button>
+    </div>
+  </div>
+  <div class="flex gap8 mb12" style="flex-wrap:wrap;align-items:center">
+    <button class="btn bsm" onclick="wdNav(-1)">&larr; Prev</button>
+    <button class="btn bsm" onclick="wdNav(0)">Today</button>
+    <button class="btn bsm" onclick="wdNav(1)">Next &rarr;</button>
+    <input type="date" class="fi" id="wd-jump" onchange="wdJump(this.value)" aria-label="Jump to date" style="width:auto;height:34px;padding:0 8px;font-size:12px">
+    <div class="spacer"></div>
+    <div id="wd-nav-lbl" class="f13 fw7" style="color:var(--ac)"></div>
+  </div>
+  <div id="wd-body"></div>
 </div>
 
 <div class="page" id="pg-todo">
@@ -3006,7 +3040,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.9.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.10.0</div>
       <div class="f10 c3" id="about-date-hdr"></div>
     </div>
   </div>
@@ -3195,6 +3229,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
   <div class="mobits">
     <div class="mobit on" onclick="showPage('today')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></div>Today</div>
     <div class="mobit" onclick="showPage('workplan')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg></div>Work</div>
+    <div class="mobit" onclick="showPage('workdone')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></div>Done</div>
     <div class="mobit" onclick="showPage('todo')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>Todo</div>
     <div class="mobit" onclick="showPage('bundles')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>Ops</div>
     <div class="mobit" onclick="showPage('voyage')"><div class="mobit-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg></div>Voyage</div>
@@ -4348,6 +4383,7 @@ var S = {
   custom_bundles: [],
   deleted_bundles: [],
   todos: [],
+  workdone: {},
   updated: 0  // Last-modified timestamp (set on every save)
 };
 
@@ -4461,7 +4497,7 @@ function importBackup(e) {
     try {
       var d = JSON.parse(ev.target.result);
       // Merge into S - keep keys that exist
-      var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos'];
+      var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone'];
       keys.forEach(function(k) { if (d[k] !== undefined) S[k] = d[k]; });
       dbSave();
       applyTheme(S.theme);
@@ -4561,8 +4597,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.9.0';
-var BUILD_DATE  = '13 Oct 2026';
+var APP_VERSION = '5.10.0';
+var BUILD_DATE  = '27 Oct 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
 var ACTIVE_BUNDLE = null;
@@ -4578,7 +4614,7 @@ function boot() {
   initDB(function() {
     dbLoad(function(saved) {
       if (saved) {
-        var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos'];
+        var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone'];
         keys.forEach(function(k) { if (saved[k] !== undefined) S[k] = saved[k]; });
       }
       if (S.ports && S.ports.length) ACTIVE_PORT = S.ports[0].id;
@@ -4599,7 +4635,7 @@ function boot2() {
   applyTheme(S.theme);
   updateVessel();
   tick(); clearInterval(window._tickI); window._tickI = setInterval(tick, 1000);
-  renderToday(); renderWP(); renderTiles(); todoInit();
+  renderToday(); renderWP(); renderWorkDone(); renderTiles(); todoInit();
   renderPortStrip(); if (ACTIVE_PORT) renderPortDetail(ACTIVE_PORT);
   renderJobs(); renderRAG(); renderDrills();
   renderDraft(); renderHolds(); renderOrders();
@@ -4649,6 +4685,7 @@ function showPage(name) {
 
   if (name==='workplan') { var _wa=document.querySelector('#wk-strip .wday.on'); if(_wa&&_wa.scrollIntoView){try{_wa.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});}catch(e){}} }
   var _am=document.querySelector('.mobit.on'); if(_am&&_am.scrollIntoView){try{_am.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});}catch(e){}}
+  if (name==='workdone') { renderWorkDone(); }
   if (name==='settings') { updateVessel(); renderDCList(); renderHiddenOps(); }
   document.getElementById('main').scrollTop = 0;
 }
@@ -5051,6 +5088,145 @@ function wpSetView(view) {
     renderWPStrip();
     renderWPDay();
   }
+}
+
+// ── WORK DONE (deck crew + repair team) ──────────────────────
+var WD_TEAMS = [
+  {k:'deck', label:'Deck Crew',   c:'var(--blu)'},
+  {k:'rt',   label:'Repair Team', c:'var(--amb)'}
+];
+var WD_DATE = todayKey();
+var WD_VIEW = 'day';
+var _wdSeq = 0;
+var WD_DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var WD_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function wdTeam(t){ return WD_TEAMS.find(function(x){return x.k===t;}) || WD_TEAMS[0]; }
+function wdList(k,t){ var d=S.workdone && S.workdone[k]; return (d && d[t]) || []; }
+function wdDay(k){
+  if(!S.workdone) S.workdone={};
+  var d=S.workdone[k]; if(!d) d=S.workdone[k]={deck:[],rt:[]};
+  if(!d.deck) d.deck=[]; if(!d.rt) d.rt=[];
+  return d;
+}
+function wdLabel(k){ var d=dateFromKey(k); return WD_DOW[d.getDay()]+' '+d.getDate()+' '+WD_MON[d.getMonth()]; }
+function wdLong(k){ return dateFromKey(k).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
+function wdShort(k,withYear){ var d=dateFromKey(k); return d.getDate()+' '+WD_MON[d.getMonth()]+(withYear?' '+d.getFullYear():''); }
+function wdWeekKeys(k){
+  var d=dateFromKey(k), off=(d.getDay()+6)%7, out=[];
+  for(var i=0;i<7;i++){ out.push(keyFromDate(new Date(d.getFullYear(),d.getMonth(),d.getDate()-off+i))); }
+  return out;
+}
+function wdOneLine(s){ return String(s).replace(/\s*\n\s*/g,' '); }
+
+// plain-text output (copy)
+function wdDayText(t,k){
+  var team=wdTeam(t), items=wdList(k,t);
+  var lines=[team.label.toUpperCase()+' - WORK DONE', S.vessel.name+' - '+wdLong(k), ''];
+  if(!items.length) lines.push('No work recorded.');
+  else items.forEach(function(x,i){ lines.push((i+1)+'. '+wdOneLine(x.text)); });
+  return lines.join('\n');
+}
+function wdWeekText(t,k){
+  var team=wdTeam(t), keys=wdWeekKeys(k), total=0;
+  var lines=[team.label.toUpperCase()+' - WEEKLY WORK DONE', S.vessel.name+' - Week '+wdShort(keys[0])+' to '+wdShort(keys[6],true), ''];
+  keys.forEach(function(dk){
+    var items=wdList(dk,t); total+=items.length;
+    lines.push(wdLabel(dk).toUpperCase());
+    if(!items.length) lines.push('  No work recorded');
+    else items.forEach(function(x,i){ lines.push('  '+(i+1)+'. '+wdOneLine(x.text)); });
+    lines.push('');
+  });
+  lines.push('Total entries: '+total);
+  return lines.join('\n');
+}
+function wdCopyDay(t,k){ k=k||WD_DATE; cp(wdDayText(t,k), wdTeam(t).label+' day copied.'); }
+function wdCopyWeek(t,k){ k=k||WD_DATE; cp(wdWeekText(t,k), wdTeam(t).label+' week copied.'); }
+
+// actions
+function wdAdd(t){
+  var inp=document.getElementById('wd-inp-'+t); var text=inp && inp.value.trim(); if(!text) return;
+  wdDay(WD_DATE)[t].push({id:Date.now()*100+(_wdSeq++%100), text:text});
+  inp.value=''; autoSave(); renderWorkDone();
+  var again=document.getElementById('wd-inp-'+t); if(again) again.focus();
+}
+function wdEdit(k,t,id){
+  var it=wdList(k,t).find(function(x){return x.id===id;}); if(!it) return;
+  openModal('Edit '+wdTeam(t).label+' entry',
+    '<div class="fg"><label>Work done</label><textarea class="ft w100" id="wd-e-text" style="min-height:96px">'+esc(it.text)+'</textarea></div>',
+    '<button class="btn bp bsm" onclick="wdSaveEdit(\''+k+'\',\''+t+'\','+id+')">Save</button>'+
+    '<button class="btn bdn bxs" onclick="wdDel(\''+k+'\',\''+t+'\','+id+')">Delete</button>'+
+    '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
+}
+function wdSaveEdit(k,t,id){
+  var it=wdList(k,t).find(function(x){return x.id===id;}); if(!it) return;
+  var el=document.getElementById('wd-e-text'); var v=el && el.value.trim(); if(!v) return;
+  it.text=v; autoSave(); closeModal(); renderWorkDone();
+}
+function wdDel(k,t,id){
+  var d=S.workdone && S.workdone[k]; if(!d) return;
+  d[t]=(d[t]||[]).filter(function(x){return x.id!==id;});
+  if(!d.deck.length && !d.rt.length) delete S.workdone[k];
+  autoSave(); closeModal(); renderWorkDone(); showToast('Entry removed');
+}
+function wdSetView(v){ WD_VIEW=v; renderWorkDone(); }
+function wdOpenDay(k){ WD_DATE=k; WD_VIEW='day'; renderWorkDone(); }
+function wdJump(v){ if(!v) return; WD_DATE=v; renderWorkDone(); }
+function wdNav(dir){
+  if(dir===0){ WD_DATE=todayKey(); }
+  else { var d=dateFromKey(WD_DATE); d.setDate(d.getDate()+dir*(WD_VIEW==='week'?7:1)); WD_DATE=keyFromDate(d); }
+  renderWorkDone();
+}
+
+// rendering
+var WD_PENCIL='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+function wdItemRow(k,t,x,i){
+  return '<div class="wd-item" onclick="wdEdit(\''+k+'\',\''+t+'\','+x.id+')">'+
+    '<div class="wd-num">'+(i+1)+'.</div><div class="wd-t">'+esc(x.text)+'</div><span class="wd-ed">'+WD_PENCIL+'</span></div>';
+}
+function wdDayCard(team,k){
+  var items=wdList(k,team.k);
+  var rows=items.length ? items.map(function(x,i){return wdItemRow(k,team.k,x,i);}).join('')
+    : '<div class="wd-empty" style="padding-left:16px">Nothing recorded for this day.</div>';
+  return '<div class="card mb12 wd-card" style="border-left:3px solid '+team.c+'">'+
+    '<div class="ch"><div><div class="ct">'+esc(team.label)+'</div><div class="cm">'+items.length+(items.length===1?' entry':' entries')+' on this day</div></div>'+
+      '<div class="flex gap8"><button class="btn bxs" onclick="wdCopyDay(\''+team.k+'\')">Copy Day</button>'+
+      '<button class="btn bxs" onclick="wdCopyWeek(\''+team.k+'\')">Copy Week</button></div></div>'+
+    '<div>'+rows+'</div>'+
+    '<div class="add-row"><span class="f12 c3">+</span>'+
+      '<input class="add-inp" id="wd-inp-'+team.k+'" placeholder="Add work done..." aria-label="Add '+esc(team.label)+' work done" onkeydown="if(event.key===\'Enter\')wdAdd(\''+team.k+'\')">'+
+      '<button class="btn bxs" onclick="wdAdd(\''+team.k+'\')">Add</button></div>'+
+  '</div>';
+}
+function wdWeekCard(team,keys,today){
+  var total=0;
+  var days=keys.map(function(dk){
+    var items=wdList(dk,team.k); total+=items.length;
+    var head='<div class="wd-dayh'+(dk===today?' today':'')+'">'+
+      '<button type="button" class="wd-dayl" onclick="wdOpenDay(\''+dk+'\')" title="Open this day">'+wdLabel(dk)+'</button>'+
+      '<span class="flex gap8" style="align-items:center"><span class="wd-cnt">'+items.length+'</span>'+
+      (items.length?'<button class="btn bxs" onclick="wdCopyDay(\''+team.k+'\',\''+dk+'\')">Copy</button>':'')+'</span></div>';
+    var body=items.length ? items.map(function(x,i){return wdItemRow(dk,team.k,x,i);}).join('') : '<div class="wd-empty">Nothing recorded</div>';
+    return head+body;
+  }).join('');
+  return '<div class="card mb12 wd-card" style="border-left:3px solid '+team.c+'">'+
+    '<div class="ch"><div><div class="ct">'+esc(team.label)+'</div><div class="cm">'+total+(total===1?' entry':' entries')+' this week</div></div>'+
+      '<div class="flex gap8"><button class="btn bxs" onclick="wdCopyWeek(\''+team.k+'\')">Copy Week</button></div></div>'+
+    '<div>'+days+'</div></div>';
+}
+function renderWorkDone(){
+  var el=document.getElementById('wd-body'); if(!el) return;
+  var today=todayKey(), keys=wdWeekKeys(WD_DATE);
+  var kept={}; WD_TEAMS.forEach(function(t){ var i=document.getElementById('wd-inp-'+t.k); kept[t.k]=i?i.value:''; });
+  var bd=document.getElementById('wd-view-day'), bw=document.getElementById('wd-view-week');
+  if(bd) bd.classList.toggle('bp', WD_VIEW==='day');
+  if(bw) bw.classList.toggle('bp', WD_VIEW==='week');
+  var jump=document.getElementById('wd-jump'); if(jump) jump.value=WD_DATE;
+  var lbl=document.getElementById('wd-nav-lbl');
+  if(lbl) lbl.textContent = WD_VIEW==='day'
+    ? (WD_DATE===today?'TODAY - ':'')+wdLong(WD_DATE)
+    : 'WEEK - '+wdShort(keys[0])+' to '+wdShort(keys[6],true);
+  el.innerHTML = WD_TEAMS.map(function(t){ return WD_VIEW==='day' ? wdDayCard(t,WD_DATE) : wdWeekCard(t,keys,today); }).join('');
+  WD_TEAMS.forEach(function(t){ var i=document.getElementById('wd-inp-'+t.k); if(i && kept[t.k]) i.value=kept[t.k]; });
 }
 
 // ── BY-CREW ASSIGNMENT VIEW ──────────────────────────────────
