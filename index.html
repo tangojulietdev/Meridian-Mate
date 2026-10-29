@@ -2741,6 +2741,13 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
 .wd-empty { padding:9px 16px 11px 48px; font-size:12px; color:var(--ink3); }
 .wd-card .ch { flex-wrap:wrap; gap:8px; }
 @media (pointer: coarse) { .wd-dayl { min-height:36px; } }
+
+/* ── PORT COLOURS ──────────────────────────────────────────── */
+.pdot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+.pcol-row { display:flex; flex-wrap:wrap; gap:10px; }
+.pcol { width:30px; height:30px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; }
+.pcol.on { border-color:var(--ink); box-shadow:0 0 0 2px var(--bg); outline:2px solid var(--ink); outline-offset:1px; }
+@media (pointer: coarse) { .pcol { width:40px; height:40px; } }
 </style>
 
 </head><body>
@@ -2818,6 +2825,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
     <button class="btn bsm" onclick="wpNav(-1)">&larr; Prev</button>
     <button class="btn bsm" onclick="wpNav(0)">Today</button>
     <button class="btn bsm" onclick="wpNav(1)">Next &rarr;</button>
+    <button class="btn bsm" id="wp-sort-btn" onclick="wpSortToggle()" title="Sort this day's tasks by the time they were added">Sort: Newest first</button>
     <div class="spacer"></div>
     <div id="wp-nav-lbl" class="f13 fw7" style="color:var(--ac)"></div>
   </div>
@@ -2944,7 +2952,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
 </div>
 
 <div class="page" id="pg-voyage">
-  <div class="ph"><div><div class="ph-t">Voyage Planner</div><div class="ph-s">Tap port to manage</div></div><button class="btn bp bsm" onclick="portAdd()">+ Add Port</button></div>
+  <div class="ph"><div><div class="ph-t">Voyage Planner</div><div class="ph-s">Tap port to manage</div></div><div class="flex gap8"><button class="btn bsm" onclick="portSortEta()" title="Order ports by arrival date">Sort by ETA</button><button class="btn bp bsm" onclick="portAdd()">+ Add Port</button></div></div>
   <div class="port-strip" id="port-strip"></div>
   <div id="port-detail"></div>
 </div>
@@ -3040,7 +3048,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.10.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.11.0</div>
       <div class="f10 c3" id="about-date-hdr"></div>
     </div>
   </div>
@@ -4597,8 +4605,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.10.0';
-var BUILD_DATE  = '27 Oct 2026';
+var APP_VERSION = '5.11.0';
+var BUILD_DATE  = '29 Oct 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
 var ACTIVE_BUNDLE = null;
@@ -5432,7 +5440,7 @@ function mcalAddTask(key) {
   var inp = document.getElementById('mcal-inp-'+key);
   var text = inp ? inp.value.trim() : '';
   if (!text) return;
-  getDay(key).tasks.push({id:Date.now(),text:text,done:false,urgent:false,carriedFrom:null});
+  getDay(key).tasks.unshift({id:Date.now(),text:text,done:false,urgent:false,carriedFrom:null});
   autoSave();
   renderWPMonth();
 }
@@ -5471,7 +5479,7 @@ function wpMoveToDay(fromKey, taskId, toKey) {
   var idx = fromDay.tasks.findIndex(function(x){return x.id===taskId;});
   if (idx < 0) return;
   var task = fromDay.tasks.splice(idx, 1)[0];
-  getDay(toKey).tasks.push(task); // same object - done/urgent/priority untouched, no carriedFrom
+  getDay(toKey).tasks.unshift(task); // same object - done/urgent/priority untouched, no carriedFrom
   autoSave();
   renderWPDay();
   renderWPStrip();
@@ -5639,7 +5647,7 @@ function renderWPDay() {
       if (w.fromPortAlert) {
         var _ap = S.ports.find(function(x){return x.id===w.portId;});
         var _apName = _ap ? _ap.name : 'Unknown Port';
-        portTag = '<span class="bdg dt" style="font-size:9px;margin-right:5px" title="Auto-created from port timeline">&#8987; '+_apName+'</span>';
+        portTag = '<span class="bdg dt" style="font-size:9px;margin-right:5px" title="Auto-created from port timeline">&#8987; '+esc(_apName)+'</span>';
       }
       var priDot = w.urgent ? '<span class="bdg dr" style="font-size:9px;margin-right:5px">URGENT</span>' :
         w.priority==='high'?'<span class="bdg da" style="font-size:9px;margin-right:5px">HIGH</span>':
@@ -5652,7 +5660,7 @@ function renderWPDay() {
         '<div class="wp-drag-handle" title="Drag to reorder">&#8942;&#8942;</div>'+
         '<div class="wp-cb '+(w.done?'on':'')+'" onclick="wpToggle(\''+k+'\','+w.id+')"></div>'+
         '<div class="wp-num">'+(i+1)+'.</div>'+
-        '<div style="flex:1">'+cf+portTag+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+wpRoleBadge(w.assignee)+w.text+'</span></div>'+
+        '<div style="flex:1">'+cf+portTag+'<span class="wp-t '+(w.done?'wp-done':'')+'">'+priDot+wpRoleBadge(w.assignee)+esc(w.text)+'</span></div>'+
         (!w.done?'<button class="btn bxs bgh" onclick="wpShift(\''+k+'\','+w.id+',\''+nk+'\',\''+ndL+'\')" style="font-size:11px;opacity:.55" title="Move to '+ndL+'">→'+ndL+'</button>':'')+
         '<button class="btn bxs bgh" onclick="wpAssign(&quot;'+k+'&quot;,'+w.id+')" title="Assign to crew" aria-label="Assign to crew" style="'+(w.assignee?'opacity:1;color:var(--ac)':'opacity:.7')+'">'+ICON_USER(14)+'</button>'+
         '<button class="btn bxs bgh" onclick="wpEditTask(&quot;'+k+'&quot;,'+w.id+')">✎</button>'+
@@ -5666,6 +5674,22 @@ function renderWPDay() {
   if(st){st.value=day.safetyTopic||'';st.readOnly=false;}
   if(sn){sn.value=day.safetyNotes||'';sn.readOnly=false;}
 }
+var WP_SORT_NEW = true;
+function wpSortToggle() {
+  var day = getDay(WP_DATE);
+  // button shows the current order; each press flips to the other one
+  var asc = WP_SORT_NEW;
+  day.tasks = day.tasks.map(function(t,i){return {t:t,i:i};}).sort(function(a,b){
+    var d = (a.t.id||0) - (b.t.id||0);
+    if (!d) d = b.i - a.i; // same instant: later array slot = added earlier
+    return asc ? d : -d;
+  }).map(function(x){return x.t;});
+  WP_SORT_NEW = !WP_SORT_NEW;
+  var btn = document.getElementById('wp-sort-btn');
+  if (btn) btn.textContent = 'Sort: ' + (WP_SORT_NEW ? 'Newest first' : 'Oldest first');
+  autoSave(); renderWPDay();
+  showToast(asc ? 'Oldest added first' : 'Newest added first');
+}
 function wpNav(dir) {
   if (dir===0) { WP_DATE=todayKey(); }
   else { var d=dateFromKey(WP_DATE); d.setDate(d.getDate()+dir); WP_DATE=keyFromDate(d); }
@@ -5675,7 +5699,7 @@ function wpJump(k) { WP_DATE=k; renderWP(); }
 function wpSetStatus(v) { getDay(WP_DATE).status=v; autoSave(); renderWPStrip(); if(WP_DATE===todayKey()) renderToday(); }
 function wpAdd() {
   var inp=document.getElementById('wp-inp'); var text=inp&&inp.value.trim(); if(!text)return;
-  getDay(WP_DATE).tasks.push({id:Date.now(),text:text,done:false,urgent:false,carriedFrom:null});
+  getDay(WP_DATE).tasks.unshift({id:Date.now(),text:text,done:false,urgent:false,carriedFrom:null});
   inp.value=''; autoSave(); renderWPDay(); renderWPStrip();
 }
 function wpToggle(k,id) {
@@ -5751,7 +5775,7 @@ function wpAllDone() {
 function wpShift(fromKey,id,toKey,toLbl) {
   var fromDay=getDay(fromKey); var task=fromDay.tasks.find(function(x){return x.id===id;}); if(!task)return;
   fromDay.tasks=fromDay.tasks.filter(function(x){return x.id!==id;});
-  getDay(toKey).tasks.push({id:Date.now(),text:task.text,done:false,urgent:task.urgent,carriedFrom:fromKey});
+  getDay(toKey).tasks.unshift({id:Date.now(),text:task.text,done:false,urgent:task.urgent,carriedFrom:fromKey});
   autoSave(); renderWP();
 }
 function wpCarry() {
@@ -5760,9 +5784,9 @@ function wpCarry() {
   var yDay=S.wplans[yKey]; if(!yDay)return;
   var inc=yDay.tasks.filter(function(t){return !t.done&&!t.carriedFrom;});
   var todayDay=getDay(today);
-  inc.forEach(function(t){
+  inc.slice().reverse().forEach(function(t){
     var already=todayDay.tasks.some(function(x){return x.carriedFrom===yKey&&x.text===t.text;});
-    if(!already) todayDay.tasks.push({id:Date.now()+Math.random(),text:t.text,done:false,urgent:t.urgent,carriedFrom:yKey});
+    if(!already) todayDay.tasks.unshift({id:Date.now()+Math.random(),text:t.text,done:false,urgent:t.urgent,carriedFrom:yKey});
   });
   autoSave(); WP_DATE=today; renderWP();
 }
@@ -5785,7 +5809,7 @@ function wpAddModal() {
     '<button class="btn bp bsm" onclick="'+
       'var t=document.getElementById(\'wat\').value.trim();'+
       'var k=document.getElementById(\'wad\').value;'+
-      'if(t){getDay(k).tasks.push({id:Date.now(),text:t,done:false,urgent:document.getElementById(\'wau\').value===\'1\',carriedFrom:null});'+
+      'if(t){getDay(k).tasks.unshift({id:Date.now(),text:t,done:false,urgent:document.getElementById(\'wau\').value===\'1\',carriedFrom:null});'+
       'autoSave();closeModal();WP_DATE=k;renderWP();}'+
     '">Add</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
@@ -6602,15 +6626,49 @@ function ordersExport(){
 }
 
 // ── VOYAGE ────────────────────────────────────────────────────
+var PORT_COLORS=['#3b82f6','#10b981','#f59e0b','#ef4444','#a855f7','#06b6d4','#ec4899','#84cc16'];
+function portColor(p){
+  if(!p.color) p.color=PORT_COLORS[Math.max(0,S.ports.indexOf(p))%PORT_COLORS.length];
+  return p.color;
+}
+function portColorPicker(pre,cur){
+  return '<div class="fg"><label>Colour</label><div class="pcol-row" role="radiogroup" aria-label="Port colour">'+
+    PORT_COLORS.map(function(c){
+      return '<button type="button" class="pcol'+(c===cur?' on':'')+'" style="background:'+c+'" data-c="'+c+'" role="radio" aria-checked="'+(c===cur)+'" aria-label="Colour '+c+'" onclick="portPickColor(\''+pre+'\',\''+c+'\')"></button>';
+    }).join('')+'<input type="hidden" id="'+pre+'-col" value="'+cur+'"></div></div>';
+}
+function portPickColor(pre,c){
+  var hid=document.getElementById(pre+'-col'); if(hid) hid.value=c;
+  document.querySelectorAll('.pcol-row .pcol').forEach(function(b){
+    var on=b.getAttribute('data-c')===c; b.classList.toggle('on',on); b.setAttribute('aria-checked',on?'true':'false');
+  });
+}
+function portTs(p){
+  if(p.etaTs) return p.etaTs;
+  var d=etaParse(p.eta); return d?d.getTime():null;
+}
+function portSort(){
+  var order=S.ports.map(function(p,i){return {p:p,i:i,t:portTs(p)};});
+  order.sort(function(a,b){
+    if(a.t===null && b.t===null) return a.i-b.i;
+    if(a.t===null) return 1; if(b.t===null) return -1;
+    return a.t-b.t || a.i-b.i;
+  });
+  S.ports=order.map(function(o){return o.p;});
+}
+function portSortEta(){
+  portSort(); autoSave(); renderPortStrip(); showToast('Ports sorted by arrival date');
+}
 function renderPortStrip(){
   var el=document.getElementById('port-strip'); if(!el)return;
   el.innerHTML=S.ports.map(function(p){
     var pscFlag=p.inspections&&p.inspections.some(function(x){return x.lvl==='r';});
     var jobCnt=p.jobs&&p.jobs.length;
     var alertCnt=p.alerts&&p.alerts.filter(function(a){return !a.done;}).length;
-    return '<div class="pchip'+(p.id===ACTIVE_PORT?' on':'')+'" style="position:relative">'+
+    var pc=portColor(p);
+    return '<div class="pchip'+(p.id===ACTIVE_PORT?' on':'')+'" style="position:relative;border-top:3px solid '+pc+'">'+
       '<div onclick="selectPort(\''+p.id+'\')" style="cursor:pointer">'+
-        '<div class="pcn">'+esc(p.name)+'</div>'+
+        '<div class="pcn"><span class="pdot" style="background:'+pc+'"></span>'+esc(p.name)+'</div>'+
         '<div class="pce">'+esc(p.eta)+'</div>'+
         '<div class="pct">'+
           '<span class="bdg dgr">'+esc(p.cc)+'</span>'+
@@ -6649,7 +6707,8 @@ function portEdit(id){
       '<div class="fg"><label>ETD</label><input type="datetime-local" class="fi" id="pe-etd" value="'+esc(displayToDTL(p.etd))+'"></div>'+
     '</div>'+
     '<div class="fg"><label>Berth</label><input class="fi" id="pe-b" value="'+esc(p.berth)+'"></div>'+
-    '<div class="fg"><label>Agent</label><input class="fi" id="pe-a" value="'+esc(p.agent||'')+'"></div>',
+    '<div class="fg"><label>Agent</label><input class="fi" id="pe-a" value="'+esc(p.agent||'')+'"></div>'+
+    portColorPicker('pe',portColor(p)),
     '<button class="btn bp bsm" onclick="portSaveEdit(\''+id+'\')">Save</button>'+
     '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
@@ -6663,9 +6722,12 @@ function portSaveEdit(id){
   var _ed=(document.getElementById('pe-etd')||{}).value;
   p.eta=_ee?dtToDisplay(_ee):p.eta;
   p.etd=_ed?dtToDisplay(_ed):p.etd;
+  if(_ee){ var _t=new Date(_ee).getTime(); if(!isNaN(_t)) p.etaTs=_t; }
+  var _pc=(document.getElementById('pe-col')||{}).value; if(_pc) p.color=_pc;
   p.berth=(document.getElementById('pe-b')||{}).value||p.berth;
   p.agent=(document.getElementById('pe-a')||{}).value||p.agent;
   if(p.eta !== oldEta) recalcPortAlerts(id);
+  portSort();
   autoSave();closeModal();renderPortStrip();renderPortDetail(id);
 }
 function portAdd(){
@@ -6680,7 +6742,8 @@ function portAdd(){
       '<div class="fg"><label>ETD</label><input type="datetime-local" class="fi" id="pa-etd"></div>'+
     '</div>'+
     '<div class="fg"><label>Berth</label><input class="fi" id="pa-b" placeholder="Terminal / Berth"></div>'+
-    '<div class="fg"><label>Agent</label><input class="fi" id="pa-a" placeholder="Agent name"></div>',
+    '<div class="fg"><label>Agent</label><input class="fi" id="pa-a" placeholder="Agent name"></div>'+
+    portColorPicker('pa',PORT_COLORS[S.ports.length%PORT_COLORS.length]),
     '<button class="btn bp bsm" onclick="portSaveNew()">Add Port</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
 function portSaveNew(){
@@ -6688,7 +6751,8 @@ function portSaveNew(){
   var id=n.toLowerCase().replace(/\s+/g,'_')+Date.now();
   var _peta=(document.getElementById('pa-eta')||{}).value||'';
   var _petd=(document.getElementById('pa-etd')||{}).value||'';
-  S.ports.push({id:id,name:n,cc:(document.getElementById('pa-cc')||{}).value||'-',eta:_peta?dtToDisplay(_peta):'-',etd:_petd?dtToDisplay(_petd):'-',berth:(document.getElementById('pa-b')||{}).value||'-',agent:(document.getElementById('pa-a')||{}).value||'-',draft:(document.getElementById('pa-dr')||{}).value||'-',alerts:[],jobs:[],orders:[],crew:[],inspections:[],notes:''});
+  S.ports.push({id:id,name:n,cc:(document.getElementById('pa-cc')||{}).value||'-',eta:_peta?dtToDisplay(_peta):'-',etd:_petd?dtToDisplay(_petd):'-',berth:(document.getElementById('pa-b')||{}).value||'-',agent:(document.getElementById('pa-a')||{}).value||'-',draft:(document.getElementById('pa-dr')||{}).value||'-',alerts:[],jobs:[],orders:[],crew:[],inspections:[],notes:'',color:(document.getElementById('pa-col')||{}).value||PORT_COLORS[S.ports.length%PORT_COLORS.length],etaTs:_peta?new Date(_peta).getTime():null});
+  portSort();
   autoSave();closeModal();renderPortStrip();selectPort(id);
 }
 function renderPortDetail(id){
@@ -6706,7 +6770,7 @@ function renderPortDetail(id){
       return '<div class="tl-row">'+
         '<div class="tl-w">'+esc(a.when)+'</div>'+
         '<div class="tl-d" style="background:'+(a.done?'var(--grn)':'var(--red)')+'"></div>'+
-        '<div class="tl-t" style="'+(a.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+a.text+relBadge+'</div>'+
+        '<div class="tl-t" style="'+(a.done?'text-decoration:line-through;color:var(--ink3)':'')+'">'+esc(a.text)+relBadge+'</div>'+
         '<button class="btn bxs bgh" onclick="markAlert(\''+id+'\','+i+')">'+(a.done?'Undo':'Done')+'</button>'+
         '<button class="btn bxs bgh" onclick="alertEdit(\''+id+'\','+i+')">&#9998;</button>'+
         '<button class="btn bxs bgh cr" onclick="delAlert(\''+id+'\','+i+')">x</button>'+
@@ -6714,40 +6778,49 @@ function renderPortDetail(id){
     }).join('')+
     '<div style="padding:12px 15px"><button class="btn bp bsm" onclick="alertAdd(\''+id+'\')">+ Add Timeline Item</button></div>';
   } else if(sec==='jobs'){
-    content=p.jobs.map(function(j){
+    content=p.jobs.map(function(j,i){
       return '<div class="tl-row">'+
         '<div class="tl-d" style="background:'+(j.pri==='critical'?'var(--red)':j.pri==='safety'?'var(--amb)':'var(--blu)')+'"></div>'+
         '<div class="tl-t" style="flex:1">'+esc(j.name)+'</div>'+
         '<span class="bdg '+(j.pri==='critical'?'dr':j.pri==='safety'?'da':'db')+'">'+j.pri+'</span>'+
+      '<button class="btn bxs bgh" aria-label="Edit" onclick="portItemEdit(\''+id+'\',\'jobs\','+i+')">&#9998;</button>'+
+        '<button class="btn bxs bgh cr" aria-label="Delete" onclick="portItemDel(\''+id+'\',\'jobs\','+i+')">x</button>'+
       '</div>';
     }).join('')+
     (p.jobs.length===0?'<div class="f12 c3" style="padding:12px 15px">No jobs for this port.</div>':'')+
     '<div style="padding:12px 15px"><button class="btn bp bsm" onclick="portJobAdd(\''+id+'\')">+ Add Job</button></div>';
   } else if(sec==='orders'){
-    content=p.orders.map(function(o){
+    content=p.orders.map(function(o,i){
       return '<div class="tl-row">'+
         '<div class="tl-d" style="background:'+(o.dir==='LOAD'?'var(--grn)':'var(--amb)')+'"></div>'+
         '<span class="bdg '+(o.dir==='LOAD'?'dg':'da')+'">'+o.dir+'</span>'+
         '<div class="tl-t" style="flex:1">'+esc(o.item)+' — '+esc(o.qty)+'</div>'+
         '<div class="f11 c3">'+esc(o.note)+'</div>'+
+      '<button class="btn bxs bgh" aria-label="Edit" onclick="portItemEdit(\''+id+'\',\'orders\','+i+')">&#9998;</button>'+
+        '<button class="btn bxs bgh cr" aria-label="Delete" onclick="portItemDel(\''+id+'\',\'orders\','+i+')">x</button>'+
       '</div>';
     }).join('')+
     (p.orders.length===0?'<div class="f12 c3" style="padding:12px 15px">No load/land for this port.</div>':'')+
     '<div style="padding:12px 15px"><button class="btn bp bsm" onclick="llAdd(\''+id+'\')">+ Add</button></div>';
   } else if(sec==='crew'){
-    content=p.crew.map(function(c){
+    content=p.crew.map(function(c,i){
       return '<div class="tl-row">'+
         '<span class="bdg '+(c.dir==='ON'?'dg':'da')+'">'+c.dir+'</span>'+
-        '<div style="flex:1"><div class="f13 fw6">'+esc(c.name)+'</div><div class="f11 c3">'+c.rank+' · '+esc(c.info)+'</div>'+(c.note?'<div class="f11 c3">'+esc(c.note)+'</div>':'')+
-      '</div></div>';
+        '<div style="flex:1"><div class="f13 fw6">'+esc(c.name)+'</div><div class="f11 c3">'+esc(c.rank)+' · '+esc(c.info)+'</div>'+(c.note?'<div class="f11 c3">'+esc(c.note)+'</div>':'')+
+      '</div>'+
+      '<button class="btn bxs bgh" aria-label="Edit" onclick="portItemEdit(\''+id+'\',\'crew\','+i+')">&#9998;</button>'+
+        '<button class="btn bxs bgh cr" aria-label="Delete" onclick="portItemDel(\''+id+'\',\'crew\','+i+')">x</button>'+
+      '</div>';
     }).join('')+
     (p.crew.length===0?'<div class="f12 c3" style="padding:12px 15px">No crew changes for this port.</div>':'')+
     '<div style="padding:12px 15px"><button class="btn bp bsm" onclick="crewAdd(\''+id+'\')">+ Add Crew Change</button></div>';
   } else if(sec==='inspections'){
-    content=p.inspections.map(function(ins){
+    content=p.inspections.map(function(ins,i){
       return '<div class="tl-row">'+
         '<div class="tl-d" style="background:'+(ins.lvl==='r'?'var(--red)':ins.lvl==='a'?'var(--amb)':ins.lvl==='b'?'var(--blu)':'var(--grn)')+'"></div>'+
         '<div style="flex:1"><div class="f13 fw6">'+esc(ins.name)+'</div><div class="f11 c3">'+esc(ins.sub)+'</div></div>'+
+      '<button class="btn bxs bgh" aria-label="Edit" onclick="portItemEdit(\''+id+'\',\'inspections\','+i+')">&#9998;</button>'+
+        '<button class="btn bxs bgh cr" aria-label="Delete" onclick="portItemDel(\''+id+'\',\'inspections\','+i+')">x</button>'+
       '</div>';
     }).join('')+
     (p.inspections.length===0?'<div class="f12 c3" style="padding:12px 15px">No inspections for this port.</div>':'')+
@@ -6786,7 +6859,7 @@ function renderPortDetail(id){
     if(p.crew.length){
       ovHtml+='<div style="padding:11px 15px;border-bottom:1px solid var(--ln)">';
       ovHtml+='<div class="f10 fw7 c3" style="letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Crew Changes ('+p.crew.length+')</div>';
-      ovHtml+=p.crew.map(function(c){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="bdg '+(c.dir==='ON'?'dg':'da')+'">'+c.dir+'</span><span class="f12 fw6">'+esc(c.name)+'</span><span class="f11 c3">'+c.rank+'</span></div>';}).join('');
+      ovHtml+=p.crew.map(function(c){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="bdg '+(c.dir==='ON'?'dg':'da')+'">'+c.dir+'</span><span class="f12 fw6">'+esc(c.name)+'</span><span class="f11 c3">'+esc(c.rank)+'</span></div>';}).join('');
       ovHtml+='</div>';
     }
     if(p.inspections.length){
@@ -6807,7 +6880,7 @@ function renderPortDetail(id){
     content=ovHtml;
   }
   el.innerHTML=
-    '<div class="card">'+
+    '<div class="card" style="border-left:3px solid '+portColor(p)+'">'+
       '<div class="ch">'+
         '<div><div class="f15 fw8">'+esc(p.name)+'</div>'+
         '<div class="f12 c3 mono">ETA: '+esc(p.eta)+' / ETD: '+esc(p.etd)+' / Berth: '+esc(p.berth)+'</div>'+
@@ -6882,7 +6955,7 @@ function recalcPortAlerts(pid){
     var newDate=new Date(etaDate.getTime() - a.relDays*86400000);
     var newKey=keyFromDate(newDate);
     var newId=Date.now()+Math.floor(Math.random()*1000);
-    getDay(newKey).tasks.push({
+    getDay(newKey).tasks.unshift({
       id:newId, text:a.text, done:false, urgent:false, carriedFrom:null,
       fromPortAlert:true, portId:pid
     });
@@ -6941,7 +7014,7 @@ function alertSave(pid){
     var newDate=new Date(etaDate.getTime() - relDays*86400000);
     var newKey=keyFromDate(newDate);
     var newId=Date.now()+Math.floor(Math.random()*1000);
-    getDay(newKey).tasks.push({
+    getDay(newKey).tasks.unshift({
       id:newId, text:t, done:false, urgent:false, carriedFrom:null,
       fromPortAlert:true, portId:pid
     });
@@ -6974,9 +7047,9 @@ function alertEdit(pid,i){
       '<div class="f11 c3" style="margin-top:-6px;margin-bottom:12px">ETA: '+esc(p.eta||'-')+'</div>'+
     '</div>'+
     '<div id="ate-fixed-block" style="display:'+(isRel?'none':'')+'">'+
-      '<div class="fg"><label>When (label)</label><input class="fi" id="ate-w" value="'+(isRel?'':a.when)+'"></div>'+
+      '<div class="fg"><label>When (label)</label><input class="fi" id="ate-w" value="'+(isRel?'':esc(a.when))+'"></div>'+
     '</div>'+
-    '<div class="fg"><label>Item</label><input class="fi" id="ate-t" value="'+a.text.replace(/"/g,'&quot;')+'"></div>',
+    '<div class="fg"><label>Item</label><input class="fi" id="ate-t" value="'+esc(a.text)+'"></div>',
     '<button class="btn bp bsm" onclick="alertSaveEdit(\''+pid+'\','+i+')">Save</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
 }
 
@@ -7011,7 +7084,7 @@ function alertSaveEdit(pid,i){
     var newDate=new Date(etaDate.getTime() - relDays*86400000);
     var newKey=keyFromDate(newDate);
     var newId=Date.now()+Math.floor(Math.random()*1000);
-    getDay(newKey).tasks.push({id:newId, text:t, done:false, urgent:false, carriedFrom:null, fromPortAlert:true, portId:pid});
+    getDay(newKey).tasks.unshift({id:newId, text:t, done:false, urgent:false, carriedFrom:null, fromPortAlert:true, portId:pid});
     a.relDays=relDays;
     a.linkedTaskId=newId;
     a.linkedDateKey=newKey;
@@ -7086,6 +7159,54 @@ function inspSave(pid){
   var n=(document.getElementById('ia-n')||{}).value; if(n)n=n.trim(); if(!n)return;
   p.inspections.push({name:n,sub:(document.getElementById('ia-s')||{}).value||'',lvl:(document.getElementById('ia-l')||{}).value||'b'});
   autoSave();closeModal();renderPortDetail(pid);
+}
+function portItemEdit(pid,kind,i){
+  var p=S.ports.find(function(x){return x.id===pid;}); if(!p) return;
+  var it=(p[kind]||[])[i]; if(!it) return;
+  var body='', title='';
+  function sel(id,opts,cur){ return '<select class="fs" id="'+id+'">'+opts.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===cur?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'; }
+  if(kind==='jobs'){
+    title='Edit Port Job';
+    body='<div class="fg"><label>Job Name</label><input class="fi" id="pie-a" value="'+esc(it.name)+'"></div>'+
+      '<div class="fg"><label>Priority</label>'+sel('pie-b',[['routine','Routine'],['safety','Safety'],['critical','Critical']],it.pri)+'</div>';
+  } else if(kind==='orders'){
+    title='Edit Load / Land';
+    body='<div class="fg"><label>Direction</label>'+sel('pie-d',[['LOAD','LOAD'],['LAND','LAND']],it.dir)+'</div>'+
+      '<div class="fg"><label>Item</label><input class="fi" id="pie-a" value="'+esc(it.item)+'"></div>'+
+      '<div class="g2"><div class="fg"><label>Quantity</label><input class="fi" id="pie-b" value="'+esc(it.qty)+'"></div>'+
+      '<div class="fg"><label>Note</label><input class="fi" id="pie-c" value="'+esc(it.note)+'"></div></div>';
+  } else if(kind==='crew'){
+    title='Edit Crew Change';
+    body='<div class="fg"><label>Direction</label>'+sel('pie-d',[['ON','ON - Joining'],['OFF','OFF - Leaving']],it.dir)+'</div>'+
+      '<div class="fg"><label>Name</label><input class="fi" id="pie-a" value="'+esc(it.name)+'"></div>'+
+      '<div class="g2"><div class="fg"><label>Rank</label><input class="fi" id="pie-b" value="'+esc(it.rank)+'"></div>'+
+      '<div class="fg"><label>Flight / Arrival Info</label><input class="fi" id="pie-c" value="'+esc(it.info)+'"></div></div>'+
+      '<div class="fg"><label>Note</label><input class="fi" id="pie-e" value="'+esc(it.note||'')+'"></div>';
+  } else if(kind==='inspections'){
+    title='Edit Inspection';
+    body='<div class="fg"><label>Inspection Name</label><input class="fi" id="pie-a" value="'+esc(it.name)+'"></div>'+
+      '<div class="fg"><label>Sub-title</label><input class="fi" id="pie-b" value="'+esc(it.sub||'')+'"></div>'+
+      '<div class="fg"><label>Level</label>'+sel('pie-d',[['r','Red - High risk'],['a','Amber - Monitor'],['b','Blue - Routine'],['g','Green - Low risk']],it.lvl)+'</div>';
+  } else return;
+  openModal(title,body,
+    '<button class="btn bp bsm" onclick="portItemSave(\''+pid+'\',\''+kind+'\','+i+')">Save</button>'+
+    '<button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
+}
+function portItemSave(pid,kind,i){
+  var p=S.ports.find(function(x){return x.id===pid;}); if(!p) return;
+  var it=(p[kind]||[])[i]; if(!it) return;
+  function v(id){ var e=document.getElementById(id); return e?e.value:''; }
+  var a=v('pie-a').trim(); if(!a) return;
+  if(kind==='jobs'){ it.name=a; it.pri=v('pie-b')||'routine'; }
+  else if(kind==='orders'){ it.dir=v('pie-d')||'LOAD'; it.item=a; it.qty=v('pie-b')||'-'; it.note=v('pie-c'); }
+  else if(kind==='crew'){ it.dir=v('pie-d')||'ON'; it.name=a; it.rank=v('pie-b')||'-'; it.info=v('pie-c')||'-'; it.note=v('pie-e'); }
+  else if(kind==='inspections'){ it.name=a; it.sub=v('pie-b'); it.lvl=v('pie-d')||'b'; }
+  autoSave(); closeModal(); renderPortStrip(); renderPortDetail(pid);
+}
+function portItemDel(pid,kind,i){
+  var p=S.ports.find(function(x){return x.id===pid;}); if(!p||!p[kind]) return;
+  if(!confirm('Delete this item?')) return;
+  p[kind].splice(i,1); autoSave(); renderPortStrip(); renderPortDetail(pid);
 }
 function portSaveNotes(pid){
   var p=S.ports.find(function(x){return x.id===pid;}); if(!p)return;
