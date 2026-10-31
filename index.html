@@ -3049,7 +3049,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.12.1</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.13.0</div>
       <div class="f10 c3" id="about-date-hdr"></div>
     </div>
   </div>
@@ -3208,6 +3208,10 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
         <button class="btn" onclick="document.getElementById('impf').click()">&#128228; Import Backup</button>
         <input type="file" id="impf" accept=".mate,.json" style="display:none" onchange="importBackup(event)">
       </div>
+      <div class="dvd"></div>
+      <div class="f13 fw7" style="margin-bottom:4px">Automatic Backups</div>
+      <div class="f11 c3 mb12">Every change saves instantly. A copy is also kept for each of the last 7 days inside this app.</div>
+      <div id="auto-backups" class="mb12"></div>
       <div class="dvd"></div>
       <div class="flexb"><div><div class="f13 cr fw7">Wipe Everything</div><div class="f11 c3">Deletes all data including your own entries. Irreversible.</div></div><button class="btn bdn bxs" onclick="wipeAll()">Wipe All</button></div>
     </div>
@@ -4432,18 +4436,84 @@ function dbLoad(cb) {
   req.onerror = function() { cb(null); };
 }
 
+var SNAP_PREFIX = 'snap_', SNAP_KEEP = 7, MIRROR_KEY = 'meridian_mirror';
 function dbSave() {
-  if (!DB) return;
+  if (_wiped) return;
   S.updated = Date.now();
-  var tx = DB.transaction(STORE_NAME, 'readwrite');
-  var store = tx.objectStore(STORE_NAME);
-  store.put(S, RECORD_KEY);
+  // last-resort copy outside IndexedDB
+  try { localStorage.setItem(MIRROR_KEY, JSON.stringify(S)); } catch(e) {}
+  if (!DB) return;
+  try {
+    var tx = DB.transaction(STORE_NAME, 'readwrite');
+    var store = tx.objectStore(STORE_NAME);
+    store.put(S, RECORD_KEY);
+    // one rolling snapshot per day, newest 7 kept
+    var sk = SNAP_PREFIX + todayKey();
+    if (_lastSnapKey !== sk) {
+      _lastSnapKey = sk;
+      var cr = store.getAllKeys();
+      cr.onsuccess = function() {
+        var keys = cr.result || [];
+        if (keys.indexOf(sk) < 0) store.put(JSON.parse(JSON.stringify(S)), sk);
+        var snaps = keys.filter(function(k){ return String(k).indexOf(SNAP_PREFIX)===0; }).concat(keys.indexOf(sk)<0?[sk]:[]).sort();
+        while (snaps.length > SNAP_KEEP) store.delete(snaps.shift());
+      };
+    }
+  } catch(e) { console.warn('save failed', e); }
 }
+var _lastSnapKey = '', _wiped = false;
+// write immediately when the app is hidden or closed, so nothing waits on the timer
+function flushSave() { if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; dbSave(); } }
+document.addEventListener('visibilitychange', function(){ if (document.hidden) flushSave(); });
+window.addEventListener('pagehide', flushSave);
 
 // Debounced auto-save - every change triggers save after 400ms
 function autoSave() {
   clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(dbSave, 400);
+  _saveTimer = setTimeout(function(){ _saveTimer = null; dbSave(); }, 400);
+}
+// ── AUTOMATIC BACKUPS ─────────────────────────────────────────
+var AUTO_KEYS = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone','recurring'];
+function autoSnaps(cb) {
+  if (!DB) { cb([]); return; }
+  var out = [];
+  var tx = DB.transaction(STORE_NAME, 'readonly'), st = tx.objectStore(STORE_NAME);
+  var cur = st.openCursor();
+  cur.onsuccess = function() {
+    var c = cur.result;
+    if (c) { if (String(c.key).indexOf(SNAP_PREFIX)===0) out.push({key:c.key, data:c.value}); c.continue(); }
+    else cb(out.sort(function(a,b){ return a.key<b.key?1:-1; }));
+  };
+  cur.onerror = function(){ cb(out); };
+}
+function autoApply(d, msg) {
+  AUTO_KEYS.forEach(function(k){ if (d[k] !== undefined) S[k] = d[k]; });
+  if (S.ports && S.ports.length) ACTIVE_PORT = S.ports[0].id;
+  dbSave(); boot2(); showToast(msg || 'Restored.', 4000);
+}
+function autoSummary(d) {
+  var tasks = 0; Object.keys(d.wplans||{}).forEach(function(k){ tasks += (d.wplans[k].tasks||[]).length; });
+  return (d.jobs||[]).length+' jobs, '+(d.ports||[]).length+' ports, '+tasks+' plan tasks';
+}
+function renderAutoBackups() {
+  var el = document.getElementById('auto-backups'); if (!el) return;
+  autoSnaps(function(list){
+    var hasMirror = false; try { hasMirror = !!localStorage.getItem(MIRROR_KEY); } catch(e) {}
+    el.innerHTML = list.length ? list.map(function(s){
+      var date = String(s.key).slice(SNAP_PREFIX.length);
+      return '<div class="tl-row" style="gap:8px"><div style="flex:1;min-width:0"><div class="f13 fw6">'+esc(date)+'</div><div class="f11 c3">'+esc(autoSummary(s.data))+'</div></div>'+
+        '<button class="btn bxs" onclick="autoRestore(\''+esc(s.key)+'\')">Restore</button></div>';
+    }).join('') : '<div class="f12 c3" style="padding:6px 0">No automatic backups yet. The first one is made on your next change.</div>';
+    el.innerHTML += '<div class="f11 c3" style="margin-top:8px">Extra safety copy in this browser: '+(hasMirror?'on':'unavailable')+'</div>';
+  });
+}
+function autoRestore(key) {
+  autoSnaps(function(list){
+    var s = list.find(function(x){ return x.key===key; }); if (!s) return;
+    if (!confirm('Replace the current data with the backup from '+String(key).slice(SNAP_PREFIX.length)+'?\n\n'+autoSummary(s.data))) return;
+    autoApply(s.data, 'Restored backup from '+String(key).slice(SNAP_PREFIX.length));
+    renderAutoBackups();
+  });
 }
 
 // ── TOAST NOTIFICATION ───────────────────────────────────────
@@ -4541,9 +4611,12 @@ function clearExampleData() {
 function wipeAll() {
   if (!confirm('WIPE EVERYTHING?\n\nThis deletes ALL data including your own entries.\nThis cannot be undone.')) return;
   if (!confirm('Are you absolutely sure? All data will be lost.')) return;
+  _wiped = true; clearTimeout(_saveTimer); _saveTimer = null;
+  try { localStorage.removeItem(MIRROR_KEY); } catch(e) {}
   if (DB) {
+    try { DB.close(); } catch(e) {}
     var req = indexedDB.deleteDatabase(DB_NAME);
-    req.onsuccess = function() { location.reload(); };
+    req.onsuccess = req.onblocked = function() { location.reload(); };
   } else {
     location.reload();
   }
@@ -4607,7 +4680,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.12.1';
+var APP_VERSION = '5.13.0';
 var BUILD_DATE  = '1 Nov 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
@@ -4625,12 +4698,18 @@ function boot() {
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   initDB(function() {
     dbLoad(function(saved) {
+      var recovered = false;
+      if (!saved) {
+        // main record missing: try the browser mirror, then the newest daily snapshot
+        try { var m = localStorage.getItem(MIRROR_KEY); if (m) { saved = JSON.parse(m); recovered = true; } } catch(e) {}
+      }
       if (saved) {
-        var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone','recurring'];
-        keys.forEach(function(k) { if (saved[k] !== undefined) S[k] = saved[k]; });
+        AUTO_KEYS.forEach(function(k) { if (saved[k] !== undefined) S[k] = saved[k]; });
       }
       if (S.ports && S.ports.length) ACTIVE_PORT = S.ports[0].id;
+      if (recovered) { dbSave(); }
       boot2();
+      if (recovered) showToast('Your data was recovered from the automatic safety copy.', 5000);
     });
   });
 }
@@ -4701,7 +4780,7 @@ function showPage(name) {
   if (name==='workplan') { var _wa=document.querySelector('#wk-strip .wday.on'); if(_wa&&_wa.scrollIntoView){try{_wa.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});}catch(e){}} }
   var _am=document.querySelector('.mobit.on'); if(_am&&_am.scrollIntoView){try{_am.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});}catch(e){}}
   if (name==='workdone') { renderWorkDone(); }
-  if (name==='settings') { updateVessel(); renderDCList(); renderHiddenOps(); }
+  if (name==='settings') { renderAutoBackups(); updateVessel(); renderDCList(); renderHiddenOps(); }
   document.getElementById('main').scrollTop = 0;
 }
 
