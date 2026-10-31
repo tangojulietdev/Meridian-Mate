@@ -3049,7 +3049,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.12.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.12.1</div>
       <div class="f10 c3" id="about-date-hdr"></div>
     </div>
   </div>
@@ -4607,7 +4607,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.12.0';
+var APP_VERSION = '5.12.1';
 var BUILD_DATE  = '1 Nov 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
@@ -4621,6 +4621,8 @@ var _repGen = null;
 var _pwaPrompt = null;
 
 function boot() {
+  // ask the browser not to evict saved data when storage is low
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   initDB(function() {
     dbLoad(function(saved) {
       if (saved) {
