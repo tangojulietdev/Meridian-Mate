@@ -2816,6 +2816,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
       <button class="btn bsm bp" id="wp-view-day" onclick="wpSetView('day')">Day</button>
       <button class="btn bsm" id="wp-view-month" onclick="wpSetView('month')">Month</button>
       <button class="btn bsm" id="wp-view-crew" onclick="wpSetView('crew')">By Crew</button>
+      <button class="btn bsm" id="wp-rec-btn" onclick="recManage()" title="Tasks that add themselves on a schedule">&#8635; Repeating</button>
       <button class="btn bsm" onclick="wpCopy()">Copy Plan</button>
       <button class="btn bp bsm" onclick="wpAddModal()">+ Add Task</button>
     </div>
@@ -3048,7 +3049,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.11.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.12.0</div>
       <div class="f10 c3" id="about-date-hdr"></div>
     </div>
   </div>
@@ -4392,6 +4393,7 @@ var S = {
   deleted_bundles: [],
   todos: [],
   workdone: {},
+  recurring: [],
   updated: 0  // Last-modified timestamp (set on every save)
 };
 
@@ -4505,7 +4507,7 @@ function importBackup(e) {
     try {
       var d = JSON.parse(ev.target.result);
       // Merge into S - keep keys that exist
-      var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone'];
+      var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone','recurring'];
       keys.forEach(function(k) { if (d[k] !== undefined) S[k] = d[k]; });
       dbSave();
       applyTheme(S.theme);
@@ -4605,8 +4607,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.11.0';
-var BUILD_DATE  = '29 Oct 2026';
+var APP_VERSION = '5.12.0';
+var BUILD_DATE  = '1 Nov 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
 var ACTIVE_BUNDLE = null;
@@ -4622,7 +4624,7 @@ function boot() {
   initDB(function() {
     dbLoad(function(saved) {
       if (saved) {
-        var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone'];
+        var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone','recurring'];
         keys.forEach(function(k) { if (saved[k] !== undefined) S[k] = saved[k]; });
       }
       if (S.ports && S.ports.length) ACTIVE_PORT = S.ports[0].id;
@@ -4643,6 +4645,8 @@ function boot2() {
   applyTheme(S.theme);
   updateVessel();
   tick(); clearInterval(window._tickI); window._tickI = setInterval(tick, 1000);
+  try{ recRun(true); }catch(e){}
+  clearInterval(window._recI); window._recI = setInterval(function(){ try{ recRun(); }catch(e){} }, 600000);
   renderToday(); renderWP(); renderWorkDone(); renderTiles(); todoInit();
   renderPortStrip(); if (ACTIVE_PORT) renderPortDetail(ACTIVE_PORT);
   renderJobs(); renderRAG(); renderDrills();
@@ -4683,6 +4687,7 @@ function vesselSave() {
 
 // ── NAVIGATION ────────────────────────────────────────────────
 function showPage(name) {
+  try{ recRun(true); }catch(e){}
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.querySelectorAll('.ni,.mobit').forEach(function(n){n.classList.remove('on');});
   var pg = document.getElementById('pg-'+name); if (pg) pg.classList.add('on');
@@ -5097,6 +5102,180 @@ function wpSetView(view) {
     renderWPDay();
   }
 }
+
+// ── REPEATING TASKS (auto-added to the Day Work Plan) ─────────
+var REC_AHEAD = 14;      // days planned ahead
+var REC_BACK = 31;       // catch-up window if app was not opened
+var REC_DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var _recSeq = 0;
+var _recDows = [], _recFreq = 'weekly', _recRole = null, _recPri = 'normal';
+function recList(){ if(!S.recurring) S.recurring=[]; return S.recurring; }
+function recOrd(n){ var s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
+function recSummary(r){
+  if (r.freq==='daily') return 'Every day';
+  if (r.freq==='weekly') {
+    var d=(r.dows||[]).slice().sort(function(a,b){return ((a+6)%7)-((b+6)%7);}).map(function(x){return REC_DOW[x];});
+    return d.length ? 'Every '+d.join(', ') : 'No day chosen';
+  }
+  return r.last ? 'Monthly, last day' : 'Monthly, on the '+recOrd(r.dom||1);
+}
+function recDue(r, d){
+  if (r.freq==='daily') return true;
+  if (r.freq==='weekly') return (r.dows||[]).indexOf(d.getDay())>=0;
+  var dim = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  return d.getDate() === (r.last ? dim : Math.min(r.dom||1, dim));
+}
+function recRun(quiet){
+  var rules = recList(); if(!rules.length) return 0;
+  var today = new Date(); today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  var floor = new Date(today); floor.setDate(floor.getDate()-REC_BACK);
+  var end = new Date(today); end.setDate(end.getDate()+REC_AHEAD);
+  var endKey = keyFromDate(end), added = 0;
+  rules.forEach(function(r){
+    if (!r.active || !r.text) return;
+    var start = r.lastGen ? dateFromKey(r.lastGen) : dateFromKey(r.from || keyFromDate(today));
+    if (r.lastGen) start.setDate(start.getDate()+1);
+    if (start < floor) start = new Date(floor);
+    for (var d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+      if (!recDue(r, d)) continue;
+      var k = keyFromDate(d), day = getDay(k);
+      if (day.tasks.some(function(t){ return t.recId===r.id; })) continue;
+      day.tasks.unshift({id:Date.now()+(_recSeq++%1000)/1000, text:r.text, done:false, urgent:r.pri==='urgent',
+        priority:(r.pri==='high'||r.pri==='low')?r.pri:undefined, assignee:r.role||null, carriedFrom:null, recId:r.id, auto:true});
+      added++;
+    }
+    r.lastGen = endKey;
+  });
+  if (added || rules.some(function(r){return r.lastGen!==endKey && r.active;})) autoSave();
+  if (added && !quiet) { try{ renderWP(); renderToday(); }catch(e){} }
+  return added;
+}
+// remove not-yet-done auto tasks of a rule from today onwards (used when a rule changes or is deleted)
+function recPurge(id){
+  var tk = todayKey();
+  Object.keys(S.wplans||{}).forEach(function(k){
+    if (k < tk) return;
+    var day = S.wplans[k];
+    day.tasks = day.tasks.filter(function(t){ return !(t.recId===id && !t.done); });
+  });
+}
+function recManage(){
+  var rules = recList();
+  var rows = rules.map(function(r){
+    var role = WP_ROLES[r.role];
+    return '<div class="tl-row" style="align-items:flex-start;gap:8px;'+(r.active?'':'opacity:.55')+'">'+
+      '<div style="flex:1;min-width:0"><div class="f13 fw6" style="word-break:break-word">'+esc(r.text)+'</div>'+
+      '<div class="f11 c3">'+esc(recSummary(r))+(r.pri==='urgent'?' &middot; Urgent':r.pri==='high'?' &middot; High':'')+(role?' &middot; '+esc(role.label):'')+(r.active?'':' &middot; Paused')+'</div></div>'+
+      '<button class="btn bxs bgh" onclick="recToggle(\''+r.id+'\')">'+(r.active?'Pause':'Resume')+'</button>'+
+      '<button class="btn bxs bgh" aria-label="Edit" onclick="recForm(\''+r.id+'\')">&#9998;</button>'+
+      '<button class="btn bxs bgh cr" aria-label="Delete" onclick="recDelete(\''+r.id+'\')">x</button>'+
+    '</div>';
+  }).join('');
+  openModal('Repeating Tasks',
+    '<div class="f12 c3" style="margin-bottom:10px">These add themselves to the Day Work Plan. Weekly, monthly or daily, up to '+REC_AHEAD+' days ahead.</div>'+
+    (rows || '<div class="f12 c3" style="padding:10px 0">No repeating tasks yet.</div>'),
+    '<button class="btn bp bsm" onclick="recForm()">+ New Repeating Task</button><button class="btn bgh bsm" onclick="closeModal()">Close</button>');
+}
+function recFreqSet(f){
+  _recFreq = f;
+  ['daily','weekly','monthly'].forEach(function(x){
+    var b=document.getElementById('rec-f-'+x); if(b){ b.classList.toggle('bp', x===f); b.setAttribute('aria-pressed', x===f?'true':'false'); }
+  });
+  var w=document.getElementById('rec-weekly'), m=document.getElementById('rec-monthly');
+  if(w) w.style.display = f==='weekly' ? '' : 'none';
+  if(m) m.style.display = f==='monthly' ? '' : 'none';
+}
+function recDowToggle(n){
+  var i=_recDows.indexOf(n); if(i>=0) _recDows.splice(i,1); else _recDows.push(n);
+  var b=document.getElementById('rec-d-'+n); if(b){ b.classList.toggle('bp', i<0); b.setAttribute('aria-pressed', i<0?'true':'false'); }
+}
+function recPriSet(p){
+  _recPri = p;
+  ['normal','high','urgent'].forEach(function(x){ var b=document.getElementById('rec-p-'+x); if(b) b.classList.toggle('bp', x===p); });
+}
+function recRoleSet(k){
+  _recRole = (k==='none') ? null : k;
+  Object.keys(WP_ROLES).concat(['none']).forEach(function(x){
+    var b=document.getElementById('rec-r-'+x); if(!b) return;
+    var on = (x==='none') ? _recRole===null : _recRole===x;
+    b.classList.toggle('bp', on);
+  });
+}
+function recForm(id){
+  var r = id ? recList().find(function(x){return x.id===id;}) : null;
+  _recFreq = r ? r.freq : 'weekly';
+  _recDows = r ? (r.dows||[]).slice() : [0];
+  _recRole = r ? (r.role||null) : null;
+  _recPri = r ? (r.pri||'normal') : 'normal';
+  var dayBtns = [1,2,3,4,5,6,0].map(function(n){
+    return '<button type="button" class="btn bsm'+(_recDows.indexOf(n)>=0?' bp':'')+'" id="rec-d-'+n+'" aria-pressed="'+(_recDows.indexOf(n)>=0)+'" onclick="recDowToggle('+n+')">'+REC_DOW[n]+'</button>';
+  }).join('');
+  var freqBtns = [['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']].map(function(f){
+    return '<button type="button" class="btn bsm'+(_recFreq===f[0]?' bp':'')+'" id="rec-f-'+f[0]+'" aria-pressed="'+(_recFreq===f[0])+'" onclick="recFreqSet(\''+f[0]+'\')">'+f[1]+'</button>';
+  }).join('');
+  var priBtns = [['normal','Normal'],['high','High'],['urgent','Urgent']].map(function(p){
+    return '<button type="button" class="btn bsm'+(_recPri===p[0]?' bp':'')+'" id="rec-p-'+p[0]+'" onclick="recPriSet(\''+p[0]+'\')">'+p[1]+'</button>';
+  }).join('');
+  var roleBtns = Object.keys(WP_ROLES).map(function(k){
+    return '<button type="button" class="btn bsm'+(_recRole===k?' bp':'')+'" id="rec-r-'+k+'" onclick="recRoleSet(\''+k+'\')">'+WP_ROLES[k].ab+'</button>';
+  }).join('')+'<button type="button" class="btn bsm bgh'+(_recRole===null?' bp':'')+'" id="rec-r-none" onclick="recRoleSet(\'none\')">None</button>';
+  openModal(r ? 'Edit Repeating Task' : 'New Repeating Task',
+    '<div class="fg"><label>Task</label><input class="fi" id="rec-text" placeholder="e.g. Test emergency lights" value="'+(r?esc(r.text):'')+'"></div>'+
+    '<div class="fg"><label>Repeat</label><div class="flex gap6" style="flex-wrap:wrap">'+freqBtns+'</div></div>'+
+    '<div class="fg" id="rec-weekly" style="display:'+(_recFreq==='weekly'?'':'none')+'"><label>On these days</label><div class="flex gap6" style="flex-wrap:wrap">'+dayBtns+'</div></div>'+
+    '<div id="rec-monthly" style="display:'+(_recFreq==='monthly'?'':'none')+'"><div class="g2">'+
+      '<div class="fg"><label>Day of month</label><input type="number" class="fi" id="rec-dom" min="1" max="31" value="'+esc(r&&r.dom?r.dom:25)+'"></div>'+
+      '<div class="fg"><label>Or</label><label class="f12" style="display:flex;align-items:center;gap:8px;min-height:36px"><input type="checkbox" id="rec-last"'+(r&&r.last?' checked':'')+'> Last day of month</label></div>'+
+    '</div><div class="f11 c3" style="margin-top:-6px;margin-bottom:12px">Short months use their last day (31 becomes 30 or 28).</div></div>'+
+    '<div class="fg"><label>Priority</label><div class="flex gap6" style="flex-wrap:wrap">'+priBtns+'</div></div>'+
+    '<div class="fg"><label>Assign to (optional)</label><div class="flex gap6" style="flex-wrap:wrap">'+roleBtns+'</div></div>',
+    '<button class="btn bp bsm" onclick="recSave('+(r?'\''+r.id+'\'':'')+')">Save</button><button class="btn bgh bsm" onclick="recManage()">Back</button>');
+}
+function recSave(id){
+  var text=(document.getElementById('rec-text')||{}).value; text=text?text.trim():''; if(!text){ showToast('Enter the task text'); return; }
+  var rule = {text:text, freq:_recFreq, pri:_recPri, role:_recRole, active:true};
+  if (_recFreq==='weekly') {
+    if(!_recDows.length){ showToast('Pick at least one day'); return; }
+    rule.dows = _recDows.slice();
+  } else if (_recFreq==='monthly') {
+    var dom = parseInt((document.getElementById('rec-dom')||{}).value, 10);
+    rule.last = !!(document.getElementById('rec-last')||{}).checked;
+    if (!rule.last && (isNaN(dom) || dom<1 || dom>31)) { showToast('Day of month must be 1 to 31'); return; }
+    rule.dom = rule.last ? 31 : dom;
+  }
+  var yest = new Date(); yest.setDate(yest.getDate()-1);
+  if (id) {
+    var old = recList().find(function(x){return x.id===id;}); if(!old) return;
+    rule.id = id; rule.active = old.active; rule.from = old.from;
+    recPurge(id);
+    rule.lastGen = keyFromDate(yest);   // regenerate from today with the new schedule
+    S.recurring = recList().map(function(x){ return x.id===id ? rule : x; });
+  } else {
+    rule.id = 'rec'+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);
+    rule.from = todayKey(); rule.lastGen = keyFromDate(yest);
+    recList().push(rule);
+  }
+  var n = recRun(true);
+  autoSave(); try{ renderWP(); renderToday(); }catch(e){}
+  recManage();
+  showToast(n ? n+' task'+(n===1?'':'s')+' added to the plan' : 'Saved');
+}
+function recToggle(id){
+  var r=recList().find(function(x){return x.id===id;}); if(!r) return;
+  r.active=!r.active;
+  if (r.active) { var y=new Date(); y.setDate(y.getDate()-1); r.lastGen=keyFromDate(y); recRun(true); try{ renderWP(); renderToday(); }catch(e){} }
+  else recPurge(id), (function(){ try{ renderWP(); renderToday(); }catch(e){} })();
+  autoSave(); recManage();
+}
+function recDelete(id){
+  var r=recList().find(function(x){return x.id===id;}); if(!r) return;
+  if(!confirm('Delete this repeating task? Upcoming copies not yet done will be removed.')) return;
+  recPurge(id);
+  S.recurring = recList().filter(function(x){return x.id!==id;});
+  autoSave(); try{ renderWP(); renderToday(); }catch(e){}
+  recManage();
+}
+document.addEventListener('visibilitychange', function(){ if(!document.hidden){ try{ recRun(); }catch(e){} } });
 
 // ── WORK DONE (deck crew + repair team) ──────────────────────
 var WD_TEAMS = [
@@ -5643,6 +5822,7 @@ function renderWPDay() {
   } else {
     el.innerHTML = day.tasks.map(function(w,i) {
       var cf = w.carriedFrom ? '<span class="bdg da" style="font-size:9px;margin-right:5px">&#8617; Carried</span>' : '';
+      if (w.recId) cf += '<span class="bdg db" style="font-size:9px;margin-right:5px" title="Added automatically by a repeating task">&#8635; Repeat</span>';
       var portTag = '';
       if (w.fromPortAlert) {
         var _ap = S.ports.find(function(x){return x.id===w.portId;});
