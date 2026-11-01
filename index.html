@@ -3049,7 +3049,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.13.0</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.13.1</div>
       <div class="f10 c3" id="about-date-hdr"></div>
     </div>
   </div>
@@ -4680,7 +4680,7 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.13.0';
+var APP_VERSION = '5.13.1';
 var BUILD_DATE  = '1 Nov 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
@@ -5185,7 +5185,8 @@ function wpSetView(view) {
 }
 
 // ── REPEATING TASKS (auto-added to the Day Work Plan) ─────────
-var REC_AHEAD = 14;      // days planned ahead
+var REC_AHEAD = 14;      // days planned ahead (daily, weekly)
+var REC_AHEAD_MONTHLY = 35; // monthly tasks always show their next date
 var REC_BACK = 31;       // catch-up window if app was not opened
 var REC_DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var _recSeq = 0;
@@ -5200,6 +5201,11 @@ function recSummary(r){
   }
   return r.last ? 'Monthly, last day' : 'Monthly, on the '+recOrd(r.dom||1);
 }
+function recNext(r){
+  var d = new Date(); d = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  for (var i=0;i<400;i++){ if (recDue(r,d)) return d; d.setDate(d.getDate()+1); }
+  return null;
+}
 function recDue(r, d){
   if (r.freq==='daily') return true;
   if (r.freq==='weekly') return (r.dows||[]).indexOf(d.getDay())>=0;
@@ -5210,14 +5216,16 @@ function recRun(quiet){
   var rules = recList(); if(!rules.length) return 0;
   var today = new Date(); today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   var floor = new Date(today); floor.setDate(floor.getDate()-REC_BACK);
-  var end = new Date(today); end.setDate(end.getDate()+REC_AHEAD);
+  var end = new Date(today); end.setDate(end.getDate()+REC_AHEAD_MONTHLY);
   var endKey = keyFromDate(end), added = 0;
   rules.forEach(function(r){
     if (!r.active || !r.text) return;
     var start = r.lastGen ? dateFromKey(r.lastGen) : dateFromKey(r.from || keyFromDate(today));
     if (r.lastGen) start.setDate(start.getDate()+1);
     if (start < floor) start = new Date(floor);
-    for (var d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+    var rEnd = new Date(today); rEnd.setDate(rEnd.getDate() + (r.freq==='monthly' ? REC_AHEAD_MONTHLY : REC_AHEAD));
+    var rEndKey = keyFromDate(rEnd);
+    for (var d = new Date(start); d <= rEnd; d.setDate(d.getDate()+1)) {
       if (!recDue(r, d)) continue;
       var k = keyFromDate(d), day = getDay(k);
       if (day.tasks.some(function(t){ return t.recId===r.id; })) continue;
@@ -5225,9 +5233,9 @@ function recRun(quiet){
         priority:(r.pri==='high'||r.pri==='low')?r.pri:undefined, assignee:r.role||null, carriedFrom:null, recId:r.id, auto:true});
       added++;
     }
-    r.lastGen = endKey;
+    r.lastGen = rEndKey;
   });
-  if (added || rules.some(function(r){return r.lastGen!==endKey && r.active;})) autoSave();
+  if (added) autoSave();
   if (added && !quiet) { try{ renderWP(); renderToday(); }catch(e){} }
   return added;
 }
@@ -5246,14 +5254,14 @@ function recManage(){
     var role = WP_ROLES[r.role];
     return '<div class="tl-row" style="align-items:flex-start;gap:8px;'+(r.active?'':'opacity:.55')+'">'+
       '<div style="flex:1;min-width:0"><div class="f13 fw6" style="word-break:break-word">'+esc(r.text)+'</div>'+
-      '<div class="f11 c3">'+esc(recSummary(r))+(r.pri==='urgent'?' &middot; Urgent':r.pri==='high'?' &middot; High':'')+(role?' &middot; '+esc(role.label):'')+(r.active?'':' &middot; Paused')+'</div></div>'+
+      '<div class="f11 c3">'+esc(recSummary(r))+(r.pri==='urgent'?' &middot; Urgent':r.pri==='high'?' &middot; High':'')+(role?' &middot; '+esc(role.label):'')+(r.active?'':' &middot; Paused')+(r.active&&recNext(r)?' &middot; Next: '+esc(recNext(r).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})):'')+'</div></div>'+
       '<button class="btn bxs bgh" onclick="recToggle(\''+r.id+'\')">'+(r.active?'Pause':'Resume')+'</button>'+
       '<button class="btn bxs bgh" aria-label="Edit" onclick="recForm(\''+r.id+'\')">&#9998;</button>'+
       '<button class="btn bxs bgh cr" aria-label="Delete" onclick="recDelete(\''+r.id+'\')">x</button>'+
     '</div>';
   }).join('');
   openModal('Repeating Tasks',
-    '<div class="f12 c3" style="margin-bottom:10px">These add themselves to the Day Work Plan. Weekly, monthly or daily, up to '+REC_AHEAD+' days ahead.</div>'+
+    '<div class="f12 c3" style="margin-bottom:10px">These add themselves to the Day Work Plan. Daily and weekly tasks appear '+REC_AHEAD+' days ahead. Monthly tasks appear as soon as the next date is within '+REC_AHEAD_MONTHLY+' days.</div>'+
     (rows || '<div class="f12 c3" style="padding:10px 0">No repeating tasks yet.</div>'),
     '<button class="btn bp bsm" onclick="recForm()">+ New Repeating Task</button><button class="btn bgh bsm" onclick="closeModal()">Close</button>');
 }
