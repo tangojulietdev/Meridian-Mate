@@ -2748,6 +2748,38 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
 .pcol { width:30px; height:30px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; }
 .pcol.on { border-color:var(--ink); box-shadow:0 0 0 2px var(--bg); outline:2px solid var(--ink); outline-offset:1px; }
 @media (pointer: coarse) { .pcol { width:40px; height:40px; } }
+.dr-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dr-tbl{border-collapse:collapse;width:100%;min-width:980px;font-size:12px}
+.dr-tbl th,.dr-tbl td{border-bottom:1px solid var(--ln);padding:6px 5px;vertical-align:middle}
+.dr-tbl th{font-size:10px;color:var(--ink3);text-align:center;font-weight:600;position:sticky;top:0;background:var(--card,var(--elev))}
+.dr-tbl th span{display:block;font-weight:400}
+.dr-tbl .dr-n{text-align:left;min-width:210px;max-width:260px}
+.dr-nm{font-weight:600}
+.dr-sub{font-size:10px;color:var(--ink3);margin-top:2px}
+.dr-bad{color:var(--red)}
+.dr-c{text-align:center;width:30px;color:var(--ink3)}
+.dr-c.on{background:rgba(120,140,200,.14);font-weight:700;color:var(--ink)}
+.dr-c.now,.dr-m.now{box-shadow:inset 0 0 0 1px var(--amb)}
+.dr-ok{color:var(--grn);font-weight:700}
+.dr-l{min-width:130px}
+.dr-s{min-width:150px}
+.dr-date{height:30px;padding:0 6px;font-size:12px}
+.dr-gh td{background:var(--elev);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:8px 8px}
+.dr-gn{font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink3);margin-top:3px;white-space:normal}
+.dr-pill,.dr-chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;border:1px solid var(--ln2)}
+.dr-pill.red,.dr-chip.red{color:var(--red);border-color:var(--red)}
+.dr-pill.amb,.dr-chip.amb{color:var(--amb);border-color:var(--amb)}
+.dr-pill.grn{color:var(--grn);border-color:var(--grn)}
+.dr-pill.mut{color:var(--ink3)}
+.dr-chip{margin:0 6px 6px 0;cursor:pointer;min-height:28px;line-height:22px}
+.dr-gtitle{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:16px 2px 8px}
+.dr-det summary{cursor:pointer;padding:12px 16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;min-height:44px;align-items:center}
+.dr-sn{font-weight:600}
+.dr-sm{font-size:11px;color:var(--ink3)}
+.dr-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:14px 0 6px}
+.dr-ul{margin:0;padding-left:18px;font-size:12px;line-height:1.55}
+.dr-box{font-size:12px;line-height:1.5;background:var(--elev);border:1px solid var(--ln);border-radius:8px;padding:10px 12px;user-select:text}
+.dr-guide-body{font-size:12px}
 </style>
 
 </head><body>
@@ -2980,8 +3012,10 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
 </div>
 
 <div class="page" id="pg-drills">
-  <div class="ph"><div><div class="ph-t">Drill Tracker</div><div class="ph-s">Overdue &rarr; Scheduled &rarr; Conducted &rarr; Recorded</div></div><button class="btn bp bsm" onclick="drillAdd()">+ Schedule</button></div>
-  <div class="kb4" id="kb-drills"></div>
+  <div class="ph"><div><div class="ph-t">Drills</div><div class="ph-s">Matrix, last done dates, SOLAS guide and log book entries</div></div><div class="flex gap8" style="flex-wrap:wrap"><button class="btn bsm" id="dr-v-matrix" onclick="drSetView('matrix')">Matrix</button><button class="btn bsm" id="dr-v-guide" onclick="drSetView('guide')">Guide</button><button class="btn bsm" id="dr-v-tracker" onclick="drSetView('tracker')">Tracker</button><button class="btn bp bsm" id="dr-sched-btn" style="display:none" onclick="drillAdd()">+ Schedule</button></div></div>
+  <div id="dr-matrix"></div>
+  <div id="dr-guide" style="display:none"></div>
+  <div class="kb4" id="kb-drills" style="display:none"></div>
 </div>
 
 <div class="page" id="pg-cargo">
@@ -3049,7 +3083,7 @@ html[data-theme] body .fi:focus-visible, html[data-theme] body .fs:focus-visible
       <div class="f12 c3" id="settings-code-lbl" style="margin-top:3px;font-family:var(--mono)"></div>
     </div>
     <div style="text-align:right">
-      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.13.1</div>
+      <div class="f11 fw7" style="color:var(--ac);font-family:var(--mono)">v5.14.0</div>
       <div class="f10 c3" id="about-date-hdr"></div>
     </div>
   </div>
@@ -4398,6 +4432,7 @@ var S = {
   todos: [],
   workdone: {},
   recurring: [],
+  drillDone: {},
   updated: 0  // Last-modified timestamp (set on every save)
 };
 
@@ -4473,7 +4508,7 @@ function autoSave() {
   _saveTimer = setTimeout(function(){ _saveTimer = null; dbSave(); }, 400);
 }
 // ── AUTOMATIC BACKUPS ─────────────────────────────────────────
-var AUTO_KEYS = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone','recurring'];
+var AUTO_KEYS = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone','recurring','drillDone'];
 function autoSnaps(cb) {
   if (!DB) { cb([]); return; }
   var out = [];
@@ -4577,7 +4612,7 @@ function importBackup(e) {
     try {
       var d = JSON.parse(ev.target.result);
       // Merge into S - keep keys that exist
-      var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone','recurring'];
+      var keys = ['vessel','theme','jobs','rag','drills','orders','ports','holds','dcounters','wplans','cldata','custom_bundles','deleted_bundles','todos','workdone','recurring','drillDone'];
       keys.forEach(function(k) { if (d[k] !== undefined) S[k] = d[k]; });
       dbSave();
       applyTheme(S.theme);
@@ -4680,8 +4715,8 @@ function cp(text, msg) {
 }
 
 // ── BOOT ──────────────────────────────────────────────────────
-var APP_VERSION = '5.13.1';
-var BUILD_DATE  = '1 Nov 2026';
+var APP_VERSION = '5.14.0';
+var BUILD_DATE  = '3 Nov 2026';
 var ACTIVE_PORT = '';
 var ACTIVE_PORT_SEC = 'overview';
 var ACTIVE_BUNDLE = null;
@@ -4780,6 +4815,7 @@ function showPage(name) {
   if (name==='workplan') { var _wa=document.querySelector('#wk-strip .wday.on'); if(_wa&&_wa.scrollIntoView){try{_wa.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});}catch(e){}} }
   var _am=document.querySelector('.mobit.on'); if(_am&&_am.scrollIntoView){try{_am.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});}catch(e){}}
   if (name==='workdone') { renderWorkDone(); }
+  if (name==='drills') { renderDrills(); }
   if (name==='settings') { renderAutoBackups(); updateVessel(); renderDCList(); renderHiddenOps(); }
   document.getElementById('main').scrollTop = 0;
 }
@@ -6638,7 +6674,9 @@ var DRILL_CLRS = {overdue:'kbc-red',scheduled:'kbc-amb',conducted:'kbc-blu',reco
 
 function renderDrills(){
   var nd=document.getElementById('np-drills');
-  if(nd)nd.textContent=S.drills.filter(function(d){return d.status==='overdue';}).length;
+  var _mo=0; try{ _mo=drOverdueCount(); }catch(e){}
+  if(nd)nd.textContent=S.drills.filter(function(d){return d.status==='overdue';}).length+_mo;
+  try{ drRenderAll(); }catch(e){}
   var el=document.getElementById('kb-drills'); if(!el)return;
   el.innerHTML=DRILL_COLS.map(function(col){
     var cards=S.drills.filter(function(d){return d.status===col;});
@@ -6706,6 +6744,575 @@ function drillSaveNew(){
   var n=(document.getElementById('da-n')||{}).value; if(n)n=n.trim(); if(!n)return;
   S.drills.push({id:Date.now(),name:n,freq:(document.getElementById('da-freq')||{}).value||'Monthly',status:'scheduled',lastDone:'',nextDue:(document.getElementById('da-due')||{}).value||'',notes:(document.getElementById('da-notes')||{}).value||''});
   autoSave(); closeModal(); renderDrills();
+}
+
+// ── DRILL MATRIX, GUIDE AND SCHEDULER ─────────────────────────
+var DR_VIEW = 'matrix';
+var DR_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var DR_GROUPS = [['fire','Fire'],['boat','Boat'],['poll','Pollution'],['isps','ISPS'],['oth','Other Emergencies']];
+var DR_GROUP_NOTE = {
+  fire:'If 25% or more of the crew have not participated in the past month on this vessel, the drill is held within 24 hours of leaving port (SOLAS III/19.3.2).',
+  boat:'If 25% or more of the crew have not participated in the past month on this vessel, the drill is held within 24 hours of leaving port (SOLAS III/19.3.2).',
+  poll:'', 
+  isps:'If 25% or more of the crew have not participated in the past 3 months on this vessel, the drill is held within 7 days of leaving port (ISPS Code B/13.6).',
+  oth:''
+};
+var DR_ALL = [1,2,3,4,5,6,7,8,9,10,11,12];
+var DR_REC = 'SOLAS III/19.5 (records)';
+var DR_ISM = 'ISM Code 8.3 (drills and exercises)';
+var DR_DECK = 'Deck Log Book (official log book entry as required by the flag State). Also the company drill record.';
+var DR_PMSEND = ' Recorded per SOLAS III/19.5 and the company drill schedule.';
+
+var DR_INFO = {
+  fire: {
+    refs:['SOLAS III/19.3.2: each crew member takes part in at least one fire drill every month; drills within 24 hours of leaving port if over 25% of the crew have not taken part in the past month; before sailing for a new ship, after major modification or with a new crew',
+      'SOLAS III/19.3.5: fire drill content; 19.3.5.3 equipment brought back to full working order straight after the drill',
+      'SOLAS II-2/15.2.2.5: fire drills conducted and recorded per III/19.3 and III/19.5',
+      'SOLAS III/19.4.1: on-board training in fire-fighting appliances within 2 weeks of joining',
+      DR_REC, DR_ISM],
+    circ:['No MSC circular is required for a routine fire drill. Quote the SOLAS regulations above.'],
+    req:['Alarm raised, crew report to stations and prepare for the duties in the muster list',
+      'Start a fire pump and use at least two jets of water to show the system works',
+      'Check fire-fighter outfits and personal rescue equipment (including EEBDs)',
+      'Check the relevant communication equipment',
+      'Check operation of fire doors, fire dampers and main inlets and outlets of ventilation in the drill area',
+      'Check the arrangements for subsequent abandoning of the ship',
+      'Use a different fire scenario and different fire pump each drill',
+      'Bring all equipment back to full operational condition and fix faults as soon as possible'],
+    dur:'30 to 45 minutes (typical, not prescribed by SOLAS)',
+    book:DR_DECK+' An engine room fire drill is also entered in the Engine Log Book.',
+    tm:'{T} LT: Fire drill held, {AREA}. Fire alarm raised, crew mustered at stations. Fire pump started and two jets of water used. Fire-fighter outfits, EEBDs and communications checked. Fire doors, dampers and ventilation in the drill area checked. Arrangements for abandoning ship checked. {N} crew participated. Equipment restored to operational condition. Duration {M} min. Debrief held. {X}',
+    pms:'{NAME} carried out as per SOLAS III/19.3.2 and III/19.3.5, SOLAS II-2/15.2.2.5 and ISM Code 8.3.'+DR_PMSEND
+  },
+  abandon: {
+    refs:['SOLAS III/19.3.2: each crew member takes part in at least one abandon ship drill every month; within 24 hours of leaving port if over 25% of the crew have not taken part in the past month',
+      'SOLAS III/19.3.4.1: abandon ship drill content',
+      'SOLAS III/19.3.4.2: different lifeboats lowered in successive drills where practicable',
+      'SOLAS III/19.3.4.9: emergency lighting for mustering and abandonment tested at each drill',
+      'SOLAS III/19.4.2: instruction in liferafts, hypothermia, survival craft in severe weather',
+      DR_REC, DR_ISM],
+    circ:['MSC.1/Circ.1206/Rev.1: Measures to prevent accidents with lifeboats (safe lowering and launching practice)',
+      'MSC.402(96): maintenance, thorough examination and operational testing of lifeboats, launching appliances and release gear (SOLAS III/20.11)'],
+    req:['Summon crew with the general alarm, followed by an announcement that this is a drill',
+      'Crew report to stations and prepare for the duties in the muster list',
+      'Check that crew are suitably dressed and lifejackets are correctly donned',
+      'Lower at least one lifeboat after the necessary preparation (use a different boat each drill)',
+      'Start and operate the lifeboat engine',
+      'Operate the davits used for launching liferafts',
+      'Instruction in the use of radio life-saving appliances',
+      'Test the emergency lighting for mustering and abandonment',
+      'Headcount and debrief'],
+    dur:'40 to 60 minutes (typical, not prescribed by SOLAS)',
+    book:DR_DECK,
+    tm:'{T} LT: Abandon ship drill held. General alarm sounded, crew mustered at stations, lifejackets checked, headcount completed. {BOAT}Lifeboat engine started and run. Liferaft davits operated. Emergency lighting for mustering and abandonment tested. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'{NAME} carried out as per SOLAS III/19.3.2, III/19.3.4.1, III/19.3.4.2 and III/19.3.4.9 and ISM Code 8.3.'+DR_PMSEND
+  },
+  lifeboat: {
+    refs:['SOLAS III/19.3.4.3: each lifeboat launched with its assigned operating crew and manoeuvred in the water at least once every 3 months during an abandon ship drill',
+      'SOLAS III/19.3.4.2: different lifeboats lowered in successive drills where practicable',
+      'SOLAS III/19.3.4.7: launching with the ship making headway only in sheltered waters under an experienced officer',
+      DR_REC],
+    circ:['MSC.1/Circ.1206/Rev.1: Measures to prevent accidents with lifeboats',
+      'MSC.402(96): operational testing of lifeboats and release gear (SOLAS III/20.11)'],
+    req:['Launch the lifeboat with the assigned operating crew on board and manoeuvre it in the water',
+      'Check engine, steering, astern and ahead propulsion and communications',
+      'Check the on-load and off-load release gear is reset and secured correctly after recovery',
+      'Check the painter, fall preventer devices and securing arrangements before and after',
+      'Weather, sea state and safe launching practice reviewed at the pre-drill briefing'],
+    dur:'45 to 60 minutes (typical, not prescribed by SOLAS)',
+    book:DR_DECK,
+    tm:'{T} LT: Lifeboat No. ____ launched with operating crew and manoeuvred in the water during abandon ship drill. Engine, steering, propulsion and communications tested. Release gear reset and secured after recovery. {N} crew participated. Duration {M} min. {X}',
+    pms:'Lifeboat launch and manoeuvre in the water carried out as per SOLAS III/19.3.4.3, MSC.1/Circ.1206/Rev.1 and ISM Code 8.3.'+DR_PMSEND
+  },
+  freefall: {
+    refs:['SOLAS III/19.3.4.4: free-fall lifeboat procedures practised every 3 months up to the point of release; free-fall launch or simulated launch at least every 6 months',
+      DR_REC],
+    circ:['MSC.1/Circ.1327: Guidelines for simulated launching of free-fall lifeboats',
+      'MSC.1/Circ.1206/Rev.1: Measures to prevent accidents with lifeboats'],
+    req:['Boarding, seating, harness and launching procedure practised up to the point of release',
+      'Free-fall launch with the operating crew only, or a simulated launch as per MSC.1/Circ.1327',
+      'Release and securing arrangements checked after the drill',
+      'Only the operating crew in the boat for an actual free-fall launch'],
+    dur:'30 to 45 minutes (typical, not prescribed by SOLAS)',
+    book:DR_DECK,
+    tm:'{T} LT: Free-fall lifeboat drill held. Boarding, harness and launch procedure practised up to the point of release. Simulated launch carried out as per MSC.1/Circ.1327. {N} crew participated. Duration {M} min. {X}',
+    pms:'Free-fall lifeboat drill carried out as per SOLAS III/19.3.4.4 and MSC.1/Circ.1327, ISM Code 8.3.'+DR_PMSEND
+  },
+  raft: {
+    refs:['SOLAS III/19.4.3: on-board training in the use of davit-launched liferafts at intervals of not more than 4 months, including inflation and lowering where practicable (a marked training liferaft may be used)',
+      'SOLAS III/19.4.2: instruction in the operation and use of inflatable liferafts',
+      DR_REC],
+    circ:['MSC.1/Circ.1206/Rev.1 for launching appliance safety. No dedicated circular for liferaft training.'],
+    req:['Davit-launched liferaft prepared and the davit operated',
+      'Inflate and lower a liferaft where practicable (a clearly marked training liferaft may be used)',
+      'Boarding procedure and painter and hydrostatic release arrangements explained',
+      'Instruction on hypothermia and survival at sea'],
+    dur:'30 to 45 minutes (typical, not prescribed by SOLAS)',
+    book:DR_DECK,
+    tm:'{T} LT: Liferaft training held. Davit-launched liferaft No. ____ prepared and lowered{X2}. Painter, boarding and release arrangements explained. {N} crew participated. Duration {M} min. {X}',
+    pms:'Liferaft training carried out as per SOLAS III/19.4.3 and III/19.4.2, ISM Code 8.3.'+DR_PMSEND
+  },
+  mob: {
+    refs:['SOLAS III/17-1: plans and procedures for recovery of persons from the water',
+      'SOLAS III/19.3.4.6: rescue boat launched and manoeuvred (see rescue boat drill)',
+      'SOLAS V/33: assistance to persons in distress',
+      DR_REC, DR_ISM],
+    circ:['MSC.1/Circ.1447: Guidelines for the development of plans and procedures for recovery of persons from the water',
+      'IAMSAR Manual Volume III'],
+    req:['MOB alarm raised, lifebuoy with light and smoke released, time and position noted (MOB button)',
+      'Look-out kept and the person kept in sight',
+      'Manoeuvre to return (Williamson or other turn per ship-specific procedure)',
+      'Rescue boat prepared and launched, recovery of a dummy or person from the water',
+      'First aid and treatment of hypothermia',
+      'Communications on the bridge, with the rescue boat and with the engine room'],
+    dur:'45 to 60 minutes (typical, not prescribed by SOLAS)',
+    book:DR_DECK,
+    tm:'{T} LT: Man overboard drill held. MOB alarm raised, lifebuoy released, position noted. Ship manoeuvred to return. Rescue boat launched and a dummy recovered from the water. First aid and hypothermia treatment practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'MOB drill carried out as per SOLAS III/17-1, MSC.1/Circ.1447 and SOLAS III/19.3.4.6, ISM Code 8.3.'+DR_PMSEND
+  },
+  rescue: {
+    refs:['SOLAS III/19.3.4.6: rescue boats other than lifeboats launched with the assigned crew and manoeuvred in the water each month where reasonable and practicable, and at least once every 3 months',
+      'SOLAS III/19.3.4.7: launching with ship making headway only in sheltered waters',
+      DR_REC],
+    circ:['MSC.1/Circ.1206/Rev.1: Measures to prevent accidents with lifeboats',
+      'MSC.402(96): operational testing of rescue boats and release gear'],
+    req:['Rescue boat launched with the assigned crew and manoeuvred in the water',
+      'Engine started and run, steering and communications tested',
+      'Release gear and painter arrangements checked',
+      'Recovery of the boat and securing after use'],
+    dur:'30 to 45 minutes (typical, not prescribed by SOLAS)',
+    book:DR_DECK,
+    tm:'{T} LT: Rescue boat launched with assigned crew and manoeuvred in the water. Engine, steering and VHF communications tested. Boat recovered and secured. {N} crew participated. Duration {M} min. {X}',
+    pms:'Rescue boat launch and manoeuvre carried out as per SOLAS III/19.3.4.6, MSC.1/Circ.1206/Rev.1 and ISM Code 8.3.'+DR_PMSEND
+  },
+  williamson: {
+    refs:['SOLAS V/33: distress situations, obligations and procedures (assistance to persons in distress)',
+      'SOLAS III/17-1: plans and procedures for recovery of persons from the water',
+      DR_ISM],
+    circ:['MSC.1/Circ.1447 (recovery of persons from the water)','IAMSAR Manual Volume III (search patterns and manoeuvres)'],
+    req:['Bridge team practises the Williamson turn or the ship-specific recovery manoeuvre',
+      'Search pattern and look-out arrangements reviewed (IAMSAR)',
+      'Communications with MRCC or other ships practised where relevant',
+      'Manoeuvring data for the ship used and checked (turning circle, advance and transfer)'],
+    dur:'20 to 30 minutes (typical)',
+    book:DR_DECK+' Bridge team entry on the Bridge Log.',
+    tm:'{T} LT: Williamson turn and search exercise carried out by the bridge team in position ____. Search pattern and look-out arrangements practised. Duration {M} min. {X}',
+    pms:'Williamson turn and SAR exercise carried out as per SOLAS V/33, SOLAS III/17-1, IAMSAR Vol. III and ISM Code 8.3.'+DR_PMSEND
+  },
+  poll: {
+    refs:['MARPOL Annex I Regulation 37: Shipboard Oil Pollution Emergency Plan (SOPEP)',
+      'IMO Guidelines for the development of SOPEP: resolution MEPC.54(32) as amended by MEPC.86(44)',
+      'OPRC 1990 Article 3: oil pollution emergency plans',
+      DR_ISM],
+    circ:['MEPC.54(32) as amended by MEPC.86(44): Guidelines for the development of shipboard oil pollution emergency plans'],
+    req:['Scenario set (for example bunker overflow, hose burst, hull leak, tank overflow, spill overboard)',
+      'Alarm and reporting chain practised using the SOPEP call list and notification forms',
+      'Shipboard spill equipment located, deployed and used (absorbents, scupper plugs, containment, pumps)',
+      'Stop the source of the spill and contain on deck',
+      'Notification to the coastal State, Company and others per the SOPEP',
+      'Review the SOPEP contact list and equipment inventory'],
+    dur:'30 to 45 minutes (typical, not prescribed)',
+    book:DR_DECK+' Not an Oil Record Book entry.',
+    tm:'{T} LT: Oil pollution (SOPEP) drill held, {AREA}. Alarm raised, crew mustered. Source of spill stopped, spill contained with shipboard equipment. SOPEP notification procedure practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'{NAME} carried out as per MARPOL Annex I Reg. 37 (SOPEP), MEPC.54(32) as amended by MEPC.86(44) and ISM Code 8.3.'+DR_PMSEND
+  },
+  ispsShip: {
+    refs:['ISPS Code Part B/13.6: security drills at least every 3 months; also within one week if over 25% of the personnel have changed and have not taken part in a drill in the past 3 months',
+      'ISPS Code Part A/13.4: drills at appropriate intervals taking account of ship type, personnel changes and port facilities',
+      'ISPS Code Part A/10.1.1: records of training, drills and exercises kept onboard',
+      'SOLAS XI-2/4 and XI-2/6 (ship security alert system)'],
+    circ:['MSC.1/Circ.1111 and MSC.1/Circ.1217: ship security guidance (check the current list in your SMS)'],
+    req:['Scenario set (stowaway search, bomb threat, hijacking or piracy, cargo tampering)',
+      'Ship Security Plan procedures for the scenario followed',
+      'Search procedure, access control and communications practised',
+      'Security levels and Declaration of Security procedures reviewed where relevant',
+      'SSO leads the drill and records it'],
+    dur:'30 to 45 minutes (typical, not prescribed)',
+    book:'Ship Security Records (ISPS A/10.1.1). Also the Deck Log Book.',
+    tm:'{T} LT: Security drill held under the Ship Security Plan, scenario: {AREA}. SSO led the drill. Procedures and communications practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'Security drill carried out as per ISPS Code Part B/13.6 and Part A/13.4, recorded under Part A/10.1.1.'+DR_PMSEND
+  },
+  ispsShore: {
+    refs:['ISPS Code Part B/13.7: security exercises at least once each calendar year, with no more than 18 months between exercises; may involve the CSO, PFSO and authorities',
+      'ISPS Code Part A/13.5: the CSO takes part in exercises at appropriate intervals',
+      'SOLAS XI-2/6: ship security alert system (SSAS) activation',
+      'ISPS Code Part A/10.1.1: records of drills and exercises'],
+    circ:['MSC.136(76) and MSC.147(77): performance standards for the ship security alert system'],
+    req:['Ship and shore communication with the CSO and PFSO practised',
+      'Coastal authority contact practised',
+      'SSAS test or activation as per the company procedure (the Company Security Officer informed beforehand for a test)',
+      'Exercise coordinated by the CSO with the Master and SSO'],
+    dur:'60 minutes or more (typical, not prescribed)',
+    book:'Ship Security Records (ISPS A/10.1.1). Also the Deck Log Book.',
+    tm:'{T} LT: Ship and shore security exercise held with the CSO. SSAS test carried out per company procedure. Communications with the coastal authority practised. {N} crew participated. Duration {M} min. {X}',
+    pms:'Ship and shore security exercise carried out as per ISPS Code Part B/13.7 and Part A/13.5, SOLAS XI-2/6, recorded under Part A/10.1.1.'+DR_PMSEND
+  },
+  steering: {
+    refs:['SOLAS V/26.5: emergency steering drills at least once every 3 months (direct control from the steering gear compartment, communication with the bridge and, where applicable, alternative power supplies)',
+      'SOLAS V/26.7: date and details of emergency steering drills recorded in the log book',
+      'SOLAS V/26.4: officers concerned familiar with the steering systems and changeover',
+      'SOLAS II-1/29: steering gear',
+      'Note: some publications number these paragraphs differently. Confirm against your consolidated SOLAS edition.'],
+    circ:['No MSC circular is needed. Quote SOLAS V/26.'],
+    req:['Changeover to emergency steering with direct control from the steering gear compartment',
+      'Communication with the navigating bridge (sound-powered phone, radio)',
+      'Operation of alternative power supplies where applicable',
+      'Rudder angle indicators checked locally and on the bridge',
+      'Officers and engineers concerned take part and practise the changeover'],
+    dur:'20 to 30 minutes (typical, not prescribed)',
+    book:DR_DECK+' Entry required by SOLAS V/26.7. Also the Engine Log Book.',
+    tm:'{T} LT: Emergency steering drill held. Changeover to emergency steering carried out with direct control from the steering gear compartment. Communication with the bridge tested. Alternative power supply operated where applicable. Rudder angle indicators checked. {N} crew participated. Duration {M} min. {X}',
+    pms:'Emergency steering drill carried out as per SOLAS V/26.5, recorded as required by SOLAS V/26.7.'
+  },
+  enclosed: {
+    refs:['SOLAS III/19.3.3: enclosed space entry and rescue drill on board at least once every 2 months for crew with enclosed space entry or rescue duties',
+      'SOLAS III/19.3.6: drill content (PPE, communications, atmosphere-testing instruments, rescue equipment and procedures, first aid and resuscitation)',
+      'SOLAS III/19.5: records',
+      'SOLAS XI-1/7: atmosphere testing instruments for enclosed spaces'],
+    circ:['MSC.581(110): Revised recommendations for entering enclosed spaces aboard ships (replaces resolution A.1050(27); confirm the current status and date in your SMS)',
+      'Resolution A.1050(27): Revised recommendations for entering enclosed spaces aboard ships (previous reference)'],
+    req:['Scenario set (for example a casualty in a hold, ballast tank or pump room)',
+      'Use of personal protective equipment, including breathing apparatus and escape sets',
+      'Communication equipment and procedure with the standby person and bridge',
+      'Atmosphere testing instruments used and calibrated',
+      'Rescue equipment and procedure (stretcher, lifting and hoisting arrangements)',
+      'First aid and resuscitation instruction',
+      'Plan and run the drill safely, with a risk assessment and toolbox talk'],
+    dur:'60 to 90 minutes (typical, not prescribed)',
+    book:DR_DECK+' Enclosed space entry and rescue drill entry required by SOLAS III/19.5.',
+    tm:'{T} LT: Enclosed space entry and rescue drill held, scenario: {AREA}. PPE, breathing apparatus, communications and atmosphere testing instruments used. Rescue equipment and procedure practised. First aid and resuscitation practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'Enclosed space entry and rescue drill carried out as per SOLAS III/19.3.3 and III/19.3.6, MSC.581(110) (previously A.1050(27)), ISM Code 8.3.'+DR_PMSEND
+  },
+  injury: {
+    refs:[DR_ISM,'MLC 2006 Regulation 4.1 (medical care on board)','STCW Code section A-VI/4 (medical first aid and medical care)','SOLAS III/19.5 where combined with another drill'],
+    circ:['International Medical Guide for Ships (WHO) and company medical procedures'],
+    req:['Scenario set (for example a fall from height or crush injury on deck or in the engine room)',
+      'Alarm, first response and first aid given by the first aiders',
+      'Casualty movement (stretcher, lowering from height or from a confined space)',
+      'Radio medical advice (TMAS) contact practised',
+      'Medical stores and equipment checked',
+      'Evacuation arrangements reviewed'],
+    dur:'30 to 45 minutes (typical)',
+    book:DR_DECK,
+    tm:'{T} LT: Serious injury drill held, scenario: {AREA}. First aid given, casualty moved and radio medical advice procedure practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'Serious injury drill carried out as per ISM Code 8.3, MLC 2006 Reg. 4.1 and the company medical procedure.'+DR_PMSEND
+  },
+  damage: {
+    refs:[DR_ISM,'SOLAS II-1/19: damage control information (confirm applicability to your ship type)','SOLAS II-1/3-4 not applicable here'],
+    circ:['No specific MSC circular. Use the ship damage control plan and the company SMS.'],
+    req:['Scenario set (for example a hull breach or flooding of a hold or ballast tank)',
+      'Damage control team mustered, plan and stability information used',
+      'Watertight and weathertight closing, bilge and ballast pumping arrangements used',
+      'Damage assessment and reporting to the Company and authorities',
+      'Stability and strength implications assessed (loading computer)'],
+    dur:'45 to 60 minutes (typical)',
+    book:DR_DECK,
+    tm:'{T} LT: Damage control drill held, scenario: {AREA}. Damage control team mustered, damage control plan used, closing and pumping arrangements practised and stability assessed. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'Damage control drill carried out as per ISM Code 8.3 and the ship damage control plan.'+DR_PMSEND
+  },
+  blackout: {
+    refs:[DR_ISM,'SOLAS II-1/43: emergency source of electrical power in cargo ships','SOLAS II-1/41: main source of electrical power'],
+    circ:['No specific MSC circular. Use the maker blackout recovery procedure and company SMS.'],
+    req:['Scenario set (total loss of main power)',
+      'Emergency generator start and emergency lighting checked',
+      'Restoration of main power and restart of essential auxiliaries in sequence',
+      'Bridge and engine room communication, navigation safety and signals practised',
+      'Steering and propulsion restored, anchors or tugs considered if near land'],
+    dur:'30 to 45 minutes (typical)',
+    book:DR_DECK+' Also the Engine Log Book.',
+    tm:'{T} LT: Blackout drill held. Emergency generator and emergency lighting checked. Main power restored and essential auxiliaries restarted in sequence. Bridge and engine room communications practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'Blackout drill carried out as per ISM Code 8.3, SOLAS II-1/41 and II-1/43 and the maker recovery procedure.'+DR_PMSEND
+  },
+  breakaway: {
+    refs:[DR_ISM,'Company SMS: berth, mooring and emergency procedures'],
+    circ:['OCIMF Mooring Equipment Guidelines (MEG4) for mooring practice (company SMS)'],
+    req:['Scenario set (ship breaks away from the berth due to weather, swell or passing traffic)',
+      'Alarm, duty officer and engine room informed, engines made ready',
+      'Mooring parties called and the line handling practised',
+      'Tugs, pilot and port control contacted and the agent informed',
+      'Emergency departure or re-securing options discussed'],
+    dur:'30 minutes (typical)',
+    book:DR_DECK,
+    tm:'{T} LT: Break away from berth drill held. Engine room informed, mooring parties called, port control and agent informed. Re-securing and emergency departure options practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'Break away from berth drill carried out as per ISM Code 8.3 and the company berth emergency procedure.'+DR_PMSEND
+  },
+  towing: {
+    refs:['SOLAS II-1/3-4: emergency towing procedures (ship-specific procedure onboard)',DR_ISM],
+    circ:['MSC.1/Circ.1255: Guidelines for owners/operators on preparing emergency towing procedures'],
+    req:['Scenario set (loss of propulsion or steering near land)',
+      'Emergency towing arrangement and ship-specific procedure used',
+      'Towing equipment located and prepared (bridle, messenger, pennant, chafing gear, fairleads)',
+      'Communications with the towing vessel and authorities practised',
+      'Roles of the bridge team and deck team assigned'],
+    dur:'45 to 60 minutes (typical)',
+    book:DR_DECK,
+    tm:'{T} LT: Emergency towing drill held. Ship-specific emergency towing procedure followed. Towing equipment prepared and communications with the towing vessel practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'Emergency towing drill carried out as per SOLAS II-1/3-4, MSC.1/Circ.1255 and ISM Code 8.3.'+DR_PMSEND
+  },
+  navfail: {
+    refs:[DR_ISM,'SOLAS V/19: carriage requirements for shipborne navigational systems and equipment'],
+    circ:['No specific MSC circular. Use the bridge procedures manual (failure of ECDIS, radar, gyro, GPS).'],
+    req:['Scenario set (for example gyro, ECDIS or GPS failure)',
+      'Changeover to the backup equipment and manual means of position fixing',
+      'Watch arrangements and Master informed, engine room alerted',
+      'Entries made in the logs and the Company informed',
+      'Safe navigation without the failed equipment practised'],
+    dur:'20 to 30 minutes (typical)',
+    book:DR_DECK+' Bridge log entry.',
+    tm:'{T} LT: Navigation equipment failure drill held, scenario: {AREA}. Changeover to backup equipment and manual position fixing practised. Master informed. {N} crew participated. Duration {M} min. {X}',
+    pms:'Navigation equipment failure drill carried out as per ISM Code 8.3 and the bridge procedures manual.'+DR_PMSEND
+  },
+  mecr: {
+    refs:[DR_ISM,'SOLAS II-1/31: machinery controls'],
+    circ:['No specific MSC circular. Use the maker manual and company SMS.'],
+    req:['Scenario set (loss of main engine remote control from the bridge)',
+      'Changeover to local control, with the bridge and engine room telephone or communication used',
+      'Engine telegraph orders passed and acknowledged',
+      'Steering and manoeuvring practised in a safe area',
+      'Engine room and bridge teams practise the changeover'],
+    dur:'20 to 30 minutes (typical)',
+    book:DR_DECK+' Also the Engine Log Book.',
+    tm:'{T} LT: Main engine remote control failure drill held. Changeover to local control done, engine orders passed by telephone. {N} crew participated. Duration {M} min. {X}',
+    pms:'Main engine remote control failure drill carried out as per ISM Code 8.3 and SOLAS II-1/31.'+DR_PMSEND
+  },
+  cpp: {
+    refs:[DR_ISM,'SOLAS II-1/31: machinery controls'],
+    circ:['No specific MSC circular. Use the maker manual and company SMS.'],
+    req:['Scenario set (loss of CP propeller control from the bridge)',
+      'Changeover to emergency pitch control',
+      'Pitch indication and propeller control checked from the machinery space',
+      'Bridge and engine room communications practised'],
+    dur:'20 to 30 minutes (typical)',
+    book:DR_DECK+' Also the Engine Log Book.',
+    tm:'{T} LT: CP propeller emergency operation drill held. Emergency pitch control used, pitch indication checked locally. {N} crew participated. Duration {M} min. {X}',
+    pms:'CP propeller emergency operation drill carried out as per ISM Code 8.3 and the maker manual.'+DR_PMSEND
+  },
+  heli: {
+    refs:[DR_ISM,'Company SMS: helicopter operations procedure'],
+    circ:['ICS Guide to Helicopter/Ship Operations (current edition)','IAMSAR Manual Volume III'],
+    req:['Landing or winching area identified, cleared and marked',
+      'Fire-fighting team, hoses and foam equipment ready',
+      'Communications with the helicopter on the agreed frequency',
+      'Ship course and speed for winching and safety briefing',
+      'Rescue and first aid arrangements'],
+    dur:'45 to 60 minutes (typical)',
+    book:DR_DECK,
+    tm:'{T} LT: Helicopter operations drill held. Winching area cleared and marked, fire-fighting team and communications arranged. Procedure practised. {N} crew participated. Duration {M} min. Debrief held. {X}',
+    pms:'Helicopter operations drill carried out as per ISM Code 8.3 and the ICS Guide to Helicopter/Ship Operations.'+DR_PMSEND
+  }
+};
+
+var DR_DB = [
+  {k:'f_acc',   g:'fire', name:'Fire: Accommodation', sub:'Galley, cabin, bridge, changing/day/mess/drying room, laundry, stores', m:[1,4,7,10], info:'fire', area:'Accommodation', int:0},
+  {k:'f_cargo', g:'fire', name:'Fire: Cargo/Deck areas', sub:'Cargo holds/tanks, cranes, pump room, deck cargo, stores', m:[2,5,8,11], info:'fire', area:'Cargo/Deck areas', int:0},
+  {k:'f_eng',   g:'fire', name:'Fire: Engine room', sub:'Purifier/incinerator room, ECR, workshop, stores, main/auxiliary engines', m:[3,6,9,12], info:'fire', area:'Engine room', int:0},
+  {k:'f_any',   g:'fire', name:'Fire drill, any area (statutory monthly check)', sub:'Latest of the three fire drills above', m:DR_ALL, info:'fire', area:'', int:1, calc:['f_acc','f_cargo','f_eng'], noLog:true},
+  {k:'b_ab',    g:'boat', name:'Abandon ship', sub:'Muster, lifejackets, lowering of a lifeboat', m:DR_ALL, info:'abandon', int:1},
+  {k:'b_lb',    g:'boat', name:'Abandon ship: all lifeboats manoeuvred in water', sub:'Each lifeboat launched with its operating crew', m:[2,5,8,11], info:'lifeboat', int:3},
+  {k:'b_ff',    g:'boat', name:'Abandon ship: freefall lifeboats launched', sub:'Simulation if fitted', m:[2,8], info:'freefall', int:6},
+  {k:'b_raft',  g:'boat', name:'Abandon ship: life rafts', sub:'Davit-launched liferaft training', m:[2,6,10], info:'raft', int:4},
+  {k:'b_mob',   g:'boat', name:'MOB: Rescue of persons from the water', sub:'', m:[1,4,7,10], info:'mob', int:0},
+  {k:'b_rb',    g:'boat', name:'MOB: Rescue boat (other than lifeboat) manoeuvred in water', sub:'', m:DR_ALL, info:'rescue', int:3},
+  {k:'b_will',  g:'boat', name:'MOB: Williamson/similar turn / SAR', sub:'', m:[1,7], info:'williamson', int:0},
+  {k:'p_proc',  g:'poll', name:'Pollution: Procedures and notification drill', sub:'', m:[1,4,7,10], info:'poll', area:'procedures and notification', int:0},
+  {k:'p_eq',    g:'poll', name:'Pollution: Equipment readiness and training', sub:'', m:[2,5,8,11], info:'poll', area:'equipment readiness and training', int:0},
+  {k:'p_deck',  g:'poll', name:'Pollution: Spill on board', sub:'Tank overflow, burst bunker/cargo/hydraulic hose', m:[3,9], info:'poll', area:'spill on board (tank overflow, burst hose)', int:0},
+  {k:'p_water', g:'poll', name:'Pollution: Spill to surrounding waters', sub:'', m:[6,12], info:'poll', area:'spill to surrounding waters', int:0},
+  {k:'i_ship',  g:'isps', name:'ISPS: Ship', sub:'Stowaway, bomb search, hijacking, piracy, cargo tampering', m:[1,4,7,10], info:'ispsShip', area:'stowaway, bomb search, hijacking, piracy or cargo tampering', int:3},
+  {k:'i_shore', g:'isps', name:'ISPS: Ship/Shore', sub:'PFSO, CSO, coastal authority, SSAS activation', m:[4], info:'ispsShore', int:0},
+  {k:'o_steer', g:'oth',  name:'Emergency steering', sub:'', m:[2,5,8,11], info:'steering', int:3},
+  {k:'o_enc',   g:'oth',  name:'Enclosed space entry and rescue', sub:'', m:[1,3,5,7,9,11], info:'enclosed', area:'casualty in an enclosed space', int:2},
+  {k:'o_inj',   g:'oth',  name:'Serious injury', sub:'', m:[1,4,7,10], info:'injury', area:'serious injury on board', int:0},
+  {k:'o_dmg',   g:'oth',  name:'Damage control', sub:'', m:[6,12], info:'damage', area:'hull damage and flooding', int:0},
+  {k:'o_blk',   g:'oth',  name:'Blackout', sub:'', m:[8], info:'blackout', int:0},
+  {k:'o_brk',   g:'oth',  name:'Break away from berth', sub:'', m:[2,8], info:'breakaway', int:0},
+  {k:'o_tow',   g:'oth',  name:'Emergency towing', sub:'', m:[2], info:'towing', int:0},
+  {k:'o_nav',   g:'oth',  name:'Navigation equipment failure', sub:'', m:[3,9], info:'navfail', area:'navigation equipment failure', int:0},
+  {k:'o_mecr',  g:'oth',  name:'Main engine remote control failure', sub:'', m:[6,12], info:'mecr', int:0},
+  {k:'o_cpp',   g:'oth',  name:'CP propeller emergency operation', sub:'', m:[6,12], info:'cpp', int:0},
+  {k:'o_heli',  g:'oth',  name:'Helicopter operations', sub:'', m:[6], info:'heli', int:0}
+];
+function drGet(k){ return DR_DB.find(function(d){return d.k===k;}); }
+function drState(k){ if(!S.drillDone) S.drillDone={}; if(!S.drillDone[k]) S.drillDone[k]={last:'',hist:[]}; return S.drillDone[k]; }
+function drLast(d){
+  if (d.calc) {
+    var best=''; d.calc.forEach(function(k){ var l=(S.drillDone&&S.drillDone[k]&&S.drillDone[k].last)||''; if(l>best) best=l; });
+    return best;
+  }
+  return (S.drillDone&&S.drillDone[d.k]&&S.drillDone[d.k].last)||'';
+}
+function drAbs(date){ return date.getFullYear()*12+date.getMonth(); }
+function drAddMonths(date,n){ var d=new Date(date.getFullYear(), date.getMonth()+n, date.getDate()); if(d.getDate()!==date.getDate()) d=new Date(date.getFullYear(), date.getMonth()+n+1, 0); return d; }
+function drFmt(date){ return date.getDate()+' '+DR_MON[date.getMonth()]+' '+date.getFullYear(); }
+function drStatus(d){
+  var T=new Date(); T=new Date(T.getFullYear(),T.getMonth(),T.getDate());
+  var nowAbs=drAbs(T), lastKey=drLast(d), L=lastKey?dateFromKey(lastKey):null;
+  var res={last:lastKey,cls:'',label:'',next:'',overdue:false,due:false,stat:''};
+  // statutory interval
+  if (d.int && L) {
+    var lim=drAddMonths(L,d.int);
+    if (T>lim) { res.stat='Statutory limit passed ('+drFmt(lim)+')'; res.overdue=true; }
+    else res.stat='Statutory limit '+drFmt(lim);
+  } else if (d.int && !L) { res.stat='Statutory interval '+d.int+' month'+(d.int>1?'s':''); }
+  // matrix month
+  var sched=d.m.map(function(x){return x-1;});
+  var base = L ? drAbs(L) : nowAbs-1;
+  var nextAbs=null;
+  for (var i=1;i<=24;i++){ var a=base+i; if (sched.indexOf(((a%12)+12)%12)>=0){ nextAbs=a; break; } }
+  var y=Math.floor(nextAbs/12), mo=((nextAbs%12)+12)%12, dueBy=new Date(y,mo+1,0);
+  res.next=DR_MON[mo]+' '+y;
+  if (!L) {
+    var curSched = sched.indexOf(T.getMonth())>=0;
+    res.label = curSched ? 'Due this month' : 'Not recorded';
+    res.cls = curSched ? 'amb' : 'mut';
+    res.due = curSched;
+    if (!curSched) res.next = res.next;
+  } else if (T>dueBy) { res.label='Overdue'; res.cls='red'; res.overdue=true; }
+  else if (nextAbs===nowAbs) { res.label='Due this month'; res.cls='amb'; res.due=true; }
+  else { res.label='Up to date'; res.cls='grn'; }
+  if (res.overdue && res.cls!=='red') { res.label='Overdue'; res.cls='red'; }
+  else if (res.overdue) {}
+  if (d.int && L && res.stat.indexOf('passed')>=0) { res.label='Overdue'; res.cls='red'; }
+  return res;
+}
+function drOverdueCount(){
+  var n=0; DR_DB.forEach(function(d){ var s=drStatus(d); if(s.overdue && drLast(d)) n++; }); return n;
+}
+
+// ── views
+function drSetView(v){ DR_VIEW=v; drRenderAll(); }
+function drRenderAll(){
+  var kb=document.getElementById('kb-drills'), mx=document.getElementById('dr-matrix'), gd=document.getElementById('dr-guide');
+  if(!kb||!mx||!gd) return;
+  ['tracker','matrix','guide'].forEach(function(x){ var b=document.getElementById('dr-v-'+x); if(b) b.classList.toggle('bp', DR_VIEW===x); });
+  var sb=document.getElementById('dr-sched-btn'); if(sb) sb.style.display = DR_VIEW==='tracker' ? '' : 'none';
+  kb.style.display = DR_VIEW==='tracker' ? '' : 'none';
+  mx.style.display = DR_VIEW==='matrix' ? '' : 'none';
+  gd.style.display = DR_VIEW==='guide' ? '' : 'none';
+  if (DR_VIEW==='matrix') drRenderMatrix();
+  if (DR_VIEW==='guide') drRenderGuide();
+}
+function drRenderMatrix(){
+  var el=document.getElementById('dr-matrix'); if(!el) return;
+  var T=new Date(), cm=T.getMonth(), cy=T.getFullYear();
+  var dueNow=[], over=[];
+  DR_DB.forEach(function(d){ if(d.calc) return; var s=drStatus(d); if(s.overdue && s.last) over.push(d); else if(s.due) dueNow.push(d); });
+  var sum='<div class="card mb12"><div class="ch"><div><div class="ct">This Month: '+DR_MON[cm]+' '+cy+'</div><div class="cm">'+(over.length?over.length+' overdue, ':'')+dueNow.length+' due</div></div></div><div class="cb">';
+  if (!over.length && !dueNow.length) sum+='<div class="f12 c3">Nothing due. All drills are up to date.</div>';
+  else {
+    sum+=over.map(function(d){ return '<div class="dr-chip red" onclick="drLogOpen(\''+d.k+'\')">'+esc(d.name)+' <b>Overdue</b></div>'; }).join('');
+    sum+=dueNow.map(function(d){ return '<div class="dr-chip amb" onclick="drLogOpen(\''+d.k+'\')">'+esc(d.name)+'</div>'; }).join('');
+  }
+  sum+='<div class="f11 c3" style="margin-top:8px">Tap a drill to record it. Drills may be done when convenient, but the stated interval must not be exceeded. Combine drills where possible.</div></div></div>';
+  var head='<tr><th class="dr-n">Drill</th>'+DR_MON.map(function(m,i){return '<th class="dr-m'+(i===cm?' now':'')+'">'+(i+1)+'<span>'+m+'</span></th>';}).join('')+'<th class="dr-l">Last done</th><th class="dr-s">Status</th><th class="dr-a"></th></tr>';
+  var body='';
+  DR_GROUPS.forEach(function(g){
+    var rows=DR_DB.filter(function(d){return d.g===g[0];});
+    body+='<tr class="dr-gh"><td colspan="16">'+esc(g[1])+(DR_GROUP_NOTE[g[0]]?'<div class="dr-gn">'+esc(DR_GROUP_NOTE[g[0]])+'</div>':'')+'</td></tr>';
+    rows.forEach(function(d){
+      var s=drStatus(d), st=S.drillDone&&S.drillDone[d.k], lastDt=s.last?dateFromKey(s.last):null;
+      body+='<tr><td class="dr-n"><div class="dr-nm">'+esc(d.name)+'</div>'+(d.sub?'<div class="dr-sub">'+esc(d.sub)+'</div>':'')+(d.int?'<div class="dr-sub">Statutory: every '+(d.int===1?'month':d.int+' months')+'</div>':'')+'</td>'+
+        DR_MON.map(function(m,i){
+          var on=d.m.indexOf(i+1)>=0, done=lastDt&&lastDt.getFullYear()===cy&&lastDt.getMonth()===i;
+          return '<td class="dr-c'+(i===cm?' now':'')+(on?' on':'')+'">'+(done?'<span class="dr-ok" title="Done '+esc(s.last)+'">&#10003;</span>':(on?'x':''))+'</td>';
+        }).join('')+
+        '<td class="dr-l">'+(d.calc?'<span class="f11 c3">'+(s.last?esc(drFmt(dateFromKey(s.last))):'-')+'</span>':'<input type="date" class="fi dr-date" aria-label="Last done: '+esc(d.name)+'" value="'+esc(s.last)+'" onchange="drSetLast(\''+d.k+'\',this.value)">')+'</td>'+
+        '<td class="dr-s"><span class="dr-pill '+s.cls+'">'+esc(s.label)+'</span><div class="dr-sub">Next: '+esc(s.next)+'</div>'+(s.stat?'<div class="dr-sub'+(s.overdue?' dr-bad':'')+'">'+esc(s.stat)+'</div>':'')+'</td>'+
+        '<td class="dr-a">'+(d.noLog?'':'<button class="btn bxs" onclick="drLogOpen(\''+d.k+'\')">Log</button>')+'</td></tr>';
+    });
+  });
+  el.innerHTML = sum+'<div class="card"><div class="dr-wrap"><table class="dr-tbl">'+head+body+'</table></div></div>'+
+    '<div class="f11 c3" style="margin:10px 2px">Months 1 to 12 follow the company drill schedule (1 = January). A tick shows a drill recorded this year in that month. Next due is the next scheduled month after the last drill. The statutory limit is the longest interval allowed by SOLAS or the ISPS Code.</div>';
+}
+function drSetLast(k,v){
+  var st=drState(k); st.last=v||''; autoSave(); drRenderMatrix(); renderDrills();
+}
+function drTodayKey(){ return todayKey(); }
+
+// ── logging a drill
+function drFill(d, rec){
+  var info=DR_INFO[d.info];
+  var map={ '{T}':rec.d+' '+(rec.t||'____'), '{AREA}':d.area||'____', '{N}':rec.n||'____', '{M}':rec.dur||'____', '{X}':rec.note?('Remarks: '+rec.note+'.'):'', '{NAME}':d.name, '{BOAT}':'', '{X2}':'' };
+  if (d.k==='b_ab') map['{BOAT}']='Lifeboat No. ____ lowered. ';
+  var t=info.tm;
+  Object.keys(map).forEach(function(k){ t=t.split(k).join(map[k]); });
+  return t.replace(/\s+\./g,'.').replace(/\s{2,}/g,' ').trim();
+}
+function drDefaultMinutes(d){ var m=(DR_INFO[d.info].dur||'').match(/(\d+)/); return m?m[1]:''; }
+function drLogOpen(k){
+  var d=drGet(k); if(!d) return;
+  var now=new Date();
+  openModal('Record Drill: '+d.name,
+    '<div class="g2"><div class="fg"><label>Date</label><input type="date" class="fi" id="dl-d" value="'+todayKey()+'"></div>'+
+    '<div class="fg"><label>Time (LT)</label><input type="time" class="fi" id="dl-t" value="'+pad(now.getHours())+':'+pad(now.getMinutes())+'"></div></div>'+
+    '<div class="g2"><div class="fg"><label>Duration (min)</label><input type="number" class="fi" id="dl-m" min="1" value="'+esc(drDefaultMinutes(d))+'"></div>'+
+    '<div class="fg"><label>Crew participating</label><input type="number" class="fi" id="dl-n" min="0" placeholder="e.g. 24"></div></div>'+
+    '<div class="fg"><label>Remarks (optional)</label><input class="fi" id="dl-x" placeholder="Scenario detail, faults found, lessons"></div>'+
+    '<div class="f11 c3">Saving sets the last done date and gives the log book entry text to copy.</div>',
+    '<button class="btn bp bsm" onclick="drLogSave(\''+k+'\')">Save</button><button class="btn bgh bsm" onclick="closeModal()">Cancel</button>');
+}
+function drLogSave(k){
+  var d=drGet(k); if(!d) return;
+  function v(id){ var e=document.getElementById(id); return e?e.value.trim():''; }
+  var date=v('dl-d')||todayKey();
+  var rec={id:Date.now(), d:date, t:v('dl-t'), dur:v('dl-m'), n:v('dl-n'), note:v('dl-x')};
+  var st=drState(k); st.hist.unshift(rec); if(st.hist.length>60) st.hist.length=60;
+  if(!st.last || date>=st.last) st.last=date;
+  autoSave(); renderDrills();
+  drLogShow(k, rec.id);
+}
+function drLogShow(k,id){
+  var d=drGet(k), st=drState(k); var rec=st.hist.find(function(r){return r.id===id;}); if(!d||!rec) return;
+  var txt=drFill(d,rec);
+  openModal('Log Book Entry',
+    '<div class="f12 c3 mb12">Enter this in: '+esc(DR_INFO[d.info].book)+'</div>'+
+    '<textarea class="ft w100" id="dl-txt" style="min-height:150px" readonly>'+esc(txt)+'</textarea>'+
+    '<div class="f11 c3" style="margin-top:8px">Fill in the blanks (____) before copying. Sign the entry as required.</div>',
+    '<button class="btn bp bsm" onclick="drCopyTxt()">Copy</button><button class="btn bgh bsm" onclick="closeModal()">Close</button>');
+}
+function drCopyTxt(){ var e=document.getElementById('dl-txt'); if(e) cp(e.value,'Log entry copied.'); }
+function drCopyGuide(kind,k){
+  var d=drGet(k); if(!d) return;
+  var info=DR_INFO[d.info];
+  if(kind==='pms'){ cp(info.pms.split('{NAME}').join(d.name), 'PMS text copied.'); return; }
+  if(kind==='log'){ var rec={d:todayKey(),t:'',dur:'',n:'',note:''}; cp(drFill(d,rec),'Log entry template copied.'); return; }
+  if(kind==='refs'){ cp(d.name+'\n'+info.refs.join('\n')+(info.circ.length?'\nGuidance:\n'+info.circ.join('\n'):''),'References copied.'); }
+}
+
+// ── guide
+function drRenderGuide(){
+  var el=document.getElementById('dr-guide'); if(!el) return;
+  var h='<div class="card mb12"><div class="ch"><div class="ct">Rules for All Drills</div><div class="cm">Quote these in PMS and the log books</div></div><div class="cb dr-guide-body"><ul class="dr-ul">'+
+    '<li><b>SOLAS III/19.3.2</b>: every crew member takes part in at least one abandon ship drill and one fire drill every month. If over 25% of the crew have not taken part in the past month on this vessel, hold the drills within 24 hours of leaving port. Hold them before sailing for a new ship, after a major modification or with a new crew.</li>'+
+    '<li><b>ISPS Code B/13.6</b>: security drills at least every 3 months. If over 25% of the crew changed and have not taken part in a drill in the past 3 months, drill within 1 week.</li>'+
+    '<li><b>SOLAS III/19.4.1</b>: on-board training in life-saving and fire-fighting appliances within 2 weeks of joining.</li>'+
+    '<li><b>SOLAS III/19.5 (records)</b>: record the date of musters, details of abandon ship and fire drills, drills of other life-saving appliances and on-board training in the log book prescribed by the flag State. If a full drill is not held at the appointed time, make an entry stating the circumstances and the extent of the drill held.</li>'+
+    '<li><b>ISM Code 8.3</b>: the Company keeps programmes for drills and exercises to prepare for emergency action.</li>'+
+    '<li><b>After every drill</b>: return all equipment to full working order (SOLAS III/19.3.5.3), hold a debrief, record the drill in the log books and the company drill record, and update PMS.</li>'+
+    '</ul><div class="f11 c3" style="margin-top:8px">Paragraph numbers follow the consolidated SOLAS text. Check them against your edition and the company SMS before quoting. Typical durations are guidance only, SOLAS sets no fixed durations.</div></div></div>';
+  DR_GROUPS.forEach(function(g){
+    var rows=DR_DB.filter(function(d){return d.g===g[0] && !d.calc;});
+    h+='<div class="dr-gtitle">'+esc(g[1])+'</div>';
+    rows.forEach(function(d){
+      var info=DR_INFO[d.info], st=S.drillDone&&S.drillDone[d.k];
+      var months=d.m.length===12?'Every month':d.m.map(function(x){return DR_MON[x-1];}).join(', ');
+      var hist=(st&&st.hist||[]).slice(0,5).map(function(r){
+        return '<div class="tl-row" style="gap:8px"><div style="flex:1"><span class="f12 fw6">'+esc(r.d)+'</span> <span class="f11 c3">'+(r.dur?esc(r.dur)+' min':'')+(r.n?', '+esc(r.n)+' crew':'')+'</span></div><button class="btn bxs" onclick="drLogShow(\''+d.k+'\','+r.id+')">Entry</button></div>';
+      }).join('');
+      h+='<details class="card mb12 dr-det"><summary><span class="dr-sn">'+esc(d.name)+'</span><span class="dr-sm">'+esc(months)+'</span></summary><div class="cb dr-guide-body">'+
+        (d.sub?'<div class="f12 c3 mb12">'+esc(d.sub)+'</div>':'')+
+        '<div class="dr-h">Statutory basis and references</div><ul class="dr-ul">'+info.refs.map(function(r){return '<li>'+esc(r)+'</li>';}).join('')+'</ul>'+
+        '<div class="dr-h">MSC circulars and guidance to quote</div><ul class="dr-ul">'+info.circ.map(function(r){return '<li>'+esc(r)+'</li>';}).join('')+'</ul>'+
+        '<div class="dr-h">What the drill must cover</div><ul class="dr-ul">'+info.req.map(function(r){return '<li>'+esc(r)+'</li>';}).join('')+'</ul>'+
+        '<div class="dr-h">Duration</div><div class="f12">'+esc(info.dur)+'</div>'+
+        '<div class="dr-h">Log book entry</div><div class="f12 c3" style="margin-bottom:6px">'+esc(info.book)+'</div><div class="dr-box">'+esc(drFill(d,{d:todayKey(),t:'',dur:'',n:'',note:''}))+'</div>'+
+        '<div class="dr-h">PMS drill details text</div><div class="dr-box">'+esc(info.pms.split('{NAME}').join(d.name))+'</div>'+
+        '<div class="flex gap8" style="flex-wrap:wrap;margin-top:10px"><button class="btn bxs" onclick="drCopyGuide(\'log\',\''+d.k+'\')">Copy log entry</button><button class="btn bxs" onclick="drCopyGuide(\'pms\',\''+d.k+'\')">Copy PMS text</button><button class="btn bxs" onclick="drCopyGuide(\'refs\',\''+d.k+'\')">Copy references</button><button class="btn bp bxs" onclick="drLogOpen(\''+d.k+'\')">Record drill</button></div>'+
+        (hist?'<div class="dr-h">Recent records</div>'+hist:'')+
+      '</div></details>';
+    });
+  });
+  el.innerHTML=h;
 }
 
 // ── CARGO ─────────────────────────────────────────────────────
